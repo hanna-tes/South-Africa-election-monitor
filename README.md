@@ -2,13 +2,11 @@
 
 Monitoring election-related narratives, hate speech, and coordination patterns for South Africa's election context.
 
-This repository is the Code for Africa maintained version of the app. It is containerized for local development and is being prepared for deployment through the `cfa-iac-pulumi` infrastructure repository.
-
 ## Quick Start
 
 The simplest way to run the app locally is Docker Compose. This starts:
 
-- Django web app on port `8000`
+- Django web app on port `8010`
 - Django-Q worker for background jobs
 - PostgreSQL database inside Docker
 - MinIO, a local S3-compatible object store, for uploads
