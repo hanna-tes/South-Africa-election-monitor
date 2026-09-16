@@ -1,0 +1,483 @@
+{% extends 'dashboard/base.html' %}
+{% block title %}Networks & TTPs - Ethiopia Election Monitor{% endblock %}
+
+{% block extra_head %}
+<style>
+    .network-container { background: #0f172a; border-radius: 12px; padding: 1rem; position: relative; border: 1px solid #334155; }
+    .control-panel { background: #1e293b; border-radius: 8px; padding: 1rem; border: 1px solid #334155; }
+    .stat-card { background: #1e293b; border-radius: 8px; padding: 1rem; border: 1px solid #334155; }
+    input[type="range"] { width: 100%; accent-color: #3b82f6; }
+    select, input[type="number"] { background: #0f172a; color: #f1f5f9; border: 1px solid #334155; border-radius: 6px; padding: 0.5rem; }
+
+    /* Interactive Directory Card Styles */
+    .interactive-card {
+        transition: all 0.2s ease;
+        cursor: pointer;
+    }
+    .interactive-card:hover {
+        background: #1e293b;
+        transform: translateY(-2px);
+    }
+    .interactive-card.active {
+        background: #1e3a8a;
+        border-color: #3b82f6;
+        box-shadow: 0 0 12px rgba(59, 130, 246, 0.3);
+    }
+
+    /* TTP Card - Static display */
+    .ttp-card-static {
+        transition: none;
+        cursor: default;
+    }
+    .ttp-card-static:hover {
+        transform: none;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="bg-slate-900 rounded-xl shadow-lg p-6 border border-slate-800 text-slate-100">
+    
+    <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
+        <div>
+            <h2 class="text-2xl font-bold text-white">🕸️ Account Coordination Network</h2>
+            <p class="text-slate-400 mt-1 text-sm">Visualizing structural domestic indicators. <strong>Click nodes/group cards to filter the list below.</strong></p>
+        </div>
+        <div class="flex gap-2">
+            <a href="{% url 'export_complete_network' %}?min_connections={{ min_connections }}" 
+               class="inline-flex items-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-medium text-sm shadow-sm">
+                📥 Download Complete Network
+            </a>
+            <a href="{% url 'export_gephi_edges_csv' %}" 
+               class="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium text-sm shadow-sm">
+                📥 Download Gephi ready data
+            </a>
+        </div>
+    </div>
+    
+    <form method="get" class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6 control-panel">
+        <div>
+            <label class="text-sm text-slate-300 mb-1 block font-medium">Min connections</label>
+            <input type="range" name="min_connections" min="3" max="10" value="{{ min_connections }}" 
+                   oninput="this.nextElementSibling.value = this.value" onchange="this.form.submit()">
+            <output class="text-sm text-blue-400 font-bold">{{ min_connections }}</output>
+        </div>
+        <div>
+            <label class="text-sm text-slate-300 mb-1 block font-medium">Top N accounts</label>
+            <input type="range" name="top_n" min="10" max="100" step="10" value="{{ top_n }}" 
+                   oninput="this.nextElementSibling.value = this.value" onchange="this.form.submit()">
+            <output class="text-sm text-blue-400 font-bold">{{ top_n }}</output>
+        </div>
+        <div>
+            <label class="text-sm text-slate-300 mb-1 block font-medium">Layout Style</label>
+            <select name="layout" class="w-full" onchange="this.form.submit()">
+                <option value="spring" {% if layout_style == 'spring' %}selected{% endif %}>Spring</option>
+                <option value="circular" {% if layout_style == 'circular' %}selected{% endif %}>Circular</option>
+                <option value="kamada_kawai" {% if layout_style == 'kamada_kawai' %}selected{% endif %}>Kamada-Kawai</option>
+            </select>
+        </div>
+        <div class="flex items-end">
+            <button type="submit" class="w-full bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors font-medium">
+                🔄 Update View
+            </button>
+        </div>
+    </form>
+
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+        <div class="stat-card text-center">
+            <div class="text-3xl font-bold text-blue-400">{{ total_coordinated_groups|default:"0" }}</div>
+            <div class="text-sm text-slate-400">Coordination Groups</div>
+        </div>
+        <div class="stat-card text-center">
+            <div class="text-3xl font-bold text-green-400">{{ total_coordinated_accounts|default:"0" }}</div>
+            <div class="text-sm text-slate-400">Coordinated Accounts</div>
+        </div>
+        <div class="stat-card text-center">
+            <div class="text-3xl font-bold text-purple-400">{{ max_group_size|default:"0" }}</div>
+            <div class="text-sm text-slate-400">Largest Group Size</div>
+        </div>
+        <div class="stat-card text-center">
+            <div class="text-3xl font-bold text-orange-400">{{ total_posts|default:"0" }}</div>
+            <div class="text-sm text-slate-400">Domestic Posts Analyzed</div>
+        </div>
+    </div>
+
+    <!-- 💡 User Guidance Banner -->
+    <div class="mb-4 px-4 py-2.5 bg-blue-950/50 border border-blue-800/80 rounded-lg flex items-center gap-2 text-xs text-blue-200">
+        <span>💡</span>
+        <span><strong>What this network shows:</strong> This graph maps accounts (nodes) that frequently post identical text or share links together in synchronized bursts. Lines (edges) represent shared activity strength between accounts.</span>
+    </div>
+
+    <div class="mb-6 p-4 bg-slate-800 rounded-lg border border-slate-700">
+        <h4 class="text-sm font-semibold text-slate-200 mb-2">Network Legend</h4>
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4 text-sm">
+            <div class="flex items-center gap-2">
+                <div class="w-4 h-4 rounded-full" style="background:#3b82f6;"></div>
+                <span class="text-slate-300">Source Account (Originator)</span>
+            </div>
+            <div class="flex items-center gap-2">
+                <div class="w-4 h-4 rounded-full" style="background:#f59e0b;"></div>
+                <span class="text-slate-300">Amplifier Account (Reposter)</span>
+            </div>
+            <div class="flex items-center gap-2">
+                <div class="w-8 h-1 bg-slate-500 opacity-40"></div>
+                <span class="text-slate-300">Coordination Link (Thicker = Stronger)</span>
+            </div>
+            <div class="flex items-center gap-2">
+                <span class="text-slate-400 text-xs font-medium">Click nodes or group cards to populate log list profiles below.</span>
+            </div>
+        </div>
+    </div>
+    
+    <div class="grid grid-cols-1 lg:grid-cols-4 gap-6 mb-6">
+        <div class="lg:col-span-3 space-y-4">
+            <div class="network-container">
+                <div id="network-graph" class="w-full h-[600px]"></div>
+                {% if not network_graph_json or graph_stats.nodes == 0 %}
+                <div class="absolute inset-0 flex flex-col items-center justify-center bg-slate-950/90 rounded-xl text-center p-6">
+                    <p class="text-xl mb-2 text-white">📊 No coordination groups matched</p>
+                    <p class="text-slate-400 text-sm">Try sliding down "Min connections"</p>
+                </div>
+                {% endif %}
+            </div>
+
+            <div id="group-posts-container" class="p-5 border border-slate-700 rounded-xl bg-slate-800/50 shadow-sm" style="display: none;">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-lg font-bold text-white">
+                        📝 Log Streams for: <span id="selected-group-id" class="text-blue-400">None Selected</span>
+                    </h3>
+                    <button onclick="resetNetworkFilter()" class="text-xs text-slate-400 hover:text-blue-400 font-semibold underline">
+                        Clear Filters
+                    </button>
+                </div>
+                <div id="group-posts-list" class="space-y-3 max-h-80 overflow-y-auto pr-2">
+                </div>
+            </div>
+        </div>
+
+        <div class="border border-slate-700 rounded-xl p-4 bg-slate-800/60 shadow-sm flex flex-col" style="max-height: 600px;">
+            <div class="flex justify-between items-center mb-2">
+                <h3 class="text-md font-bold text-white">🔗 Networks ({{ coordination_groups|length }})</h3>
+                <button onclick="resetNetworkFilter()" class="text-[11px] text-blue-400 hover:underline">Reset</button>
+            </div>
+            
+            <div class="overflow-y-auto flex-1 space-y-2 pr-1">
+                {% for group in coordination_groups %}
+                <div class="interactive-card group-card p-3 rounded-lg border border-slate-700 bg-slate-800" 
+                     onclick="selectGroup({{ group.id }})" 
+                     id="group-card-{{ group.id }}">
+                    <div class="flex justify-between items-center mb-1">
+                        <span class="font-bold text-blue-400 text-xs">Network #{{ group.id }}</span>
+                        <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-900 border border-slate-700 text-slate-300">
+                            {{ group.account_count }} accounts
+                        </span>
+                    </div>
+
+                    <div class="text-[10px] font-semibold text-amber-400 mb-1">
+                        {{ group.behavior_class|default:"👥 Coordinated Tracking" }}
+                    </div>
+
+                    <div class="text-[11px] text-slate-300 font-medium truncate mb-1">
+                        📱 {{ group.platforms|join:', ' }} • {{ group.post_count }} instances
+                    </div>
+                    
+                    {% if group.sub_narrative and group.sub_narrative != 'General Coordination' %}
+                    <div class="text-[10px] text-purple-300 bg-purple-950/60 px-1.5 py-0.5 rounded border border-purple-800 truncate mb-1">
+                        📂 {{ group.sub_narrative }}
+                    </div>
+                    {% endif %}
+
+                    <div class="text-[10px] text-slate-400 italic truncate mb-1">
+                        "{{ group.text_sample }}"
+                    </div>
+
+                    <div class="text-[9px] text-slate-500 bg-slate-900/60 px-1 py-1 rounded font-mono border border-slate-700/50">
+                        <strong>Log:</strong> {{ group.time_justification|default:"Validated text asset grouping match." }}
+                    </div>
+                </div>
+                {% empty %}
+                <div class="text-center text-slate-500 text-sm py-12">
+                    No cluster data files parsed.
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    {% if ttps %}
+    <div class="bg-slate-800/80 rounded-xl p-6 border border-slate-700">
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-2">
+            <div>
+                <h3 class="text-xl font-bold text-white">🎯 DISARM TTP Attack Vectors Detection</h3>
+                <p class="text-slate-400 mt-1 text-sm">Each technique card displays its associated threat signatures and evidence posts directly below.</p>
+            </div>
+            <a href="https://disarmframework.herokuapp.com/" target="_blank" class="px-4 py-2 bg-slate-700 text-slate-200 rounded-lg hover:bg-slate-600 transition-colors text-sm font-medium border border-slate-600 shrink-0">
+                View Full Framework Wiki →
+            </a>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {% for ttp in ttps %}
+            <div class="ttp-card-static p-4 bg-slate-900 rounded-lg border border-slate-700" 
+                 id="ttp-card-{{ forloop.index }}">
+                <div class="flex justify-between items-start mb-2">
+                    <div class="flex-1">
+                        <span class="font-bold text-white text-sm block mb-1">🏷️ {{ ttp.name }}</span>
+                        <p class="text-xs text-slate-300 mb-2">{{ ttp.description }}</p>
+                        
+                        {% if ttp.evidence %}
+                        <p class="text-[11px] text-blue-400 font-medium italic mb-2">Pattern Evidence: {{ ttp.evidence }}</p>
+                        {% endif %}
+
+                        <div class="mt-2 space-y-1.5 border-t border-slate-800 pt-2">
+                            <span class="text-[10px] font-bold uppercase tracking-wider text-slate-500 block">Contextual Case Validation Log:</span>
+                            {% for post in ttp.evidence_posts %}
+                            <div class="p-2 bg-slate-950 rounded border border-slate-800 text-[11px]">
+                                <div class="flex justify-between text-slate-400 mb-0.5">
+                                    <span>👤 @{{ post.username }} via <strong>{{ post.platform }}</strong></span>
+                                    <span>{{ post.timestamp }}</span>
+                                </div>
+                                <p class="text-slate-300 italic">"{{ post.text_preview|truncatechars:120 }}"</p>
+                                <div class="text-[10px] text-amber-400/90 mt-1 font-mono">
+                                    <strong>↳ Match Proof:</strong> {{ post.ttp_reason }}
+                                </div>
+                                {% if post.url %}
+                                <a href="{{ post.url }}" target="_blank" class="text-blue-400 hover:text-blue-300 text-[10px] font-semibold mt-1 inline-block">
+                                    🔗 View Original Post
+                                </a>
+                                {% endif %}
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    <span class="px-2 py-1 rounded text-[10px] font-bold text-white shrink-0 ml-2
+                        {% if ttp.severity == 'Critical' %}bg-red-600
+                        {% elif ttp.severity == 'High' %}bg-orange-600
+                        {% elif ttp.severity == 'Medium' %}bg-yellow-600
+                        {% else %}bg-blue-600{% endif %}">
+                        {{ ttp.severity }}
+                    </span>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+<script>
+    const graphData = {{ network_graph_json|safe|default:"{}" }};
+    const coordinationGroups = {{ coordination_groups_json|safe|default:"[]" }};
+    
+    function scaleNodeSize(rawVal, groupVal) {
+        const value = Math.max(parseFloat(rawVal) || 0, parseFloat(groupVal) || 0, 1);
+        return 12 + (Math.log10(value + 1) * 12);
+    }
+
+    function renderPlotlyNetwork(filteredNodes = null, filteredEdges = null) {
+        if (!graphData || !graphData.nodes || graphData.nodes.length === 0) return;
+
+        const nodesToRender = filteredNodes || graphData.nodes;
+        const edgesToRender = filteredEdges || graphData.edges;
+
+        const edgeTraces = edgesToRender.map(edge => ({
+            x: [edge.source_x, edge.target_x, null],
+            y: [edge.source_y, edge.target_y, null],
+            mode: 'lines',
+            line: { 
+                width: Math.min(4, Math.max(1, (edge.weight || 1) * 1.2)), 
+                color: 'rgba(148, 163, 184, 0.25)' 
+            },
+            hoverinfo: 'none',
+            showlegend: false,
+            type: 'scatter'
+        }));
+
+        let nodeTraces = [];
+        const sourceNodes = nodesToRender.filter(n => n.type === 'source');
+        const amplifierNodes = nodesToRender.filter(n => n.type === 'amplifier');
+        const defaultNodes = nodesToRender.filter(n => !n.type);
+
+        const processTrace = (nodesList, colorHex, labelName) => {
+            if (nodesList.length === 0) return;
+            
+            const labels = nodesList.map(n => n.label || n.username || n.id);
+            const rawSizes = nodesList.map(n => {
+                let match = coordinationGroups.find(g => g.accounts && (g.accounts.includes(n.id) || g.accounts.includes(n.label)));
+                let countFallback = match ? match.post_count : 1;
+                return scaleNodeSize(n.post_count || n.size, countFallback);
+            });
+
+            nodeTraces.push({
+                x: nodesList.map(n => n.x),
+                y: nodesList.map(n => n.y),
+                mode: 'markers+text',
+                text: labels,
+                textposition: 'top center',
+                cliponaxis: false,
+                textfont: { family: 'Inter, sans-serif', size: 10, color: '#f1f5f9' },
+                marker: {
+                    size: rawSizes,
+                    color: colorHex,
+                    line: { width: 1.5, color: '#0f172a' }
+                },
+                customdata: nodesList.map(n => ({ id: n.id, label: n.label || n.username || n.id })),
+                name: labelName,
+                hovertemplate: '<b>Account Profile:</b> %{text}<extra></extra>',
+                hoverlabel: { bgcolor: '#1e293b', font: { color: '#ffffff' } },
+                type: 'scatter'
+            });
+        };
+
+        processTrace(sourceNodes, '#3b82f6', '🔵 Source Accounts');
+        processTrace(amplifierNodes, '#f59e0b', '🟠 Amplifier Accounts');
+        processTrace(defaultNodes, '#10b981', '🟢 Other Handles');
+
+        const layout = {
+            showlegend: true,
+            legend: { 
+                x: 0.02, 
+                y: 0.98, 
+                bgcolor: 'rgba(15, 23, 42, 0.75)', 
+                bordercolor: '#334155',
+                borderwidth: 1,
+                font: { color: '#cbd5e1', size: 10 } 
+            },
+            hovermode: 'closest',
+            margin: { t: 40, b: 40, l: 40, r: 40 },
+            xaxis: { 
+                showgrid: false, 
+                zeroline: false, 
+                showticklabels: false,
+                autorange: true
+            },
+            yaxis: { 
+                showgrid: false, 
+                zeroline: false, 
+                showticklabels: false,
+                autorange: true
+            },
+            plot_bgcolor: '#0f172a',
+            paper_bgcolor: '#0f172a'
+        };
+
+        const targetDiv = document.getElementById('network-graph');
+        Plotly.react(targetDiv, [...edgeTraces, ...nodeTraces], layout, { 
+            responsive: true, 
+            displayModeBar: true, 
+            scrollZoom: true 
+        });
+
+        targetDiv.on('plotly_click', function(data){
+            if(data.points && data.points[0]) {
+                const point = data.points[0];
+                if(point.customdata) {
+                    displaySpecificAccountLogs(point.customdata.id, point.customdata.label);
+                }
+            }
+        });
+    }
+
+    function displaySpecificAccountLogs(nodeId, screenLabel) {
+        document.querySelectorAll('.group-card').forEach(el => el.classList.remove('active'));
+        
+        const container = document.getElementById('group-posts-container');
+        const listWrapper = document.getElementById('group-posts-list');
+        document.getElementById('selected-group-id').innerText = `@${screenLabel}`;
+        
+        listWrapper.innerHTML = '';
+        let matchCount = 0;
+
+        coordinationGroups.forEach(group => {
+            const belongs = group.accounts && (group.accounts.includes(nodeId) || group.accounts.includes(screenLabel));
+            if (belongs && group.sample_posts_with_urls) {
+                group.sample_posts_with_urls.forEach(post => {
+                    matchCount++;
+                    const row = document.createElement('div');
+                    row.className = 'p-3 rounded-lg border border-slate-700 bg-slate-900 text-xs mb-2';
+                    row.innerHTML = `
+                        <div class="flex justify-between items-center mb-1">
+                            <span class="font-bold text-amber-400">@${post.username || screenLabel}</span>
+                            <span class="text-slate-400">${post.platform || 'Platform'} • ${post.timestamp || 'Recent'}</span>
+                        </div>
+                        <p class="text-slate-200 text-sm italic mb-2">"${group.text_sample || ''}"</p>
+                        <div class="text-[10px] text-amber-400 font-mono bg-slate-950 p-1.5 rounded border border-slate-800 mb-2">
+                            <strong>Verification Proof:</strong> Live cross-post latency: ${post.timestamp || 'Temporal validation active.'}
+                        </div>
+                        ${post.url ? `<a href="${post.url}" target="_blank" class="text-blue-400 font-semibold hover:underline">🔗 View Original Live URL</a>` : ''}
+                    `;
+                    listWrapper.appendChild(row);
+                });
+            }
+        });
+
+        if (matchCount === 0) {
+            listWrapper.innerHTML = `<div class="p-3 text-slate-400 bg-slate-900 text-center text-sm rounded-lg">No active text logs stored for @${screenLabel}.</div>`;
+        }
+        container.style.display = 'block';
+        container.scrollIntoView({ behavior: 'smooth' });
+    }
+
+    function selectGroup(groupId) {
+        const group = coordinationGroups.find(g => g.id == groupId);
+        if (!group) return;
+
+        document.querySelectorAll('.group-card').forEach(el => el.classList.remove('active'));
+        const card = document.getElementById(`group-card-${groupId}`);
+        if (card) card.classList.add('active');
+
+        let accountIdSet = new Set(group.accounts || []);
+        const filteredNodes = graphData.nodes.filter(n => accountIdSet.has(n.id) || accountIdSet.has(n.label));
+        const activeNodeIds = new Set(filteredNodes.map(n => n.id));
+        const filteredEdges = graphData.edges.filter(e => activeNodeIds.has(e.source) || activeNodeIds.has(e.target));
+
+        renderPlotlyNetwork(filteredNodes, filteredEdges);
+
+        const container = document.getElementById('group-posts-container');
+        const listWrapper = document.getElementById('group-posts-list');
+        document.getElementById('selected-group-id').innerText = `Network Cluster Group #${groupId}`;
+        
+        listWrapper.innerHTML = '';
+        let validPostsCount = 0;
+
+        if (group.sample_posts_with_urls && group.sample_posts_with_urls.length > 0) {
+            group.sample_posts_with_urls.forEach(post => {
+                validPostsCount++;
+                const row = document.createElement('div');
+                row.className = 'p-3 rounded-lg border border-slate-700 bg-slate-900 text-xs mb-2';
+                row.innerHTML = `
+                    <div class="flex justify-between items-center mb-1">
+                        <span class="font-bold text-blue-400">@${post.username || 'Coordinated Handle'}</span>
+                        <span class="text-slate-400">${post.platform || 'N/A'} • ${post.timestamp || 'Recent'}</span>
+                    </div>
+                    <p class="text-slate-200 text-sm italic mb-2">"${group.text_sample}"</p>
+                    <div class="text-[10px] text-amber-400 font-mono bg-slate-950 p-1.5 rounded border border-slate-800 mb-2">
+                        <strong>Verification Proof:</strong> Coordinated timeline signature: ${post.timestamp || 'Temporal execution sequence.'}
+                    </div>
+                    ${post.url ? `<a href="${post.url}" target="_blank" class="text-blue-400 font-semibold hover:underline">🔗 View Live Post</a>` : ''}
+                `;
+                listWrapper.appendChild(row);
+            });
+        }
+
+        if (validPostsCount === 0) {
+            listWrapper.innerHTML = `<div class="p-3 text-slate-400 text-center bg-slate-900 rounded-lg text-sm">No explicit matching entries found for this cluster block.</div>`;
+        }
+        container.style.display = 'block';
+        container.scrollIntoView({ behavior: 'smooth' });
+    }
+
+    function resetNetworkFilter() {
+        document.querySelectorAll('.interactive-card').forEach(el => el.classList.remove('active'));
+        document.getElementById('group-posts-container').style.display = 'none';
+        renderPlotlyNetwork();
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        renderPlotlyNetwork();
+    });
+</script>
+{% endblock %}

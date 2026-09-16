@@ -1,0 +1,43 @@
+{% extends 'dashboard/base.html' %}
+{% block content %}
+<div class="mb-6 flex justify-between items-center">
+    <h2 class="text-2xl font-bold text-gray-900">🚨 Risk Actors</h2>
+    <div class="text-sm text-gray-500">Auto-flagged via hate speech & coordinated activity patterns</div>
+</div>
+
+<div class="bg-white rounded-xl shadow-sm border overflow-x-auto">
+    <table class="w-full text-sm">
+        <thead class="bg-gray-50 border-b">
+            <tr>
+                <th class="px-4 py-3 text-left font-medium text-gray-600">Account</th>
+                <th class="px-4 py-3 text-left font-medium text-gray-600">Platform</th>
+                <th class="px-4 py-3 text-left font-medium text-gray-600">Risk Level</th>
+                <th class="px-4 py-3 text-left font-medium text-gray-600">Score</th>
+                <th class="px-4 py-3 text-left font-medium text-gray-600">Triggers</th>
+                <th class="px-4 py-3 text-left font-medium text-gray-600">Last Seen</th>
+            </tr>
+        </thead>
+        <tbody class="divide-y divide-gray-100">
+            {% for actor in actors %}
+            <tr class="hover:bg-gray-50 transition">
+                <td class="px-4 py-3 font-mono text-xs text-gray-700">{{ actor.account_id|truncatechars:30 }}</td>
+                <td class="px-4 py-3">{{ actor.platform }}</td>
+                <td class="px-4 py-3">
+                    <span class="px-2 py-1 rounded text-xs font-bold 
+                        {% if actor.risk_level == 'critical' %}bg-red-100 text-red-700
+                        {% elif actor.risk_level == 'high' %}bg-orange-100 text-orange-700
+                        {% else %}bg-yellow-100 text-yellow-700{% endif %}">
+                        {{ actor.risk_level|upper }}
+                    </span>
+                </td>
+                <td class="px-4 py-3 font-mono">{{ actor.risk_score|floatformat:2 }}</td>
+                <td class="px-4 py-3 text-xs text-gray-600">{{ actor.reasons|join:", " }}</td>
+                <td class="px-4 py-3 text-gray-500">{{ actor.last_seen|date:"M d, Y" }}</td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="6" class="px-4 py-10 text-center text-gray-400">No risk actors flagged yet. Data will appear as ingestion & scoring runs.</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

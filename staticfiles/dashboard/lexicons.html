@@ -1,0 +1,129 @@
+{% extends 'dashboard/base.html' %}
+{% block title %}Mapped Lexicons - Ethiopia Election Monitor{% endblock %}
+
+{% block content %}
+<div class="bg-white rounded-xl shadow-sm p-6 border border-blue-100">
+    <!-- Header -->
+    <div class="flex justify-between items-center mb-6">
+        <div>
+            <h2 class="text-2xl font-bold text-gray-900">🗣️ Mapped Lexicons</h2>
+            <p class="text-gray-600 mt-1">Scanning uploaded posts for hate speech and trigger terms</p>
+        </div>
+        <div class="text-right">
+            <span class="px-4 py-2 bg-blue-100 text-blue-800 rounded-lg font-semibold">
+                {{ total_matches }} matches in {{ posts_scanned }} posts
+            </span>
+            <p class="text-xs text-gray-500 mt-1">of {{ total_posts }} total posts</p>
+        </div>
+    </div>
+    
+    {% if top_terms %}
+    <!-- Top Trigger Terms Grid -->
+    <div class="mb-8">
+        <h3 class="text-lg font-semibold text-gray-800 mb-4">🔥 Top Trigger Terms</h3>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {% for term in top_terms %}
+            <div class="bg-blue-50 border border-blue-100 rounded-lg p-4 hover:shadow-md transition-shadow">
+                <div class="flex justify-between items-start">
+                    <div>
+                        <div class="font-semibold text-blue-900 text-lg">{{ term.term }}</div>
+                        <div class="text-sm text-blue-600 mt-1">{{ term.count }} mentions</div>
+                    </div>
+                    {% if term.metadata.severity %}
+                    <span class="px-2 py-1 rounded text-xs font-medium
+                        {% if term.metadata.severity == 'critical' %}bg-red-100 text-red-800
+                        {% elif term.metadata.severity == 'high' %}bg-orange-100 text-orange-800
+                        {% elif term.metadata.severity == 'medium' %}bg-yellow-100 text-yellow-800
+                        {% else %}bg-green-100 text-green-800{% endif %}">
+                        {{ term.metadata.severity }}
+                    </span>
+                    {% endif %}
+                </div>
+                {% if term.metadata.target_entity %}
+                <div class="text-xs text-gray-500 mt-2">Target: {{ term.metadata.target_entity }}</div>
+                {% endif %}
+                {% if term.metadata.language %}
+                <div class="text-xs text-gray-500">Language: {{ term.metadata.language|title }}</div>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    
+    <!-- Category & Severity Breakdown -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+        <!-- Category Counts -->
+        <div>
+            <h3 class="text-lg font-semibold text-gray-800 mb-4">📂 By Category</h3>
+            <div class="grid grid-cols-2 gap-3">
+                {% for category, count in category_counts.items %}
+                <div class="bg-gray-50 rounded-lg p-3 text-center border border-gray-200">
+                    <div class="text-2xl font-bold text-gray-800">{{ count }}</div>
+                    <div class="text-xs text-gray-500">{{ category|title }}</div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        
+        <!-- Severity Distribution -->
+        <div>
+            <h3 class="text-lg font-semibold text-gray-800 mb-4">⚠️ By Severity</h3>
+            <div class="flex flex-wrap gap-2">
+                {% for severity, count in severity_counts.items %}
+                <span class="px-3 py-1 rounded-full text-sm font-medium
+                    {% if severity == 'critical' %}bg-red-100 text-red-800
+                    {% elif severity == 'high' %}bg-orange-100 text-orange-800
+                    {% elif severity == 'medium' %}bg-yellow-100 text-yellow-800
+                    {% else %}bg-green-100 text-green-800{% endif %}">
+                    {{ severity|title }}: {{ count }}
+                </span>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    
+    <!-- Word Cloud (Streamlit-style) -->
+    {% if wordcloud_base64 %}
+    <div class="mb-8">
+        <h3 class="text-lg font-semibold text-gray-800 mb-4">🔥 Trigger Terms Word Cloud</h3>
+        <div class="bg-white rounded-lg p-4 border border-gray-200 flex justify-center">
+            <img src="image/png;base64,{{ wordcloud_base64 }}" 
+                 alt="Trigger Terms Word Cloud" 
+                 class="w-full max-w-3xl h-auto max-h-96 object-contain">
+        </div>
+        <p class="text-xs text-gray-500 mt-2 text-center">Size = frequency • Color = severity</p>
+    </div>
+    {% endif %}
+    
+    <!-- Targeted Entities (Streamlit-style) -->
+    {% if targeted_entities %}
+    <div class="mb-8">
+        <h3 class="text-lg font-semibold text-gray-800 mb-4">🎯 Most Targeted Entities</h3>
+        <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
+            {% for entity in targeted_entities %}
+            <div class="bg-purple-50 rounded-lg p-3 text-center border border-purple-100 hover:shadow-sm transition-shadow">
+                <div class="font-semibold text-purple-900 text-sm">{{ entity.entity|truncatechars:25 }}</div>
+                <div class="text-xs text-purple-600 mt-1">{{ entity.count }} mentions</div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+    
+    {% else %}
+    <!-- Empty State -->
+    <div class="text-center py-16 bg-gray-50 rounded-xl border-2 border-dashed border-gray-300">
+        <div class="text-6xl mb-4">🔍</div>
+        <h3 class="text-lg font-semibold text-gray-800 mb-2">No lexicon matches yet</h3>
+        <p class="text-gray-500 mb-2">You have <strong>{{ total_posts }}</strong> posts in the database.</p>
+        <p class="text-gray-500 mb-6 max-w-md mx-auto">
+            Upload election-related social media data to scan for hate speech and trigger terms 
+            from the Ethiopia election lexicon.
+        </p>
+        <a href="{% url 'upload_data' %}" class="inline-flex items-center px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium">
+            📤 Upload Data
+        </a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

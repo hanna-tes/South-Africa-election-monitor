@@ -1,0 +1,84 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Virtual environments
+venv/
+ENV/
+env/
+.venv/
+
+# Django
+*.log
+local_settings.py
+db.sqlite3
+media/
+
+# Database dumps
+*.dump
+*.sql
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+
+__pycache__/
+*.pyc
+*.dump
+*.sqlite3
+__pycache__/
+*.pyc
+*.dump
+*.sqlite3
+.env
+model_cache/
+*.safetensors
+*.bin
+*.pt
+*.pth
+model_cache/
+*.safetensors
+*.bin
+*.pt
+*.pth
+
+*.pem
+__pycache__/
+*.pyc
+*.pem
+
+dashboard/model_cache/
+!dashboard/model_cache/.gitkeep
+
+!docker/backups/
+!docker/backups/ethiopia_election_db.dump
+dashboard/model_cache/
+!dashboard/model_cache/.gitkeep
+
+# Local-only CFA deploy helper. Keep machine/account-specific deployment
+# scripts out of PRs; use the GitHub workflow for shared deploy automation.
+scripts/deploy-locally.sh

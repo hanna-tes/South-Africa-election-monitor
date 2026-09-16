@@ -1,0 +1,114 @@
+{% extends 'dashboard/base.html' %}
+{% block title %}Investigative Reports - Ethiopia Election Monitor{% endblock %}
+
+{% block content %}
+<!-- Hero Section - DARK BLUE with WHITE text -->
+<div class="bg-blue-900 py-16 px-6" style="background-color: #1e3a8a !important;">
+    <div class="max-w-7xl mx-auto text-center">
+        <h1 class="text-4xl md:text-5xl font-bold text-white mb-4 tracking-tight" style="color: white !important;">
+            Ethiopia Electoral Information & Political Landscape
+        </h1>
+        <p class="text-lg md:text-xl text-blue-100 max-w-3xl mx-auto leading-relaxed" style="color: #bfdbfe !important;">
+            Investigative analysis of digital harms, coordinated influence operations, and platform-specific manipulation strategies.
+        </p>
+    </div>
+</div>
+
+<!-- Report Cards Section -->
+<div class="max-w-7xl mx-auto px-6 -mt-12 relative z-10 mb-16">
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+        
+        <!-- Baseline Report -->
+        <div class="bg-white rounded-2xl shadow-xl overflow-hidden border border-gray-200 hover:shadow-2xl hover:-translate-y-1 transition-all duration-300">
+            <div class="h-48 bg-blue-800 flex items-center justify-center" style="background-color: #1e40af !important;">
+                <svg class="w-20 h-20 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="color: white !important;">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                </svg>
+            </div>
+            <div class="p-6">
+                <h3 class="text-2xl font-bold text-gray-900 mb-3" style="color: #111827 !important;">Baseline Report</h3>
+                <p class="text-gray-700 mb-6 leading-relaxed text-sm" style="color: #374151 !important;">
+                    A comprehensive Information Ecosystem Assessment mapping digital harms, weaponized hate speech, and coordinated influence operations using DISARM frameworks.
+                </p>
+                {% if baseline_reports.first %}
+                <a href="{% url 'report_detail' baseline_reports.first.id %}" 
+                   class="inline-flex items-center justify-center w-full px-6 py-3 bg-blue-900 text-white font-semibold rounded-lg hover:bg-blue-800 transition-colors shadow-md"
+                   style="background-color: #1e3a8a !important; color: white !important;">
+                    Read more
+                    <svg class="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+                </a>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Situational Report -->
+        <div class="bg-white rounded-2xl shadow-xl overflow-hidden border border-gray-200 hover:shadow-2xl hover:-translate-y-1 transition-all duration-300">
+            <div class="h-48 bg-indigo-700 flex items-center justify-center" style="background-color: #4338ca !important;">
+                <svg class="w-20 h-20 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="color: white !important;">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                </svg>
+            </div>
+            <div class="p-6">
+                <h3 class="text-2xl font-bold text-gray-900 mb-3" style="color: #111827 !important;">Situational Reports</h3>
+                <p class="text-gray-700 mb-6 leading-relaxed text-sm" style="color: #374151 !important;">
+                    Rapid-response investigations into specific narratives, actors, or manipulation strategies. Provides actionable insights for media, CSOs, and policy actors.
+                </p>
+                {% if situational_reports.first %}
+                <a href="{% url 'report_detail' situational_reports.first.id %}" 
+                   class="inline-flex items-center justify-center w-full px-6 py-3 bg-blue-900 text-white font-semibold rounded-lg hover:bg-blue-800 transition-colors shadow-md"
+                   style="background-color: #1e3a8a !important; color: white !important;">
+                    Read more
+                    <svg class="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+                </a>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- TikTok Analysis Report -->
+        <div class="bg-white rounded-2xl shadow-xl overflow-hidden border border-gray-200 hover:shadow-2xl hover:-translate-y-1 transition-all duration-300">
+            <div class="h-48 bg-blue-900 flex items-center justify-center relative overflow-hidden" style="background-color: #1e3a8a !important;">
+                <div class="absolute inset-0 opacity-10 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')]"></div>
+                <svg class="w-20 h-20 text-white relative z-10" viewBox="0 0 24 24" fill="currentColor" style="color: white !important;">
+                    <path d="M19.59 6.69a4.83 4.83 0 01-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 01-5.2 1.74 2.89 2.89 0 012.31-4.64 2.93 2.93 0 01.88.13V9.4a6.84 6.84 0 00-1-.05A6.33 6.33 0 005 20.1a6.34 6.34 0 0010.86-4.43v-7a8.16 8.16 0 004.77 1.52v-3.4a4.85 4.85 0 01-1-.1z"></path>
+                </svg>
+            </div>
+            <div class="p-6">
+                <h3 class="text-2xl font-bold text-gray-900 mb-3" style="color: #111827 !important;">TikTok Analysis Report</h3>
+                <p class="text-gray-700 mb-6 leading-relaxed text-sm" style="color: #374151 !important;">
+                    Deep dive into algorithmic amplification, coordinated hashtag campaigns, and audio-visual manipulation tactics targeting Ethiopian political discourse on short-form video platforms.
+                </p>
+                {% if tiktok_reports.first %}
+                <a href="{% url 'report_detail' tiktok_reports.first.id %}" 
+                   class="inline-flex items-center justify-center w-full px-6 py-3 bg-blue-900 text-white font-semibold rounded-lg hover:bg-blue-800 transition-colors shadow-md"
+                   style="background-color: #1e3a8a !important; color: white !important;">
+                    Read more
+                    <svg class="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+                </a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Archive Section -->
+{% if all_reports %}
+<div class="max-w-7xl mx-auto px-6 pb-16">
+    <h2 class="text-2xl font-bold text-gray-900 mb-6 pb-2 border-b-2 border-gray-300" style="color: #111827 !important;">📚 Report Archive</h2>
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {% for report in all_reports %}
+        <a href="{% url 'report_detail' report.id %}" 
+           class="block p-5 bg-white rounded-xl border-2 border-gray-300 hover:border-blue-700 hover:shadow-lg transition-all group">
+            <div class="flex justify-between items-start mb-2">
+                <h3 class="font-bold text-gray-900 group-hover:text-blue-800 transition-colors" style="color: #111827 !important;">{{ report.title }}</h3>
+                <span class="text-xs font-semibold px-2 py-1 bg-blue-100 text-blue-800 rounded" style="background-color: #dbeafe !important; color: #1e40af !important;">
+                    {{ report.get_report_category_display }}
+                </span>
+            </div>
+            <p class="text-sm text-gray-600" style="color: #4b5563 !important;">{{ report.uploaded_at|date:"F d, Y" }}</p>
+            <p class="text-sm text-gray-700 mt-2 line-clamp-2" style="color: #374151 !important;">{{ report.summary|truncatewords:15 }}</p>
+        </a>
+        {% endfor %}
+    </div>
+</div>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,211 @@
+{% extends 'dashboard/base.html' %}
+{% block title %}PEP Analysis - Ethiopia Election Monitor{% endblock %}
+
+{% block extra_head %}
+<style>
+    .pep-card {
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        border: 1px solid rgba(229, 231, 235, 0.5);
+    }
+    .pep-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    }
+    .metric-pill {
+        transition: all 0.2s ease;
+    }
+    .metric-pill:hover {
+        transform: scale(1.05);
+    }
+    .hashtag-tag {
+        transition: all 0.2s ease;
+    }
+    .hashtag-tag:hover {
+        background-color: #3b82f6;
+        color: white;
+    }
+    .cluster-badge {
+        animation: fadeIn 0.5s ease-in;
+    }
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(-10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    .velocity-indicator {
+        animation: pulse 2s infinite;
+    }
+    @keyframes pulse {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.6; }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Header -->
+<div class="mb-6">
+    <div class="flex items-center justify-between">
+        <div>
+            <h1 class="text-3xl font-bold text-gray-900 mb-2">🎯 PEP Mention & Narrative Analysis</h1>
+            <p class="text-gray-600">Advanced threat intelligence across {{ pep_analysis|length }} analyzed officials.</p>
+        </div>
+        <a href="{% url 'peps' %}" class="text-sm text-blue-600 hover:text-blue-800 font-medium flex items-center gap-1 bg-blue-50 px-3 py-2 rounded-lg border border-blue-200">
+            ← Back to PEPs Tracker
+        </a>
+    </div>
+    
+    <!-- NEW: Banner indicating RC Members inclusion -->
+    <div class="mt-4 bg-orange-50 border border-orange-200 rounded-lg p-4 flex items-start gap-3">
+        <span class="text-2xl">👥</span>
+        <div>
+            <h3 class="text-sm font-semibold text-orange-900">Enhanced with Regional Council (RC) Members</h3>
+            <p class="text-xs text-orange-800 mt-1">
+                This analysis automatically includes officials from the <strong>RC_Members.xlsx</strong> dataset alongside standard PEPs. 
+                Any mentions, narrative clusters, or bot activity targeting these regional officials will be flagged here.
+            </p>
+        </div>
+    </div>
+</div>
+
+<!-- Grid Layout -->
+<div class="grid grid-cols-1 xl:grid-cols-2 gap-6">
+    {% for pep in pep_analysis %}
+    <div class="pep-card bg-white rounded-2xl overflow-hidden shadow-sm">
+        <!-- Card Header -->
+        <div class="bg-gradient-to-r from-blue-50 to-indigo-50 px-6 py-4 border-b border-blue-100">
+            <div class="flex justify-between items-start">
+                <div>
+                    <h3 class="text-xl font-bold text-gray-900">{{ pep.pep_name }}</h3>
+                    <div class="flex items-center gap-3 mt-1 text-sm text-gray-600">
+                        <span class="flex items-center gap-1">
+                            💬 {{ pep.mention_count }} mentions
+                        </span>
+                        <span class="text-gray-300">|</span>
+                        <span class="flex items-center gap-1">
+                            {% if pep.risk_score <= 3 %}
+                                <span class="text-green-600">🟢 Mostly Neutral</span>
+                            {% elif pep.risk_score <= 6 %}
+                                <span class="text-yellow-600">🟡 Some Criticism</span>
+                            {% else %}
+                                <span class="text-red-600">🔴 High Criticism</span>
+                            {% endif %}
+                        </span>
+                    </div>
+                </div>
+                <div class="text-right">
+                    <div class="text-3xl font-bold text-blue-600">{{ pep.risk_score }}/10</div>
+                    <div class="text-xs text-gray-500">Risk Score</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="p-6 space-y-5">
+            <!-- Platform Breakdown -->
+            <div>
+                <h4 class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">📱 Platform Distribution</h4>
+                <div class="flex flex-wrap gap-2">
+                    {% for platform in pep.platform_breakdown %}
+                    <div class="metric-pill bg-blue-50 text-blue-700 px-3 py-1.5 rounded-lg text-sm font-medium border border-blue-200">
+                        {{ platform.name }}: {{ platform.percent }}%
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Velocity & Bot Detection -->
+            <div class="grid grid-cols-2 gap-4">
+                <div class="bg-gray-50 rounded-xl p-3 border border-gray-200">
+                    <div class="flex items-center gap-2 mb-1">
+                        <span class="text-lg">⚡</span>
+                        <span class="text-xs font-semibold text-gray-600">Velocity</span>
+                        {% if pep.velocity_alert %}
+                        <span class="velocity-indicator text-xs bg-red-100 text-red-700 px-2 py-0.5 rounded-full">⚠️</span>
+                        {% endif %}
+                    </div>
+                    <div class="text-sm text-gray-700">Peak: {{ pep.peak_hour }}:00</div>
+                </div>
+                <div class="bg-gray-50 rounded-xl p-3 border border-gray-200">
+                    <div class="flex items-center gap-2 mb-1">
+                        <span class="text-lg">🤖</span>
+                        <span class="text-xs font-semibold text-gray-600">Bot Activity</span>
+                    </div>
+                    <div class="text-sm {{ pep.bot_level|slice:':2' == '🟢'|yesno:'text-green-600,text-yellow-600,text-red-600' }}">
+                        {{ pep.bot_level }} ({{ pep.bot_score }}%)
+                    </div>
+                </div>
+            </div>
+
+            <!-- Gendered Attack Alert -->
+            {% if pep.is_gendered_target %}
+            <div class="bg-gradient-to-r from-pink-50 to-rose-50 border-l-4 border-pink-500 p-4 rounded-r-xl">
+                <div class="flex items-start gap-3">
+                    <span class="text-2xl">⚠️</span>
+                    <div>
+                        <h4 class="font-semibold text-pink-900 text-sm">Gendered Disinformation Detected</h4>
+                        <p class="text-xs text-pink-700 mt-1">AI-generated content, sexualized narratives, or qualification attacks identified</p>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Top Hashtags -->
+            {% if pep.top_hashtags %}
+            <div>
+                <h4 class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">#️⃣ Weaponized Hashtags</h4>
+                <div class="flex flex-wrap gap-2">
+                    {% for hashtag in pep.top_hashtags %}
+                    <span class="hashtag-tag bg-gray-100 text-gray-700 px-3 py-1 rounded-full text-xs font-medium cursor-pointer">
+                        #{{ hashtag.tag }} <span class="text-gray-400 ml-1">({{ hashtag.count }})</span>
+                    </span>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Narrative Clusters -->
+            {% if pep.narrative_clusters %}
+            <div>
+                <h4 class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">🎭 Narrative Clusters</h4>
+                <div class="space-y-2">
+                    {% for cluster in pep.narrative_clusters %}
+                    <div class="cluster-badge bg-indigo-50 border border-indigo-200 rounded-lg p-3">
+                        <div class="flex justify-between items-center">
+                            <span class="text-sm font-medium text-indigo-900">{{ cluster.name }}</span>
+                            <span class="text-xs bg-indigo-200 text-indigo-800 px-2 py-0.5 rounded-full">{{ cluster.count }} posts</span>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Sample Posts -->
+            {% if pep.sample_posts %}
+            <div>
+                <h4 class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">📄 Recent Examples</h4>
+                <div class="space-y-2">
+                    {% for post in pep.sample_posts %}
+                    <div class="bg-gray-50 rounded-lg p-3 text-sm text-gray-700 border border-gray-200 hover:bg-gray-100 transition">
+                        <div class="flex items-center gap-2 mb-1 text-xs text-gray-500">
+                            <span>{{ post.platform }}</span>
+                            <span>•</span>
+                            <span>{{ post.timestamp|date:"M d, H:i" }}</span>
+                            {% if post.risk_level == 'high' or post.risk_level == 'critical' %}
+                            <span class="text-red-600 font-semibold">⚠️</span>
+                            {% endif %}
+                        </div>
+                        <p class="text-gray-800">{{ post.text }}{% if post.text|length > 150 %}...{% endif %}</p>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+    {% empty %}
+    <div class="col-span-2 text-center py-12 bg-gray-50 rounded-2xl border-2 border-dashed border-gray-300">
+        <p class="text-gray-500 text-lg">📊 No PEP mentions detected yet. Upload social media data to begin analysis.</p>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

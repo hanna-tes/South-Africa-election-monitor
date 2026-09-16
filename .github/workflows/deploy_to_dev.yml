@@ -1,0 +1,452 @@
+name: deploy_to_dev
+
+on:
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
+
+jobs:
+  resolve_infra:
+    runs-on: ${{ fromJSON(vars.CFA_RUNNER_LABELS || '["ubuntu-24.04"]') }}
+    outputs:
+      app-url: ${{ steps.resolve.outputs.app-url }}
+      aws-region: ${{ steps.resolve.outputs.aws-region }}
+      aws-role-to-assume: ${{ steps.resolve.outputs.aws-role-to-assume }}
+      web-container-name: ${{ steps.resolve.outputs.web-container-name }}
+      web-ecr-repository: ${{ steps.resolve.outputs.web-ecr-repository }}
+      worker-container-name: ${{ steps.resolve.outputs.worker-container-name }}
+      worker-ecr-repository: ${{ steps.resolve.outputs.worker-ecr-repository }}
+      tei-ecr-repository: ${{ steps.resolve.outputs.tei-ecr-repository }}
+      tei-container-name: ${{ steps.resolve.outputs.tei-container-name }}
+      web-ecs-cluster-name: ${{ steps.resolve.outputs.web-ecs-cluster-name }}
+      web-ecs-service-name: ${{ steps.resolve.outputs.web-ecs-service-name }}
+      web-task-family: ${{ steps.resolve.outputs.web-task-family }}
+      auto-sync-schedule-name: ${{ steps.resolve.outputs.auto-sync-schedule-name }}
+      auto-ingest-schedule-name: ${{ steps.resolve.outputs.auto-ingest-schedule-name }}
+      refresh-analytics-schedule-name: ${{ steps.resolve.outputs.refresh-analytics-schedule-name }}
+    steps:
+      - name: Install Pulumi CLI
+        run: |
+          set -euo pipefail
+          echo "[resolve] Installing Pulumi CLI..."
+          curl -fsSL https://get.pulumi.com | sh
+          echo "$HOME/.pulumi/bin" >> "$GITHUB_PATH"
+          echo "[resolve] OK - Pulumi CLI installed ($("$HOME/.pulumi/bin/pulumi" version))."
+
+      - name: Resolve infrastructure config from Pulumi stack
+        id: resolve
+        env:
+          PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}
+          PULUMI_STACK: ${{ vars.ETHIOPIAN_ELECTION_MONITOR_PULUMI_STACK }}
+        run: |
+          set -euo pipefail
+
+          log() { echo "[resolve] $*"; }
+          err() { echo "[resolve] ERROR: $*" >&2; }
+
+          if [[ -z "${PULUMI_STACK:-}" ]]; then
+            err "ETHIOPIAN_ELECTION_MONITOR_PULUMI_STACK repository variable is required."
+            exit 1
+          fi
+          if [[ -z "${PULUMI_ACCESS_TOKEN:-}" ]]; then
+            err "PULUMI_ACCESS_TOKEN is not available. Add it as a repository, organization, or environment secret."
+            exit 1
+          fi
+          if ! command -v jq >/dev/null 2>&1; then
+            err "jq not found on PATH."
+            exit 1
+          fi
+
+          log "Logging in to Pulumi Cloud..."
+          pulumi login >/dev/null
+
+          log "Reading stack outputs for '$PULUMI_STACK'..."
+          pulumi_err="$(mktemp)"
+          if ! outputs="$(pulumi stack output --json --stack "$PULUMI_STACK" 2>"$pulumi_err")"; then
+            err "failed to read Pulumi stack outputs for '$PULUMI_STACK':"
+            cat "$pulumi_err" >&2
+            rm -f "$pulumi_err"
+            exit 1
+          fi
+          rm -f "$pulumi_err"
+
+          if [[ -z "$outputs" ]]; then
+            err "no outputs returned for stack '$PULUMI_STACK'. Is the stack deployed?"
+            exit 1
+          fi
+
+          missing=0
+          emit_required() {
+            local out_key="$1" json_key="$2" value
+            value="$(printf '%s' "$outputs" | jq -r --arg k "$json_key" '.[$k] // ""')"
+            if [[ "$value" == "null" ]]; then
+              value=""
+            fi
+            if [[ -z "$value" ]]; then
+              err "required Pulumi output '$json_key' is missing or empty in stack '$PULUMI_STACK'."
+              missing=1
+              return
+            fi
+            printf '%s=%s\n' "$out_key" "$value" >> "$GITHUB_OUTPUT"
+            log "OK - $out_key resolved from '$json_key'."
+          }
+
+          emit_optional() {
+            local out_key="$1" json_key="$2" default_value="${3:-}" value
+            value="$(printf '%s' "$outputs" | jq -r --arg k "$json_key" '.[$k] // ""')"
+            if [[ "$value" == "null" || -z "$value" ]]; then
+              value="$default_value"
+            fi
+            printf '%s=%s\n' "$out_key" "$value" >> "$GITHUB_OUTPUT"
+            if [[ -n "$value" ]]; then
+              log "OK - $out_key = '$value'."
+            else
+              log "OK - $out_key is empty; optional output '$json_key' is not configured."
+            fi
+          }
+
+          emit_optional aws-region awsRegion eu-west-1
+          emit_required aws-role-to-assume githubDeployRoleArn
+          emit_required app-url applicationUrl
+          emit_optional web-container-name webContainerName web
+          emit_optional worker-container-name workerContainerName worker
+          emit_optional tei-container-name teiContainerName tei
+          emit_required web-ecs-cluster-name webClusterName
+          emit_required web-ecs-service-name webServiceName
+          emit_required web-task-family webTaskFamily
+
+          web_repository_url="$(printf '%s' "$outputs" | jq -r '.webRepositoryUrl // ""')"
+          if [[ -z "$web_repository_url" || "$web_repository_url" == "null" ]]; then
+            err "required Pulumi output 'webRepositoryUrl' is missing or empty in stack '$PULUMI_STACK'."
+            missing=1
+          else
+            web_repository="${web_repository_url##*/}"
+            printf 'web-ecr-repository=%s\n' "$web_repository" >> "$GITHUB_OUTPUT"
+            log "OK - web-ecr-repository resolved from 'webRepositoryUrl'."
+          fi
+
+          worker_repository_url="$(printf '%s' "$outputs" | jq -r '.workerRepositoryUrl // ""')"
+          if [[ -z "$worker_repository_url" || "$worker_repository_url" == "null" ]]; then
+            err "required Pulumi output 'workerRepositoryUrl' is missing or empty in stack '$PULUMI_STACK'."
+            missing=1
+          else
+            worker_repository="${worker_repository_url##*/}"
+            printf 'worker-ecr-repository=%s\n' "$worker_repository" >> "$GITHUB_OUTPUT"
+            log "OK - worker-ecr-repository resolved from 'workerRepositoryUrl'."
+          fi
+
+          tei_repository_url="$(printf '%s' "$outputs" | jq -r '.teiRepositoryUrl // ""')"
+          if [[ -z "$tei_repository_url" || "$tei_repository_url" == "null" ]]; then
+            err "required Pulumi output 'teiRepositoryUrl' is missing or empty in stack '$PULUMI_STACK'."
+            missing=1
+          else
+            tei_repository="${tei_repository_url##*/}"
+            printf 'tei-ecr-repository=%s\n' "$tei_repository" >> "$GITHUB_OUTPUT"
+            log "OK - tei-ecr-repository resolved from 'teiRepositoryUrl'."
+          fi
+
+          emit_optional auto-sync-schedule-name autoSyncScheduleName
+          emit_optional auto-ingest-schedule-name autoIngestScheduleName
+          emit_optional refresh-analytics-schedule-name refreshAnalyticsScheduleName
+
+          if [[ "$missing" -ne 0 ]]; then
+            err "one or more required deploy outputs are missing. The infra stack likely needs to export webClusterName, webServiceName, and webTaskFamily before this app workflow can deploy."
+            exit 1
+          fi
+
+  build_web:
+    needs:
+      - resolve_infra
+    permissions:
+      contents: read
+      id-token: write
+      packages: read
+    uses: CodeForAfrica/iac-cfa-pulumi/.github/workflows/deploy-fargate-service.yml@main # zizmor: ignore[unpinned-uses] trusted internal reusable workflow should track central infra fixes
+    with:
+      aws-region: ${{ needs.resolve_infra.outputs.aws-region }}
+      aws-role-to-assume: ${{ needs.resolve_infra.outputs.aws-role-to-assume }}
+      build-context: .
+      container-name: ${{ needs.resolve_infra.outputs.web-container-name }}
+      dockerfile-path: Dockerfile
+      ecr-repository: ${{ needs.resolve_infra.outputs.web-ecr-repository }}
+      ecs-cluster-name: ${{ needs.resolve_infra.outputs.web-ecs-cluster-name }}
+      ecs-service-name: ${{ needs.resolve_infra.outputs.web-ecs-service-name }}
+      task-family: ${{ needs.resolve_infra.outputs.web-task-family }}
+      deploy: false
+      startup-validation-command: python -c "import election_monitor.wsgi"
+      startup-validation-entrypoint: sh
+
+  build_tei:
+    needs:
+      - resolve_infra
+    permissions:
+      contents: read
+      id-token: write
+      packages: read
+    uses: CodeForAfrica/iac-cfa-pulumi/.github/workflows/deploy-fargate-service.yml@main # zizmor: ignore[unpinned-uses] trusted internal reusable workflow should track central infra fixes
+    with:
+      aws-region: ${{ needs.resolve_infra.outputs.aws-region }}
+      aws-role-to-assume: ${{ needs.resolve_infra.outputs.aws-role-to-assume }}
+      build-context: models
+      build-args: |
+        TEI_IMAGE=ghcr.io/huggingface/text-embeddings-inference:cpu-1.9@sha256:c26a226262ad4ff3330fb30b76653c1bb65da2fcf413b92284545a010e0a8a48
+      checkout-lfs: true
+      container-name: ${{ needs.resolve_infra.outputs.tei-container-name }}
+      dockerfile-path: models/Dockerfile.tei
+      ecr-repository: ${{ needs.resolve_infra.outputs.tei-ecr-repository }}
+      ecs-cluster-name: ${{ needs.resolve_infra.outputs.web-ecs-cluster-name }}
+      ecs-service-name: ${{ needs.resolve_infra.outputs.web-ecs-service-name }}
+      task-family: ${{ needs.resolve_infra.outputs.web-task-family }}
+      deploy: false
+
+  build_worker:
+    needs:
+      - resolve_infra
+    permissions:
+      contents: read
+      id-token: write
+      packages: read
+    uses: CodeForAfrica/iac-cfa-pulumi/.github/workflows/deploy-fargate-service.yml@main # zizmor: ignore[unpinned-uses] trusted internal reusable workflow should track central infra fixes
+    with:
+      aws-region: ${{ needs.resolve_infra.outputs.aws-region }}
+      aws-role-to-assume: ${{ needs.resolve_infra.outputs.aws-role-to-assume }}
+      build-context: .
+      container-name: ${{ needs.resolve_infra.outputs.worker-container-name }}
+      dockerfile-path: Dockerfile
+      ecr-repository: ${{ needs.resolve_infra.outputs.worker-ecr-repository }}
+      ecs-cluster-name: ${{ needs.resolve_infra.outputs.web-ecs-cluster-name }}
+      ecs-service-name: ${{ needs.resolve_infra.outputs.web-ecs-service-name }}
+      task-family: ${{ needs.resolve_infra.outputs.web-task-family }}
+      deploy: false
+
+  deploy_tei:
+    needs:
+      - resolve_infra
+      - build_tei
+      - build_web
+      - build_worker
+    permissions:
+      contents: read
+      id-token: write
+      packages: read
+    uses: CodeForAfrica/iac-cfa-pulumi/.github/workflows/deploy-fargate-service.yml@main # zizmor: ignore[unpinned-uses] trusted internal reusable workflow should track central infra fixes
+    with:
+      aws-region: ${{ needs.resolve_infra.outputs.aws-region }}
+      aws-role-to-assume: ${{ needs.resolve_infra.outputs.aws-role-to-assume }}
+      build-context: models
+      build-args: |
+        TEI_IMAGE=ghcr.io/huggingface/text-embeddings-inference:cpu-1.9@sha256:c26a226262ad4ff3330fb30b76653c1bb65da2fcf413b92284545a010e0a8a48
+      checkout-lfs: true
+      container-name: ${{ needs.resolve_infra.outputs.tei-container-name }}
+      dockerfile-path: models/Dockerfile.tei
+      ecr-repository: ${{ needs.resolve_infra.outputs.tei-ecr-repository }}
+      ecs-cluster-name: ${{ needs.resolve_infra.outputs.web-ecs-cluster-name }}
+      ecs-service-name: ${{ needs.resolve_infra.outputs.web-ecs-service-name }}
+      task-family: ${{ needs.resolve_infra.outputs.web-task-family }}
+      prebuilt-image-reference: ${{ needs.build_tei.outputs.image-reference }}
+
+  deploy_web:
+    needs:
+      - resolve_infra
+      - build_web
+      - deploy_tei
+    permissions:
+      contents: read
+      id-token: write
+      packages: read
+    uses: CodeForAfrica/iac-cfa-pulumi/.github/workflows/deploy-fargate-service.yml@main # zizmor: ignore[unpinned-uses] trusted internal reusable workflow should track central infra fixes
+    with:
+      aws-region: ${{ needs.resolve_infra.outputs.aws-region }}
+      aws-role-to-assume: ${{ needs.resolve_infra.outputs.aws-role-to-assume }}
+      container-name: ${{ needs.resolve_infra.outputs.web-container-name }}
+      dockerfile-path: Dockerfile
+      ecr-repository: ${{ needs.resolve_infra.outputs.web-ecr-repository }}
+      ecs-cluster-name: ${{ needs.resolve_infra.outputs.web-ecs-cluster-name }}
+      ecs-service-name: ${{ needs.resolve_infra.outputs.web-ecs-service-name }}
+      task-family: ${{ needs.resolve_infra.outputs.web-task-family }}
+      prebuilt-image-reference: ${{ needs.build_web.outputs.image-reference }}
+
+  deploy_worker:
+    needs:
+      - resolve_infra
+      - build_worker
+      - deploy_web
+    permissions:
+      contents: read
+      id-token: write
+      packages: read
+    uses: CodeForAfrica/iac-cfa-pulumi/.github/workflows/deploy-fargate-service.yml@main # zizmor: ignore[unpinned-uses] trusted internal reusable workflow should track central infra fixes
+    with:
+      aws-region: ${{ needs.resolve_infra.outputs.aws-region }}
+      aws-role-to-assume: ${{ needs.resolve_infra.outputs.aws-role-to-assume }}
+      build-context: .
+      container-name: ${{ needs.resolve_infra.outputs.worker-container-name }}
+      dockerfile-path: Dockerfile
+      ecr-repository: ${{ needs.resolve_infra.outputs.worker-ecr-repository }}
+      ecs-cluster-name: ${{ needs.resolve_infra.outputs.web-ecs-cluster-name }}
+      ecs-service-name: ${{ needs.resolve_infra.outputs.web-ecs-service-name }}
+      task-family: ${{ needs.resolve_infra.outputs.web-task-family }}
+      prebuilt-image-reference: ${{ needs.build_worker.outputs.image-reference }}
+
+  apply_scheduled_jobs:
+    needs:
+      - resolve_infra
+      - deploy_web
+      - deploy_tei
+      - deploy_worker
+    runs-on: ${{ fromJSON(vars.CFA_RUNNER_LABELS || '["ubuntu-24.04"]') }}
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09
+        with:
+          persist-credentials: false
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@61815dcd50bd041e203e49132bacad1fd04d2708
+        with:
+          aws-region: ${{ needs.resolve_infra.outputs.aws-region }}
+          role-to-assume: ${{ needs.resolve_infra.outputs.aws-role-to-assume }}
+
+      - name: Apply approved scheduled job overrides
+        env:
+          AUTO_INGEST_SCHEDULE_NAME: ${{ needs.resolve_infra.outputs.auto-ingest-schedule-name }}
+          AUTO_SYNC_SCHEDULE_NAME: ${{ needs.resolve_infra.outputs.auto-sync-schedule-name }}
+          REFRESH_ANALYTICS_SCHEDULE_NAME: ${{ needs.resolve_infra.outputs.refresh-analytics-schedule-name }}
+        run: |
+          set -euo pipefail
+
+          apply_job() {
+            local job_name="$1" schedule_name="$2"
+            if [[ -z "$schedule_name" ]]; then
+              echo "[scheduled-jobs] Skipping '$job_name'; infra stack did not export a schedule name for this slot."
+              return
+            fi
+            echo "[scheduled-jobs] Applying '$job_name' to schedule '$schedule_name'."
+            SCHEDULED_JOB_NAME="$job_name" SCHEDULE_NAME="$schedule_name" scripts/ci/apply-scheduled-job-overrides.sh infra/scheduled-jobs.yml
+          }
+
+          apply_job auto-sync "$AUTO_SYNC_SCHEDULE_NAME"
+          apply_job auto-ingest "$AUTO_INGEST_SCHEDULE_NAME"
+          apply_job refresh-analytics "$REFRESH_ANALYTICS_SCHEDULE_NAME"
+
+  verify_health:
+    needs:
+      - resolve_infra
+      - deploy_web
+      - deploy_tei
+      - deploy_worker
+      - apply_scheduled_jobs
+    runs-on: ${{ fromJSON(vars.CFA_RUNNER_LABELS || '["ubuntu-24.04"]') }}
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - name: Configure AWS credentials for health diagnostics
+        if: ${{ needs.resolve_infra.result == 'success' }}
+        uses: aws-actions/configure-aws-credentials@61815dcd50bd041e203e49132bacad1fd04d2708
+        with:
+          aws-region: ${{ needs.resolve_infra.outputs.aws-region }}
+          role-to-assume: ${{ needs.resolve_infra.outputs.aws-role-to-assume }}
+
+      - name: Verify public health endpoint
+        env:
+          APP_URL: ${{ needs.resolve_infra.outputs.app-url }}
+          HEALTH_PATH: /health/
+        run: |
+          set -euo pipefail
+
+          if [[ -z "$APP_URL" ]]; then
+            echo "[health] ERROR - app URL is empty." >&2
+            exit 1
+          fi
+
+          health_url="${APP_URL%/}/${HEALTH_PATH#/}"
+          echo "[health] Checking Ethiopian Election Monitor: $health_url"
+          paths=(
+            "/health/"
+            "/"
+            "/narratives/"
+            "/lexicons/"
+            "/peps/"
+            "/networks/"
+            "/lexicon-management/"
+            "/reports/"
+            "/upload/"
+            "/admin/"
+          )
+          for path in "${paths[@]}"; do
+            route_url="${APP_URL%/}/${path#/}"
+            route_ok=false
+            for attempt in $(seq 1 24); do
+              status="$(curl -ksS -o /tmp/ethiopian-election-monitor-route-body.txt -w '%{http_code}' "$route_url" || true)"
+              if [[ "$status" =~ ^[23][0-9][0-9]$ ]]; then
+                echo "[health] OK - $path returned $status."
+                route_ok=true
+                break
+              fi
+              echo "[health] Waiting for $path (attempt $attempt/24, status=$status)..."
+              sleep 10
+            done
+            if [[ "$route_ok" != "true" ]]; then
+              echo "[health] ERROR - $path did not return a successful HTTP response." >&2
+              cat /tmp/ethiopian-election-monitor-route-body.txt >&2 || true
+              exit 1
+            fi
+          done
+
+      - name: Show redacted application errors after health failure
+        if: ${{ failure() && needs.resolve_infra.result == 'success' }}
+        env:
+          AWS_REGION: ${{ needs.resolve_infra.outputs.aws-region }}
+          ECS_CLUSTER_NAME: ${{ needs.resolve_infra.outputs.web-ecs-cluster-name }}
+          ECS_SERVICE_NAME: ${{ needs.resolve_infra.outputs.web-ecs-service-name }}
+          ECS_TASK_FAMILY: ${{ needs.resolve_infra.outputs.web-task-family }}
+          ECS_TARGET_CONTAINER_NAME: ${{ needs.resolve_infra.outputs.web-container-name }}
+        run: |
+          set -euo pipefail
+
+          region="$AWS_REGION"
+          log() { echo "[health-diagnostics] $*"; }
+          task_arns="$(
+            {
+              aws ecs list-tasks --cluster "$ECS_CLUSTER_NAME" --service-name "$ECS_SERVICE_NAME" --desired-status RUNNING --region "$region" --query 'taskArns[]' --output json || true
+              aws ecs list-tasks --cluster "$ECS_CLUSTER_NAME" --service-name "$ECS_SERVICE_NAME" --desired-status STOPPED --region "$region" --query 'taskArns[]' --output json || true
+            } | jq -s 'add | unique | .[-10:]'
+          )"
+          if [[ "$task_arns" == "[]" ]]; then
+            log "No recent ECS tasks were found."
+            exit 0
+          fi
+
+          mapfile -t task_arn_list < <(printf '%s' "$task_arns" | jq -r '.[]')
+          task_details="$(aws ecs describe-tasks --cluster "$ECS_CLUSTER_NAME" --tasks "${task_arn_list[@]}" --region "$region" --output json)"
+          printf '%s' "$task_details" | jq -c --arg container "$ECS_TARGET_CONTAINER_NAME" \
+            '.tasks[] | {taskArn, taskDefinition: .taskDefinitionArn, lastStatus, stopCode, stoppedReason, stoppedAt, targetContainer: ([.containers[] | select(.name == $container)] | first | {name, lastStatus, exitCode, reason})}'
+
+          while IFS=$'\t' read -r task_arn task_definition_arn; do
+            task_id="${task_arn##*/}"
+            task_definition="$(aws ecs describe-task-definition --task-definition "$task_definition_arn" --region "$region" --output json)"
+            IFS=$'\t' read -r log_group stream_prefix < <(printf '%s' "$task_definition" | jq -r --arg container "$ECS_TARGET_CONTAINER_NAME" '
+              .taskDefinition.containerDefinitions[] | select(.name == $container)
+              | [.logConfiguration.options["awslogs-group"] // "", .logConfiguration.options["awslogs-stream-prefix"] // ""] | @tsv')
+            [[ -n "$log_group" && -n "$stream_prefix" ]] || continue
+            stream_name="$(aws logs describe-log-streams --log-group-name "$log_group" --log-stream-name-prefix "${stream_prefix}/${ECS_TARGET_CONTAINER_NAME}/${task_id}" --order-by LastEventTime --descending --max-items 1 --region "$region" --query 'logStreams[0].logStreamName' --output text 2>/dev/null || true)"
+            [[ -n "$stream_name" && "$stream_name" != "None" ]] || continue
+            errors="$(aws logs get-log-events --log-group-name "$log_group" --log-stream-name "$stream_name" --limit 120 --region "$region" --query 'events[*].message' --output text 2>/dev/null | grep -Ei 'traceback|exception|error|critical|fatal|failed|failure|panic|oom|out of memory|killed|timeout|timed out|denied|refused|unavailable|cannot|could not|exit code|status.?5[0-9][0-9]|internal server' | tail -n 40 || true)"
+            [[ -n "$errors" ]] || continue
+            log "Redacted error excerpts for task=$task_id container=$ECS_TARGET_CONTAINER_NAME:"
+            printf '%s\n' "$errors" | sed -E \
+              -e 's/((password|passwd|secret|token|api[_-]?key|authorization|cookie|set-cookie|access[_-]?key|secret[_-]?key)[[:space:]]*[=:][[:space:]]*)[^[:space:]]+/\1[REDACTED]/Ig' \
+              -e 's/(Bearer[[:space:]]+)[^[:space:]]+/\1[REDACTED]/Ig' | cut -c1-2000
+          done < <(printf '%s' "$task_details" | jq -r '.tasks[] | [.taskArn, .taskDefinitionArn] | @tsv')

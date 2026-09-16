@@ -1,0 +1,43 @@
+{% if reports %}
+<div class="mt-10">
+    <h3 class="text-xl font-bold text-gray-800 mb-4">📊 Monthly Insight Reports</h3>
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {% for report in reports %}
+        <div class="bg-white rounded-xl shadow-sm border p-6 hover:shadow-md transition">
+            <div class="flex justify-between items-start mb-4">
+                <h4 class="text-lg font-semibold text-gray-900">{{ report.report_month }} Report</h4>
+                <span class="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded">Uploaded {{ report.uploaded_at|date:"M d" }}</span>
+            </div>
+
+            <div class="space-y-4">
+                <!-- Insights -->
+                <div>
+                    <p class="text-sm font-semibold text-blue-600 mb-2">🔑 Key Insights</p>
+                    <ul class="list-disc list-inside text-sm text-gray-700 space-y-1">
+                        {% for item in report.extracted_data.insights %}<li>{{ item }}</li>{% endfor %}
+                    </ul>
+                </div>
+                
+                <!-- Narratives -->
+                <div>
+                    <p class="text-sm font-semibold text-red-600 mb-2">⚠️ Top Narratives</p>
+                    <ul class="list-disc list-inside text-sm text-gray-700 space-y-1">
+                        {% for item in report.extracted_data.narratives %}<li>{{ item }}</li>{% endfor %}
+                    </ul>
+                </div>
+
+                <!-- TTPs -->
+                <div>
+                    <p class="text-sm font-semibold text-purple-600 mb-2">🎯 Tactics & Techniques (TTPs)</p>
+                    <div class="flex flex-wrap gap-2">
+                        {% for ttp in report.extracted_data.ttps %}
+                        <span class="px-2 py-1 bg-gray-100 text-gray-700 rounded text-xs font-medium">{{ ttp }}</span>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endif %}

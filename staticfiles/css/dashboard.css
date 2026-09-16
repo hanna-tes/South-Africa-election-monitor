@@ -1,0 +1,33 @@
+:root {
+  --primary-blue: #3b82f6;
+  --success-green: #10b981;
+  --warning-orange: #f59e0b;
+  --error-red: #ef4444;
+}
+
+.metric-card {
+  @apply bg-white rounded-xl shadow-sm border border-gray-200 p-6 transition-all hover:shadow-md;
+}
+
+.metric-value { @apply text-3xl font-bold text-gray-900; }
+.metric-label { @apply text-sm text-gray-500 mt-1; }
+
+.narrative-card {
+  @apply bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-4 transition-all hover:shadow-md;
+}
+
+.pep-card {
+  @apply bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-3 transition-all hover:shadow-md;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg-primary: #0f172a;
+    --text-primary: #f8fafc;
+    --text-secondary: #cbd5e1;
+  }
+  .metric-card, .narrative-card, .pep-card {
+    @apply bg-gray-800 border-gray-700;
+  }
+  .metric-value, .narrative-theme, .pep-name { @apply text-white; }
+}

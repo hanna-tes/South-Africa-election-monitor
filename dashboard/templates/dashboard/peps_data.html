@@ -1,0 +1,86 @@
+{% extends 'dashboard/base.html' %}
+{% block title %}{{ selected_file }} - Election Data{% endblock %}
+
+{% block extra_head %}
+<style>
+    /* Ensures the select box and its options are fully visible against the dark dashboard backdrop */
+    .dark-select-field {
+        background-color: #0f172a !important; /* Deep slate matching sidebar fields */
+        color: #f8fafc !important; /* White slate-50 text */
+        border: 1px solid #334155 !important; /* Muted slate-700 border border */
+        outline: none;
+    }
+    .dark-select-field:focus {
+        border-color: #3b82f6 !important;
+    }
+    .dark-select-field option {
+        background-color: #0f172a;
+        color: #f8fafc;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<div class="bg-slate-900/40 rounded-xl p-6 border border-slate-800/80 backdrop-blur-md shadow-xl text-slate-100">
+    <div class="flex items-center justify-between mb-4">
+        <h2 class="text-2xl font-bold text-white">📊 {{ selected_file }}</h2>
+    </div>
+
+    {% if sheets %}
+    <div class="mb-4 flex items-center gap-3">
+        <label class="block text-sm font-medium text-slate-400">Sheet:</label>
+        <select class="dark-select-field rounded px-3 py-2 text-sm cursor-pointer" 
+                onchange="window.location.href='?file={{ selected_file }}&sheet='+this.value">
+            {% for s in sheets %}
+            <option value="{{ s }}" {% if selected_sheet == s %}selected{% endif %}>{{ s|title }}</option>
+            {% endfor %}
+        </select>
+        <span class="text-sm text-slate-400">({{ total_records }} records)</span>
+    </div>
+    {% endif %}
+
+    {% if page_obj and page_obj.paginator.count > 0 %}
+    <div class="overflow-hidden border border-slate-800 rounded-xl bg-slate-950/20 shadow-inner">
+        <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-slate-800 text-sm">
+                <thead class="bg-slate-900/60 text-slate-400 font-semibold uppercase tracking-wider text-[11px]">
+                    <tr>
+                        {% for col in column_order %}
+                            {% if col %}
+                            <th class="px-4 py-3 text-left whitespace-nowrap border-b border-slate-800">{{ col|title }}</th>
+                            {% endif %}
+                        {% endfor %}
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-800/40 text-slate-300">
+                    {% for row_values in aligned_rows %}
+                    <tr class="hover:bg-slate-800/20 transition-colors">
+                        {% for val in row_values %}
+                        <td class="px-4 py-3 whitespace-nowrap text-slate-300">{{ val|default:"—" }}</td>
+                        {% endfor %}
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    {% if page_obj.paginator.num_pages > 1 %}
+    <div class="mt-4 flex items-center justify-between border-t border-slate-800 pt-4">
+        <div class="text-sm text-slate-400">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</div>
+        <div class="flex gap-1">
+            {% if page_obj.has_previous %}
+            <a href="?file={{ selected_file }}&sheet={{ selected_sheet }}&page={{ page_obj.previous_page_number }}" class="px-3 py-1 bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 rounded text-sm transition">Prev</a>
+            {% endif %}
+            {% if page_obj.has_next %}
+            <a href="?file={{ selected_file }}&sheet={{ selected_sheet }}&page={{ page_obj.next_page_number }}" class="px-3 py-1 bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 rounded text-sm transition">Next</a>
+            {% endif %}
+        </div>
+    </div>
+    {% endif %}
+    {% else %}
+    <div class="text-center py-12 text-slate-500 italic bg-slate-900/10 rounded-xl border border-dashed border-slate-800">No records found for this sheet.</div>
+    {% endif %}
+</div>
+{% endblock %}

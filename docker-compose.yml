@@ -1,0 +1,249 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: ethiopia_election_db
+      POSTGRES_USER: ethiopia_user
+      POSTGRES_PASSWORD: ethiopia_password
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ethiopia_user -d ethiopia_election_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  db-restore:
+    image: postgres:16-alpine
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      PGHOST: postgres
+      PGPORT: "5432"
+      PGUSER: ethiopia_user
+      PGPASSWORD: ethiopia_password
+      POSTGRES_DB: ethiopia_election_db
+      SKIP_LEGACY_RESTORE: "${SKIP_LEGACY_RESTORE:-0}"
+      FORCE_LEGACY_RESTORE: "${FORCE_LEGACY_RESTORE:-0}"
+    volumes:
+      - ./docker/backups/ethiopia_election_db.dump:/backups/ethiopia_election_db.dump:ro
+    entrypoint: >
+      /bin/sh -c "
+      set -eu;
+      if [ \"$${SKIP_LEGACY_RESTORE}\" = \"1\" ]; then
+        echo 'Skipping bundled legacy DB restore.';
+        exit 0;
+      fi;
+      restored_table_count=$$(psql -d \"$${POSTGRES_DB}\" -Atc \"select count(*) from information_schema.tables where table_schema = 'public' and table_name = 'dashboard_processedpost';\");
+      if [ \"$${FORCE_LEGACY_RESTORE}\" != \"1\" ] && [ \"$${restored_table_count}\" = \"1\" ]; then
+        post_count=$$(psql -d \"$${POSTGRES_DB}\" -Atc \"select count(*) from dashboard_processedpost;\" 2>/dev/null || echo 0);
+        if [ \"$${post_count}\" -gt 0 ]; then
+          echo \"Bundled legacy DB already restored ($${post_count} posts).\";
+          exit 0;
+        fi;
+      fi;
+      echo 'Restoring bundled legacy DB dump into local PostgreSQL...';
+      dropdb --if-exists --force \"$${POSTGRES_DB}\";
+      createdb \"$${POSTGRES_DB}\";
+      pg_restore -d \"$${POSTGRES_DB}\" --no-owner --no-acl /backups/ethiopia_election_db.dump;
+      echo 'Bundled legacy DB restore complete.';
+      "
+
+  minio:
+    image: minio/minio:latest
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: minioadmin
+      MINIO_ROOT_PASSWORD: minioadmin
+    ports:
+      - "${MINIO_API_PORT:-9000}:9000"
+      - "${MINIO_CONSOLE_PORT:-9001}:9001"
+    volumes:
+      - minio-data:/data
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  minio-init:
+    image: minio/mc:latest
+    depends_on:
+      minio:
+        condition: service_healthy
+    entrypoint: >
+      /bin/sh -c "
+      mc alias set local http://minio:9000 minioadmin minioadmin &&
+      mc mb --ignore-existing local/ethiopian-election-monitor-media &&
+      mc anonymous set download local/ethiopian-election-monitor-media
+      "
+
+  redis:
+    image: redis:7-alpine
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  tei:
+    build:
+      context: ./models
+      dockerfile: Dockerfile.tei
+      args:
+        TEI_IMAGE: "${TEI_IMAGE:-ghcr.io/huggingface/text-embeddings-inference:cpu-arm64-latest@sha256:35c50d7494de22deecdb783b8f5b7e1d05765709bd90071b03469b9440d28656}"
+    environment:
+      API_KEY: "${TEI_API_KEY:-local-test-key}"
+    mem_limit: 2g
+    ports:
+      - "${TEI_PORT:-8085}:8080"
+
+  app-setup:
+    build: .
+    command: >
+      /bin/sh -c "
+      set -eu;
+      echo 'Waiting for local TEI model service...';
+      until curl -fsS http://tei:8080/health >/dev/null; do sleep 2; done;
+      python manage.py migrate --noinput;
+      python manage.py shell -c \"import os; from django.contrib.auth import get_user_model; User = get_user_model(); username = os.environ.get('DJANGO_SUPERUSER_USERNAME', 'admin'); email = os.environ.get('DJANGO_SUPERUSER_EMAIL', 'admin@example.local'); password = os.environ.get('DJANGO_SUPERUSER_PASSWORD', 'admin12345'); user, created = User.objects.update_or_create(username=username, defaults={'email': email, 'is_staff': True, 'is_superuser': True, 'is_active': True}); should_set_password = created or os.environ.get('RESET_LOCAL_ADMIN_PASSWORD') == '1'; user.set_password(password) if should_set_password else None; user.save(); print(f'Local admin user ready: {username}')\";
+      needs_refresh=$$(python manage.py shell -c \"from dashboard.models import DashboardAnalyticsSnapshot, PostLexiconMatch, ProcessedPost; posts = ProcessedPost.objects.count(); matches = PostLexiconMatch.objects.count(); narrative = DashboardAnalyticsSnapshot.objects.filter(kind='narratives').order_by('-generated_at').first(); narrative_count = len((narrative.payload or {}).get('summaries', [])) if narrative else 0; print(int(posts == 0 or matches == 0 or narrative_count == 0))\");
+      if [ \"$${FORCE_ANALYTICS_REFRESH:-0}\" = \"1\" ] || [ \"$${needs_refresh}\" = \"1\" ]; then
+        echo 'Refreshing precomputed analytics for local startup...';
+        python manage.py refresh_dashboard_analytics;
+      else
+        echo 'Precomputed analytics already available.';
+      fi;
+      "
+    depends_on:
+      db-restore:
+        condition: service_completed_successfully
+      minio-init:
+        condition: service_completed_successfully
+      redis:
+        condition: service_healthy
+      tei:
+        condition: service_started
+    environment:
+      SECRET_KEY: local-dev-secret
+      DEBUG: "1"
+      ALLOWED_HOSTS: localhost,127.0.0.1,0.0.0.0
+      CSRF_TRUSTED_ORIGINS: http://localhost,http://127.0.0.1
+      DJANGO_COLLECTSTATIC: "0"
+      DJANGO_MIGRATE: "0"
+      DJANGO_SUPERUSER_USERNAME: "${DJANGO_SUPERUSER_USERNAME:-admin}"
+      DJANGO_SUPERUSER_EMAIL: "${DJANGO_SUPERUSER_EMAIL:-admin@example.local}"
+      DJANGO_SUPERUSER_PASSWORD: "${DJANGO_SUPERUSER_PASSWORD:-admin12345}"
+      RESET_LOCAL_ADMIN_PASSWORD: "${RESET_LOCAL_ADMIN_PASSWORD:-0}"
+      FORCE_ANALYTICS_REFRESH: "${FORCE_ANALYTICS_REFRESH:-0}"
+      DATABASE_LOG_HANDLER_ENABLED: "1"
+      APPLICATION_LOG_RETENTION_DAYS: "90"
+      GROQ_API_KEY: "${GROQ_API_KEY:-}"
+      CFA_VALKEY_URL: redis://redis:6379/1
+      REDIS_URL: redis://redis:6379/1
+      AFRO_XLMR_API_URL: http://tei:8080
+      AFRO_XLMR_API_KEY: "${TEI_API_KEY:-local-test-key}"
+      DB_HOST: postgres
+      DB_PORT: "5432"
+      DB_NAME: ethiopia_election_db
+      DB_USER: ethiopia_user
+      DB_PASSWORD: ethiopia_password
+      DB_SSLMODE: disable
+      AWS_ACCESS_KEY_ID: minioadmin
+      AWS_SECRET_ACCESS_KEY: minioadmin
+      AWS_STORAGE_BUCKET_NAME: ethiopian-election-monitor-media
+      AWS_S3_ENDPOINT_URL: http://minio:9000
+      AWS_S3_CUSTOM_DOMAIN: localhost:${MINIO_API_PORT:-9000}/ethiopian-election-monitor-media
+      AWS_S3_REGION_NAME: eu-west-1
+      AWS_S3_ADDRESSING_STYLE: path
+      AWS_QUERYSTRING_AUTH: "0"
+
+  web:
+    build:
+      context: .
+      args:
+        INSTALL_DEV_DEPS: "1"
+    depends_on:
+      app-setup:
+        condition: service_completed_successfully
+      redis:
+        condition: service_healthy
+      tei:
+        condition: service_started
+    mem_limit: 512m
+    environment:
+      SECRET_KEY: local-dev-secret
+      DEBUG: "1"
+      ALLOWED_HOSTS: localhost,127.0.0.1,0.0.0.0
+      CSRF_TRUSTED_ORIGINS: http://localhost,http://127.0.0.1
+      DATABASE_LOG_HANDLER_ENABLED: "1"
+      APPLICATION_LOG_RETENTION_DAYS: "90"
+      GROQ_API_KEY: "${GROQ_API_KEY:-}"
+      CFA_VALKEY_URL: redis://redis:6379/1
+      REDIS_URL: redis://redis:6379/1
+      AFRO_XLMR_API_URL: http://tei:8080
+      AFRO_XLMR_API_KEY: "${TEI_API_KEY:-local-test-key}"
+      DB_HOST: postgres
+      DB_PORT: "5432"
+      DB_NAME: ethiopia_election_db
+      DB_USER: ethiopia_user
+      DB_PASSWORD: ethiopia_password
+      DB_SSLMODE: disable
+      AWS_ACCESS_KEY_ID: minioadmin
+      AWS_SECRET_ACCESS_KEY: minioadmin
+      AWS_STORAGE_BUCKET_NAME: ethiopian-election-monitor-media
+      AWS_S3_ENDPOINT_URL: http://minio:9000
+      AWS_S3_CUSTOM_DOMAIN: localhost:${MINIO_API_PORT:-9000}/ethiopian-election-monitor-media
+      AWS_S3_REGION_NAME: eu-west-1
+      AWS_S3_ADDRESSING_STYLE: path
+      AWS_QUERYSTRING_AUTH: "0"
+    ports:
+      - "${APP_PORT:-8000}:8000"
+
+  worker:
+    build: .
+    command: ["python", "manage.py", "qcluster"]
+    depends_on:
+      web:
+        condition: service_started
+      redis:
+        condition: service_healthy
+      tei:
+        condition: service_started
+    mem_limit: 1g
+    environment:
+      SECRET_KEY: local-dev-secret
+      DEBUG: "1"
+      ALLOWED_HOSTS: localhost,127.0.0.1,0.0.0.0
+      CSRF_TRUSTED_ORIGINS: http://localhost,http://127.0.0.1
+      DATABASE_LOG_HANDLER_ENABLED: "1"
+      APPLICATION_LOG_RETENTION_DAYS: "90"
+      DJANGO_COLLECTSTATIC: "0"
+      DJANGO_MIGRATE: "0"
+      GROQ_API_KEY: "${GROQ_API_KEY:-}"
+      CFA_VALKEY_URL: redis://redis:6379/1
+      REDIS_URL: redis://redis:6379/1
+      AFRO_XLMR_API_URL: http://tei:8080
+      AFRO_XLMR_API_KEY: "${TEI_API_KEY:-local-test-key}"
+      DB_HOST: postgres
+      DB_PORT: "5432"
+      DB_NAME: ethiopia_election_db
+      DB_USER: ethiopia_user
+      DB_PASSWORD: ethiopia_password
+      DB_SSLMODE: disable
+      AWS_ACCESS_KEY_ID: minioadmin
+      AWS_SECRET_ACCESS_KEY: minioadmin
+      AWS_STORAGE_BUCKET_NAME: ethiopian-election-monitor-media
+      AWS_S3_ENDPOINT_URL: http://minio:9000
+      AWS_S3_CUSTOM_DOMAIN: localhost:${MINIO_API_PORT:-9000}/ethiopian-election-monitor-media
+      AWS_S3_REGION_NAME: eu-west-1
+      AWS_S3_ADDRESSING_STYLE: path
+      AWS_QUERYSTRING_AUTH: "0"
+
+volumes:
+  postgres-data:
+  minio-data:
+  redis-data:

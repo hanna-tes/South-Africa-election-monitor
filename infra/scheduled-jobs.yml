@@ -1,0 +1,35 @@
+# App-side overrides for infra-approved Ethiopian Election Monitor scheduled job slots.
+#
+# The infra stack owns which scheduler slots exist, which ECS service they target,
+# and the IAM/network guardrails. This file only updates mutable runtime values
+# for existing slots: schedule, timezone, and container command.
+scheduledJobs:
+  - name: auto-sync
+    description: Sync active remote sources registered in the app database.
+    targetService: ethiopian-election-monitor
+    containerName: web
+    command: ["python", "manage.py", "auto_sync"]
+    schedule: "cron(0 3 * * ? *)"
+    timezone: "Africa/Kampala"
+    capacityMode: spot
+    concurrencyPolicy: replace
+
+  - name: auto-ingest
+    description: Ingest configured remote CSV sources from environment URLs.
+    targetService: ethiopian-election-monitor
+    containerName: web
+    command: ["python", "manage.py", "auto_ingest"]
+    schedule: "cron(30 3 * * ? *)"
+    timezone: "Africa/Kampala"
+    capacityMode: spot
+    concurrencyPolicy: replace
+
+  - name: refresh-analytics
+    description: Refresh precomputed dashboard analytics, including narrative clusters.
+    targetService: ethiopian-election-monitor
+    containerName: web
+    command: ["python", "manage.py", "refresh_dashboard_analytics"]
+    schedule: "cron(0 4 * * ? *)"
+    timezone: "Africa/Kampala"
+    capacityMode: spot
+    concurrencyPolicy: replace

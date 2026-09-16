@@ -1,0 +1,78 @@
+{% extends 'dashboard/base.html' %}
+{% block title %}{{ selected_file }} - Election Data{% endblock %}
+{% block content %}
+
+<!--  Top Navigation Tabs -->
+<div class="mb-6">
+    <div class="border-b border-gray-200">
+        <nav class="-mb-px flex space-x-8 overflow-x-auto" aria-label="Tabs">
+            <a href="{% url 'home' %}" class="border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm">🏠 Home</a>
+            <a href="{% url 'peps' %}" class="{% if active_tab == 'peps' %}border-blue-500 text-blue-600{% else %}border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300{% endif %} whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm">👥 PIPs/PEPs Tracker</a>
+            <a href="{% url 'narratives' %}" class="border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm">📰 Trending Narratives</a>
+            <a href="{% url 'networks' %}" class="border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm">🕸️ Network Analaysis</a>
+            <a href="{% url 'lexicons' %}" class="border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm">🗣️ Lexicon Managment</a>
+        </nav>
+    </div>
+</div>
+
+<div class="bg-white rounded-xl shadow-sm p-6 border border-blue-100">
+    <div class="flex items-center justify-between mb-4">
+        <h2 class="text-2xl font-bold">📊 {{ selected_file }}</h2>
+    </div>
+
+    <!--  Sheet Filter: Distinct names only, no "All" -->
+    {% if sheets %}
+    <div class="mb-4 flex items-center gap-3">
+        <label class="block text-sm font-medium text-gray-700">Sheet:</label>
+        <select class="border border-gray-300 rounded px-3 py-2 text-sm" 
+                onchange="window.location.href='?file={{ selected_file }}&sheet='+this.value">
+            {% for s in sheets %}
+            <option value="{{ s }}" {% if selected_sheet == s %}selected{% endif %}>{{ s|title }}</option>
+            {% endfor %}
+        </select>
+        <span class="text-sm text-gray-600">({{ total_records }} records)</span>
+    </div>
+    {% endif %}
+
+    {% if page_obj and page_obj.paginator.count > 0 %}
+    <div class="overflow-x-auto">
+        <table class="min-w-full divide-y divide-gray-200 text-sm">
+            <thead class="bg-gray-50">
+                <tr>
+                    {% for col in column_order %}
+                        {% if col %}
+                        <th class="px-4 py-3 text-left font-medium text-gray-500 uppercase whitespace-nowrap">{{ col|title }}</th>
+                        {% endif %}
+                    {% endfor %}
+                </tr>
+            </thead>
+            <tbody class="bg-white divide-y divide-gray-200">
+                {% for row_values in aligned_rows %}
+                <tr class="hover:bg-gray-50">
+                    {% for val in row_values %}
+                    <td class="px-4 py-3 whitespace-nowrap text-gray-700">{{ val|default:"—" }}</td>
+                    {% endfor %}
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    {% if page_obj.paginator.num_pages > 1 %}
+    <div class="mt-4 flex items-center justify-between border-t border-gray-200 pt-4">
+        <div class="text-sm text-gray-700">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</div>
+        <div class="flex gap-1">
+            {% if page_obj.has_previous %}
+            <a href="?file={{ selected_file }}&sheet={{ selected_sheet }}&page={{ page_obj.previous_page_number }}" class="px-3 py-1 border rounded text-sm hover:bg-gray-50">Prev</a>
+            {% endif %}
+            {% if page_obj.has_next %}
+            <a href="?file={{ selected_file }}&sheet={{ selected_sheet }}&page={{ page_obj.next_page_number }}" class="px-3 py-1 border rounded text-sm hover:bg-gray-50">Next</a>
+            {% endif %}
+        </div>
+    </div>
+    {% endif %}
+    {% else %}
+    <div class="text-center py-12 text-gray-500">No records found for this sheet.</div>
+    {% endif %}
+</div>
+{% endblock %}

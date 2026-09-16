@@ -1,0 +1,186 @@
+{% extends 'dashboard/base.html' %}
+{% load static %}
+{% load custom_filters %}
+
+{% block title %}Trending Narratives - Ethiopia Election Monitor{% endblock %}
+
+{% block extra_head %}
+{{ block.super }}
+<style>
+  .narrative-card { 
+    background: white; border-radius: 12px; padding: 1.5rem; margin-bottom: 1.5rem; 
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1); border-left: 4px solid #3b82f6;
+  }
+  .narrative-title { 
+    font-size: 1.25rem; font-weight: 700; color: #111827; margin: 0 0 0.5rem 0; line-height: 1.3;
+  }
+  .narrative-meta { display: flex; flex-wrap: wrap; gap: 0.5rem; margin: 0.75rem 0; font-size: 0.875rem; color: #4b5563; }
+  .narrative-meta span { background: #f3f4f6; padding: 0.25rem 0.5rem; border-radius: 4px; }
+  .badge-topic { background: #dbeafe; color: #1e40af; }
+  .badge-tone { background: #ede9fe; color: #5b21b6; }
+  
+  /* Content styling - NO bold on body text */
+  .narrative-content { 
+    font-weight: 400 !important; 
+    color: #374151; 
+    font-size: 0.95rem; 
+    line-height: 1.6; 
+  }
+  .narrative-content p, 
+  .narrative-content div, 
+  .narrative-content span { 
+    font-weight: 400 !important; 
+  }
+  .narrative-content strong { 
+    font-weight: 600 !important; 
+    color: #1f2937; 
+    display: block; 
+    margin: 0.5rem 0 0.25rem 0; 
+  }
+  
+  .narrative-quote { 
+    background: #f9fafb; border-left: 3px solid #9ca3af; padding: 0.75rem 1rem; 
+    margin: 0.5rem 0; font-style: italic; color: #374151; font-size: 0.9rem; border-radius: 0 4px 4px 0;
+  }
+  
+  .evidence-post { background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 8px; padding: 0.75rem; margin-bottom: 0.75rem; }
+  .evidence-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem; font-size: 0.75rem; }
+  .platform-badge { background: #dbeafe; color: #1e40af; padding: 0.125rem 0.5rem; border-radius: 4px; font-weight: 500; }
+  .translate-btn { background: #dbeafe; color: #1e40af; border: none; padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.75rem; cursor: pointer; margin-top: 0.5rem; }
+  .translate-btn:hover { background: #bfdbfe; }
+  .translate-btn.loading { opacity: 0.6; cursor: wait; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="bg-white rounded-xl shadow-sm p-6 border border-blue-100">
+    <div class="flex justify-between items-start mb-6">
+        <div>
+            <h2 class="text-2xl font-bold text-gray-900 mb-1">📰 Trending Narratives</h2>
+            <p class="text-sm text-gray-500">{{ summaries|length }} clusters • {{ total_posts }} posts • {{ date_range }}</p>
+        </div>
+        <a href="{% url 'export_posts_api' %}" class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 text-sm">📥 Export</a>
+    </div>
+
+    <form method="get" class="flex flex-wrap gap-3 items-end bg-gray-50 p-3 rounded-lg mb-6 border">
+        <div>
+            <label class="block text-xs font-medium text-gray-600 mb-1">From</label>
+            <input type="date" name="start_date" value="{{ start_date|default:'' }}" class="rounded border-gray-300 text-sm px-3 py-2">
+        </div>
+        <div>
+            <label class="block text-xs font-medium text-gray-600 mb-1">To</label>
+            <input type="date" name="end_date" value="{{ end_date|default:'' }}" class="rounded border-gray-300 text-sm px-3 py-2">
+        </div>
+        <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded text-sm hover:bg-blue-700">🔍 Apply</button>
+        <a href="{{ request.path }}" class="text-gray-500 hover:text-gray-700 text-sm px-3 py-2">Clear</a>
+    </form>
+
+    {% if summaries %}
+    <div class="space-y-6">
+        {% for summary in summaries %}
+        <div class="narrative-card">
+            <!-- Header with Clean Title -->
+            <div class="flex items-start justify-between mb-4">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center text-white font-bold">#{{ summary.cluster_id }}</div>
+                    <div>
+                        <!-- ✅ FIXED TITLE: No autoescape nesting, clean extraction -->
+                        <h3 class="narrative-title">
+                            {% if summary.Context %}
+                                {% with first_line=summary.Context|split:"\n"|first %}
+                                    {% if "Narrative Title:" in first_line %}
+                                        {{ first_line|cut:"Narrative Title:"|strip|truncatechars:100 }}
+                                    {% elif "Core Claim(s):" in first_line %}
+                                        {{ summary.Narrative_Description|default:"Cluster #"|add:summary.cluster_id }}
+                                    {% else %}
+                                        {{ first_line|strip|truncatechars:100 }}
+                                    {% endif %}
+                                {% endwith %}
+                            {% elif summary.Narrative_Description %}
+                                {{ summary.Narrative_Description }}
+                            {% else %}
+                                Cluster #{{ summary.cluster_id }}
+                            {% endif %}
+                        </h3>
+                        <div class="text-sm text-gray-600 mt-1">📊 {{ summary.Total_Reach }} posts • 🚀 {{ summary.Emerging_Virality }} • {{ summary.Top_Platforms }}</div>
+                        <div class="text-xs text-gray-500 mt-1">📅 {{ summary.Min_TS }} to {{ summary.Max_TS }} {% if summary.Originators and summary.Originators != "Unknown" %}• 👤 {{ summary.Originators|truncatechars:30 }}{% endif %}</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Badges -->
+            {% if summary.Detected_Topics or summary.Detected_Tone %}
+            <div class="flex flex-wrap gap-2 mb-4">
+                {% if summary.Detected_Topics %}{% for topic in summary.Detected_Topics %}<span class="px-2 py-1 badge-topic rounded-full text-xs font-medium">🏷️ {{ topic }}</span>{% endfor %}{% endif %}
+                {% if summary.Detected_Tone %}<span class="px-2 py-1 badge-tone rounded-full text-xs font-medium">🎭 {{ summary.Detected_Tone }}</span>{% endif %}
+            </div>
+            {% endif %}
+            
+            <!-- Simple Content Display (NO complex parsing = NO duplication/bolding) -->
+            {% if summary.Context %}
+            <div class="narrative-content mt-4 space-y-2">
+                {{ summary.Context|linebreaksbr }}
+            </div>
+            {% endif %}
+            
+            <!-- Collapsible Evidence -->
+            {% if summary.Posts_Data %}
+            <div class="evidence-expander mt-4">
+                <details>
+                    <summary class="cursor-pointer text-sm font-medium text-blue-600 hover:text-blue-800">📂 View Evidence ({{ summary.Posts_Data|length }} posts)</summary>
+                    <div class="mt-3 space-y-3">
+                        {% for post in summary.Posts_Data|slice:":5" %}
+                        <div class="evidence-post">
+                            <div class="evidence-header">
+                                <span class="platform-badge">{{ post.platform|default:"Unknown" }}</span>
+                                <span class="text-gray-400 text-xs">{{ post.timestamp_share|date:"M d" }}</span>
+                            </div>
+                            <div class="text-sm text-gray-700">{{ post.original_text|truncatechars:200 }}</div>
+                            
+                            {% if "፣" in post.original_text or "።" in post.original_text or "አ" in post.original_text %}
+                            <button class="translate-btn" onclick="translatePost('{{ forloop.counter }}', '{{ post.original_text|escapejs }}')">🔤 Translate</button>
+                            <div id="trans-{{ forloop.counter }}" class="hidden mt-2 text-sm text-gray-600 italic bg-blue-50 p-2 rounded"></div>
+                            {% endif %}
+                            
+                            {% if post.url %}<a href="{{ post.url }}" target="_blank" class="text-xs text-blue-600 hover:underline mt-1">🔗 View</a>{% endif %}
+                        </div>
+                        {% endfor %}
+                    </div>
+                </details>
+            </div>
+            {% endif %}
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="text-center py-12 bg-gray-50 rounded-xl">
+        <div class="text-4xl mb-3">📰</div>
+        <p class="text-gray-600">No narratives detected. Upload more election posts.</p>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+{{ block.super }}
+<script>
+window.translatePost = async function(id, text) {
+    const btn = event.target, target = document.getElementById(`trans-${id}`);
+    btn.classList.add('loading'); btn.textContent = '⏳...'; btn.disabled = true;
+    try {
+        const res = await fetch('https://libretranslate.com/translate', {
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ q: text.slice(0, 500), source: 'am', target: 'en', format: 'text' })
+        });
+        const data = await res.json();
+        target.textContent = data.translatedText || 'Unavailable';
+        target.classList.remove('hidden');
+        btn.textContent = '✅ Done';
+        setTimeout(() => { btn.textContent = '🔤 Translate'; btn.classList.remove('loading'); btn.disabled = false; }, 1500);
+    } catch(e) {
+        target.textContent = '⚠️ Failed'; target.classList.remove('hidden');
+        btn.textContent = '🔤 Retry'; btn.classList.remove('loading'); btn.disabled = false;
+    }
+};
+</script>
+{% endblock %}

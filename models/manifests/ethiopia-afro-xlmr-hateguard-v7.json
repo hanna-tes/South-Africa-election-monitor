@@ -1,0 +1,9 @@
+{
+  "version": 1,
+  "files": {
+    "config.json": "8712b57cee40e4b2f45f29ea8d13760cfd6e2f13526fe58812b0253e1c50c09b",
+    "model.safetensors": "1722628ded3e4cf7014200bcbab12517079f0379f3cc905c88d195335ee1532d",
+    "tokenizer.json": "3c088c06cf975b7097e469bd69630cdb0d675c6db1ce3af1042b6e19c6d01f22",
+    "tokenizer_config.json": "e06e4c713f57b185222e34ad0deed56baa1b4e4aa2edef8f33e3f794e4cfd5ab"
+  }
+}
