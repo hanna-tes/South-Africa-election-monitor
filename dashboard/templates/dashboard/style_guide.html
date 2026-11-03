@@ -1,0 +1,190 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ADDO Style Guide - SA Municipal Elections</title>
+    <link rel="stylesheet" href="{% static 'css/sa-election-theme.css' %}">
+    <!-- Pinned Plotly.js -->
+    <script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
+</head>
+<body>
+
+    <!-- MASTHEAD -->
+    <header class="sa-masthead">
+        <a href="/" class="sa-masthead__logo">
+            <!-- Simple SVG Logo Placeholder -->
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><circle cx="12" cy="12" r="4"></circle></svg>
+            ADDO
+        </a>
+        <nav class="sa-masthead__nav">
+            <a href="#" class="sa-masthead__link sa-masthead__link--active">Home</a>
+            <a href="#" class="sa-masthead__link">Candidates</a>
+            <a href="#" class="sa-masthead__link">Narratives</a>
+            <a href="#" class="sa-masthead__link">Lexicons</a>
+            <a href="#" class="sa-masthead__link">Networks</a>
+        </nav>
+    </header>
+
+    <!-- HERO SECTION -->
+    <section class="sa-hero">
+        <h1 class="sa-hero__title">2026 Municipal Elections Monitor</h1>
+        <p class="sa-hero__subtitle">Tracking social media narratives, weaponized language, and coordinated networks ahead of the 4 November 2026 local government elections.</p>
+        
+        <div class="sa-hero__figures">
+            <div class="sa-figure">
+                <span class="sa-figure__value">75,311</span>
+                <span class="sa-figure__label">Candidates in File</span>
+            </div>
+            <div class="sa-figure">
+                <span class="sa-figure__value">257</span>
+                <span class="sa-figure__label">Municipalities</span>
+            </div>
+            <div class="sa-figure">
+                <span class="sa-figure__value">579</span>
+                <span class="sa-figure__label">Parties Registered</span>
+            </div>
+            <div class="sa-figure">
+                <span class="sa-figure__value">136,790</span>
+                <span class="sa-figure__label">IEC Certified (Figures as at 16 Sept 2026)</span>
+            </div>
+        </div>
+    </section>
+
+    <!-- RISK BADGES & SECTION HEADING -->
+    <section class="sa-section">
+        <div class="sa-section__header">
+            <span class="sa-section__number">01</span>
+            <h2>Risk Assessment & Narrative Tone</h2>
+        </div>
+        
+        <div style="display: flex; gap: 1rem; margin-bottom: 3rem;">
+            <span class="sa-badge sa-badge--calm">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+                Calm
+            </span>
+            <span class="sa-badge sa-badge--watch">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+                Watch
+            </span>
+            <span class="sa-badge sa-badge--elevated">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+                Elevated
+            </span>
+            <span class="sa-badge sa-badge--critical">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="15" y1="9" x2="9" y2="15"></line><line x1="9" y1="9" x2="15" y2="15"></line></svg>
+                Critical
+            </span>
+        </div>
+
+        <!-- FILTER BAR & FORM CONTROLS -->
+        <div class="sa-section__header">
+            <span class="sa-section__number">02</span>
+            <h2>Filters & Controls</h2>
+        </div>
+        <div style="display: flex; gap: 1rem; margin-bottom: 3rem; align-items: end;">
+            <div style="flex: 1;">
+                <label style="display: block; margin-bottom: 0.5rem; font-size: 0.875rem; color: var(--color-text-muted);">Search Candidates</label>
+                <input type="text" class="sa-input" placeholder="e.g. Johannesburg, ANC, Ward 42">
+            </div>
+            <div style="width: 200px;">
+                <label style="display: block; margin-bottom: 0.5rem; font-size: 0.875rem; color: var(--color-text-muted);">Province</label>
+                <select class="sa-select">
+                    <option>All Provinces</option>
+                    <option>Gauteng</option>
+                    <option>KwaZulu-Natal</option>
+                    <option>Western Cape</option>
+                </select>
+            </div>
+            <button class="sa-btn sa-btn--primary">Apply Filters</button>
+        </div>
+
+        <!-- DATA TABLE -->
+        <div class="sa-section__header">
+            <span class="sa-section__number">03</span>
+            <h2>Candidates Data Table</h2>
+        </div>
+        <div class="sa-table-container">
+            <table class="sa-table">
+                <thead>
+                    <tr>
+                        <th>Full Name</th>
+                        <th>Party</th>
+                        <th>Office</th>
+                        <th>Municipality</th>
+                        <th>Ward / PR Order</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Thandiwe Modise</td>
+                        <td>African National Congress</td>
+                        <td>Local Ward Candidate</td>
+                        <td>JHB - City of Johannesburg</td>
+                        <td>Ward 112</td>
+                    </tr>
+                    <tr>
+                        <td>Sipho Nkosi</td>
+                        <td>Democratic Alliance</td>
+                        <td>Metro PR Candidate</td>
+                        <td>CPT - City of Cape Town</td>
+                        <td>List Position 14</td>
+                    </tr>
+                    <tr>
+                        <td>Pieter van der Merwe</td>
+                        <td>Independent</td>
+                        <td>Local Ward Candidate</td>
+                        <td>TSH - City of Tshwane</td>
+                        <td>Ward 88</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- EMPTY STATE -->
+        <div class="sa-section__header" style="margin-top: 3rem;">
+            <span class="sa-section__number">04</span>
+            <h2>Empty State</h2>
+        </div>
+        <div class="sa-empty-state">
+            <svg class="sa-empty-state__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+            <h3>No data yet</h3>
+            <p>Analytics are being prepared for this selection. Please check back shortly.</p>
+        </div>
+
+        <!-- PLOTLY THEME CONTAINER -->
+        <div class="sa-section__header" style="margin-top: 3rem;">
+            <span class="sa-section__number">05</span>
+            <h2>Plotly Theme Integration</h2>
+        </div>
+        <div id="plotly-demo" style="width: 100%; height: 400px; background: var(--color-panel-bg); border: 1px solid var(--color-border); border-radius: var(--radius-md);"></div>
+    </section>
+
+    <script>
+        // Shared Plotly Theme Configuration
+        const saPlotlyTheme = {
+            font: { family: 'Inter, sans-serif', color: '#14181F' },
+            paper_bgcolor: 'rgba(0,0,0,0)',
+            plot_bgcolor: 'rgba(0,0,0,0)',
+            margin: { t: 40, r: 20, b: 40, l: 60 },
+            xaxis: { gridcolor: '#E5E7EB', zerolinecolor: '#E5E7EB' },
+            yaxis: { gridcolor: '#E5E7EB', zerolinecolor: '#E5E7EB' },
+            showlegend: true,
+            legend: { orientation: 'h', y: -0.2 },
+            modebar: { remove: ['toImage', 'sendDataToCloud', 'autoScale2d', 'resetScale2d', 'hoverClosestCartesian', 'hoverCompareCartesian'] }
+        };
+
+        // Demo Chart
+        Plotly.newPlot('plotly-demo', [{
+            x: ['Buffalo City', 'Cape Town', 'Ekurhuleni', 'eThekwini', 'Johannesburg', 'Mangaung', 'Nelson Mandela Bay', 'Tshwane'],
+            y: [4500, 12000, 9800, 11500, 18000, 3200, 8900, 14000],
+            type: 'bar',
+            marker: { color: '#0F5C5A' }
+        }], {
+            ...saPlotlyTheme,
+            title: { text: 'Candidates by Metro Municipality', font: { family: 'Fraunces, serif', size: 18 } }
+        });
+    </script>
+</body>
+</html>
