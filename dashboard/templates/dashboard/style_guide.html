@@ -1,437 +1,198 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Design System & Style Guide | SA Municipal Elections Monitor</title>
-    <!-- Fonts: Newsreader for serif headlines, Inter for UI/body -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400&display=swap" rel="stylesheet">
-    <script src="https://cdn.plot.ly/plotly-2.32.0.min.js"></script>
-    <style>
-        :root {
-            --bg-canvas: #F6F3EC;
-            --bg-surface: #FFFFFF;
-            --text-ink: #14181F;
-            --text-muted: #596374;
-            --accent-teal: #0F5C5A;
-            --accent-gold: #B8923A;
-            --border-hairline: #E2DDD5;
-            
-            --risk-calm: #2E7D5B;
-            --risk-watch: #C79A1E;
-            --risk-elevated: #D4691F;
-            --risk-critical: #B3261E;
-            
-            --font-serif: 'Newsreader', Georgia, serif;
-            --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-            --radius-default: 6px;
-        }
+{% extends 'dashboard/base.html' %}
+{% load static %}
 
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-        body {
-            background-color: var(--bg-canvas);
-            color: var(--text-ink);
-            font-family: var(--font-sans);
-            font-size: 16px;
-            line-height: 1.6;
-            -webkit-font-smoothing: antialiased;
-        }
+{% block title %}ADD O - Style Guide & UI Component Preview{% endblock %}
 
-        /* Masthead */
-        header.site-masthead {
-            position: sticky;
-            top: 0;
-            z-index: 100;
-            background: var(--bg-surface);
-            border-bottom: 1px solid var(--border-hairline);
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 0.75rem 2rem;
-        }
-        .brand-lockup {
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-            text-decoration: none;
-            color: var(--text-ink);
-        }
-        .brand-lockup svg { width: 24px; height: 24px; fill: var(--accent-teal); }
-        .brand-title { font-family: var(--font-serif); font-weight: 600; font-size: 1.15rem; }
+{% block content %}
+<div class="max-w-7xl mx-auto space-y-10 pb-16">
+
+    <!-- Header Section with ADD O Logo Integration -->
+    <div class="panel p-8 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+        <div class="flex items-center space-x-5">
+            <div class="bg-white/10 p-3 rounded-2xl border border-white/10 backdrop-blur-md">
+                <!-- ADD O Logo Integration -->
+                <img src="{% static 'images/addo_logo.png' %}" alt="African Digital Democracy Observatory Logo" class="h-14 w-auto object-contain">
+            </div>
+            <div>
+                <span class="px-3 py-1 bg-blue-500/20 text-blue-400 rounded-full text-xs font-semibold tracking-wide uppercase">African Digital Democracy Observatory</span>
+                <h1 class="text-3xl font-display font-bold text-white mt-1">Design System & Style Guide Preview</h1>
+                <p class="text-muted text-sm mt-1">Reviewing updated components, navigation tabs, plot titles, social media cards, and dataset tables.</p>
+            </div>
+        </div>
+        <div class="flex items-center gap-3">
+            <a href="{% url 'home' %}" class="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-xl text-sm font-medium transition shadow-lg shadow-blue-600/20">Back to Dashboard</a>
+        </div>
+    </div>
+
+    <!-- Navigation Tabs Preview -->
+    <div class="panel p-6 space-y-4">
+        <div class="flex items-center justify-between">
+            <h2 class="text-xl font-display font-semibold text-white">1. Navigation Tabs & Structure</h2>
+            <span class="text-xs text-muted">Includes the new Lexicons tab & PEPs reorganization</span>
+        </div>
+        <div class="flex flex-wrap gap-2 border-b border-white/10 pb-4">
+            <a href="#" class="px-4 py-2 rounded-xl text-sm font-medium text-muted hover:text-white hover:bg-white/5 transition flex items-center gap-2">🏠 Home</a>
+            <a href="#" class="px-4 py-2 rounded-xl text-sm font-medium text-muted hover:text-white hover:bg-white/5 transition flex items-center gap-2">👤 PEPs Tab</a>
+            <a href="#" class="px-4 py-2 rounded-xl text-sm font-medium bg-blue-600/20 text-blue-400 border border-blue-500/30 shadow-sm flex items-center gap-2">🗣️ Lexicons</a>
+            <a href="#" class="px-4 py-2 rounded-xl text-sm font-medium text-muted hover:text-white hover:bg-white/5 transition flex items-center gap-2">📰 Trending Narratives</a>
+            <a href="#" class="px-4 py-2 rounded-xl text-sm font-medium text-muted hover:text-white hover:bg-white/5 transition flex items-center gap-2">🕸️ Networks & TTPs</a>
+            <a href="#" class="px-4 py-2 rounded-xl text-sm font-medium text-muted hover:text-white hover:bg-white/5 transition flex items-center gap-2">⚙️ Lexicon Management</a>
+            <a href="#" class="px-4 py-2 rounded-xl text-sm font-medium text-muted hover:text-white hover:bg-white/5 transition flex items-center gap-2">📑 Reports</a>
+        </div>
+    </div>
+
+    <!-- Social Media Stats (Ethiopia Views Style) -->
+    <div class="space-y-4">
+        <h2 class="text-xl font-display font-semibold text-white">2. Social Media Statistics & Analytics Cards (Ethiopia Views Style)</h2>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div class="panel p-6 relative overflow-hidden group hover:border-blue-500/40 transition">
+                <div class="absolute -right-6 -bottom-6 w-24 h-24 bg-blue-500/10 rounded-full blur-xl group-hover:bg-blue-500/20 transition"></div>
+                <span class="text-xs uppercase font-semibold text-blue-400 tracking-wider">Top Monitored Platform</span>
+                <p class="text-3xl font-display font-bold text-white mt-2">Telegram</p>
+                <div class="mt-4 flex items-center justify-between text-xs text-muted pt-3 border-t border-white/10">
+                    <span>Total Volume Share</span>
+                    <span class="text-emerald-400 font-semibold">48.2%</span>
+                </div>
+            </div>
+            
+            <div class="panel p-6 relative overflow-hidden group hover:border-indigo-500/40 transition">
+                <div class="absolute -right-6 -bottom-6 w-24 h-24 bg-indigo-500/10 rounded-full blur-xl group-hover:bg-indigo-500/20 transition"></div>
+                <span class="text-xs uppercase font-semibold text-indigo-400 tracking-wider">Total Lexicons Mapped</span>
+                <p class="text-3xl font-display font-bold text-white mt-2">1,248</p>
+                <div class="mt-4 flex items-center justify-between text-xs text-muted pt-3 border-t border-white/10">
+                    <span>Active Categories</span>
+                    <span class="text-indigo-400 font-semibold">18 Categories</span>
+                </div>
+            </div>
+
+            <div class="panel p-6 relative overflow-hidden group hover:border-purple-500/40 transition">
+                <div class="absolute -right-6 -bottom-6 w-24 h-24 bg-purple-500/10 rounded-full blur-xl group-hover:bg-purple-500/20 transition"></div>
+                <span class="text-xs uppercase font-semibold text-purple-400 tracking-wider">Municipal Candidates Mapped</span>
+                <p class="text-3xl font-display font-bold text-white mt-2">3,450</p>
+                <div class="mt-4 flex items-center justify-between text-xs text-muted pt-3 border-t border-white/10">
+                    <span>Source Files</span>
+                    <span class="text-purple-400 font-semibold">2 Excel Sheets</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- PEPs Tab Reorganization Preview (Municipal Election Details & Candidates) -->
+    <div class="space-y-6">
+        <h2 class="text-xl font-display font-semibold text-white">3. PEPs Tab Reorganization (Municipal Candidates Section)</h2>
         
-        nav.nav-links {
-            display: flex;
-            align-items: center;
-            gap: 2rem;
-        }
-        nav.nav-links a {
-            text-decoration: none;
-            color: var(--text-muted);
-            font-size: 0.925rem;
-            font-weight: 500;
-            padding-bottom: 2px;
-            border-bottom: 2px solid transparent;
-            transition: color 0.15s, border-color 0.15s;
-        }
-        nav.nav-links a.active, nav.nav-links a:hover {
-            color: var(--accent-teal);
-            border-bottom-color: var(--accent-teal);
-        }
-
-        /* Container */
-        .container {
-            max-width: 1280px;
-            margin: 0 auto;
-            padding: 3rem 2rem;
-        }
-
-        /* Hero */
-        .editorial-hero {
-            border-bottom: 1px solid var(--border-hairline);
-            padding-bottom: 2.5rem;
-            margin-bottom: 3rem;
-        }
-        .editorial-hero h1 {
-            font-family: var(--font-serif);
-            font-size: 3rem;
-            font-weight: 500;
-            line-height: 1.15;
-            margin-bottom: 1rem;
-            color: var(--text-ink);
-        }
-        .editorial-hero p.lead {
-            font-size: 1.15rem;
-            color: var(--text-muted);
-            max-width: 800px;
-            margin-bottom: 2rem;
-        }
-
-        /* Key Figure Strip (No boxed cards) */
-        .key-figure-strip {
-            display: flex;
-            gap: 3rem;
-            padding-top: 1.5rem;
-            border-top: 1px solid var(--border-hairline);
-            flex-wrap: wrap;
-        }
-        .key-figure {
-            display: flex;
-            flex-direction: column;
-        }
-        .key-figure .label {
-            font-size: 0.8rem;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-            color: var(--text-muted);
-            margin-bottom: 0.25rem;
-        }
-        .key-figure .value {
-            font-family: var(--font-serif);
-            font-size: 2.25rem;
-            font-weight: 600;
-            color: var(--text-ink);
-            line-height: 1;
-        }
-        .key-figure .value.dominant {
-            color: var(--accent-teal);
-        }
-        .key-figure .subnote {
-            font-size: 0.8rem;
-            color: var(--text-muted);
-            margin-top: 0.25rem;
-        }
-
-        /* Section Headings */
-        .section-block {
-            margin-bottom: 4rem;
-        }
-        .section-header {
-            display: flex;
-            align-items: baseline;
-            gap: 1rem;
-            border-bottom: 1px solid var(--border-hairline);
-            padding-bottom: 0.75rem;
-            margin-bottom: 1.5rem;
-        }
-        .section-header span.number {
-            font-family: var(--font-serif);
-            font-size: 1.25rem;
-            color: var(--accent-gold);
-            font-weight: 600;
-        }
-        .section-header h2 {
-            font-family: var(--font-serif);
-            font-size: 1.85rem;
-            font-weight: 500;
-        }
-
-        /* Panels & Tables */
-        .editorial-panel {
-            background: var(--bg-surface);
-            border: 1px solid var(--border-hairline);
-            border-radius: var(--radius-default);
-            padding: 2rem;
-            margin-bottom: 2rem;
-        }
-        
-        table.editorial-table {
-            width: 100%;
-            border-collapse: collapse;
-            text-align: left;
-            font-size: 0.925rem;
-        }
-        table.editorial-table th {
-            font-weight: 600;
-            color: var(--text-muted);
-            border-bottom: 2px solid var(--border-hairline);
-            padding: 0.75rem 1rem;
-            background: #FAF8F5;
-        }
-        table.editorial-table td {
-            padding: 0.875rem 1rem;
-            border-bottom: 1px solid var(--border-hairline);
-            font-variant-numeric: tabular-nums;
-        }
-        table.editorial-table tr:hover td {
-            background: #FAF8F5;
-        }
-
-        /* Badges & Risk Pills */
-        .badge {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.35rem;
-            padding: 0.2rem 0.6rem;
-            border-radius: 9999px;
-            font-size: 0.75rem;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 0.03em;
-        }
-        .badge.calm { background: #EAF3ED; color: var(--risk-calm); }
-        .badge.watch { background: #FDF6E2; color: var(--risk-watch); }
-        .badge.elevated { background: #FAEDE5; color: var(--risk-elevated); }
-        .badge.critical { background: #FCE8E6; color: var(--risk-critical); }
-
-        /* Form Controls */
-        .form-group {
-            margin-bottom: 1.25rem;
-        }
-        .form-label {
-            display: block;
-            font-size: 0.875rem;
-            font-weight: 500;
-            margin-bottom: 0.375rem;
-        }
-        .form-control {
-            width: 100%;
-            padding: 0.625rem 0.875rem;
-            background: var(--bg-surface);
-            border: 1px solid var(--border-hairline);
-            border-radius: var(--radius-default);
-            font-family: var(--font-sans);
-            font-size: 0.925rem;
-            color: var(--text-ink);
-        }
-        .form-control:focus {
-            outline: none;
-            border-color: var(--accent-teal);
-            box-shadow: 0 0 0 2px rgba(15, 92, 90, 0.1);
-        }
-
-        /* Buttons */
-        .btn {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            padding: 0.625rem 1.25rem;
-            border-radius: var(--radius-default);
-            font-weight: 500;
-            font-size: 0.925rem;
-            cursor: pointer;
-            text-decoration: none;
-            border: 1px solid transparent;
-            transition: background 0.15s;
-        }
-        .btn-primary {
-            background: var(--accent-teal);
-            color: white;
-        }
-        .btn-primary:hover { background: #0b4745; }
-        .btn-secondary {
-            background: transparent;
-            border-color: var(--border-hairline);
-            color: var(--text-ink);
-        }
-        .btn-secondary:hover { background: #EAF1F1; }
-
-        /* Empty State */
-        .empty-state {
-            text-align: center;
-            padding: 3rem 1.5rem;
-            color: var(--text-muted);
-        }
-        .empty-state svg { width: 40px; height: 40px; margin-bottom: 1rem; stroke: var(--text-muted); }
-    </style>
-</head>
-<body>
-
-    <!-- Masthead -->
-    <header class="site-masthead">
-        <a href="#" class="brand-lockup">
-            <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="2"/></svg>
-            <span class="brand-title">SA Municipal Elections Monitor</span>
-        </a>
-        <nav class="nav-links">
-            <a href="#" class="active">Overview</a>
-            <a href="#">Municipal Candidates</a>
-            <a href="#">Narratives</a>
-            <a href="#">Networks & TTPs</a>
-            <a href="#">Upload Data</a>
-        </nav>
-    </header>
-
-    <div class="container">
-        <!-- Hero Section -->
-        <section class="editorial-hero">
-            <h1>Design System & Style Guide</h1>
-            <p class="lead">Establishing a rigorous editorial data-journalism standard for South Africa's 4 November 2026 municipal election monitoring operations.</p>
-            
-            <div class="key-figure-strip">
-                <div class="key-figure">
-                    <span class="label">Certified Candidates</span>
-                    <span class="value dominant">75,311</span>
-                    <span class="subnote">Covering ~55% of IEC total</span>
+        <!-- Section 1: Municipal Election Statistics -->
+        <div class="panel p-6">
+            <h3 class="text-lg font-semibold text-white mb-4 flex items-center gap-2">
+                <span>📊</span> Municipal Election Statistics Overview
+            </h3>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div class="bg-white/5 border border-white/10 p-4 rounded-xl">
+                    <span class="text-xs text-muted uppercase">Total Candidate Records</span>
+                    <p class="text-2xl font-bold text-white mt-1">3,450</p>
                 </div>
-                <div class="key-figure">
-                    <span class="label">Municipalities</span>
-                    <span class="value">257</span>
-                    <span class="subnote">8 Metros, 44 Districts, 205 Locals</span>
+                <div class="bg-white/5 border border-white/10 p-4 rounded-xl">
+                    <span class="text-xs text-muted uppercase">Source Spreadsheets</span>
+                    <p class="text-2xl font-bold text-white mt-1">1 File</p>
                 </div>
-                <div class="key-figure">
-                    <span class="label">Active Risk Status</span>
-                    <span class="value" style="color: var(--risk-watch);">Watch</span>
-                    <span class="subnote">Elevated coordination detected</span>
+                <div class="bg-white/5 border border-white/10 p-4 rounded-xl">
+                    <span class="text-xs text-muted uppercase">Data Sheets</span>
+                    <p class="text-2xl font-bold text-white mt-1">1 Sheet</p>
                 </div>
             </div>
-        </section>
+        </div>
 
-        <!-- 01 Typography & Risk Scale -->
-        <section class="section-block">
-            <div class="section-header">
-                <span class="number">01</span>
-                <h2>Visual & Risk Hierarchy</h2>
+        <!-- Section 2: Municipal Candidates Table -->
+        <div class="panel p-6 space-y-4">
+            <div class="flex items-center justify-between">
+                <h3 class="text-lg font-semibold text-white flex items-center gap-2">
+                    <span>👥</span> Municipal Candidates Dataset
+                </h3>
+                <span class="text-xs bg-blue-500/20 text-blue-400 px-3 py-1 rounded-full">Filtered & Sorted</span>
             </div>
-            <div class="editorial-panel">
-                <p style="margin-bottom: 1rem;">Standardised risk status badges with mandatory text labelling:</p>
-                <div style="display: flex; gap: 1rem; align-items: center; flex-wrap: wrap;">
-                    <span class="badge calm">Calm #2E7D5B</span>
-                    <span class="badge watch">Watch #C79A1E</span>
-                    <span class="badge elevated">Elevated #D4691F</span>
-                    <span class="badge critical">Critical #B3261E</span>
-                </div>
-            </div>
-        </section>
-
-        <!-- 02 Data Table & Forms -->
-        <section class="section-block">
-            <div class="section-header">
-                <span class="number">02</span>
-                <h2>Dense Editorial Tables & Controls</h2>
-            </div>
-            <div class="editorial-panel">
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 2rem;">
-                    <div class="form-group">
-                        <label class="form-label">Municipality Filter</label>
-                        <select class="form-control">
-                            <option>City of Cape Town (CPT)</option>
-                            <option>Johannesburg (JHB)</option>
-                            <option>eThekwini (ETH)</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Search Candidate Name</label>
-                        <input type="text" class="form-control" placeholder="Enter candidate or party...">
-                    </div>
-                </div>
-
-                <table class="editorial-table">
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-white/10 text-left">
                     <thead>
-                        <tr>
-                            <th>Candidate Full Name</th>
-                            <th>Party</th>
-                            <th>Office</th>
-                            <th>Municipality</th>
-                            <th>Risk Status</th>
+                        <tr class="text-xs uppercase text-muted tracking-wider">
+                            <th class="px-4 py-3 font-semibold">Candidate Name</th>
+                            <th class="px-4 py-3 font-semibold">Source File</th>
+                            <th class="px-4 py-3 font-semibold">Sheet Name</th>
+                            <th class="px-4 py-3 font-semibold text-right">Action</th>
                         </tr>
                     </thead>
-                    <tbody>
-                        <tr>
-                            <td><strong>Nkosazana Dlamini</strong></td>
-                            <td>African National Congress</td>
-                            <td>Local Ward Candidate</td>
-                            <td>Buffalo City (BUF)</td>
-                            <td><span class="badge calm">Calm</span></td>
+                    <tbody class="divide-y divide-white/5 text-sm">
+                        <tr class="hover:bg-white/5 transition">
+                            <td class="px-4 py-3 font-medium text-white">Abebe Bekele Tadesse</td>
+                            <td class="px-4 py-3 text-muted">CfA _PEP data _ South Africa...xlsx</td>
+                            <td class="px-4 py-3 text-muted">Local Government Candidates</td>
+                            <td class="px-4 py-3 text-right">
+                                <span class="text-blue-400 hover:text-blue-300 cursor-pointer font-medium text-xs">View Details</span>
+                            </td>
                         </tr>
-                        <tr>
-                            <td><strong>Pieter van der Merwe</strong></td>
-                            <td>Democratic Alliance</td>
-                            <td>Metro PR Candidate</td>
-                            <td>City of Cape Town (CPT)</td>
-                            <td><span class="badge watch">Watch</span></td>
+                        <tr class="hover:bg-white/5 transition">
+                            <td class="px-4 py-3 font-medium text-white">Tigist Mamo Dinku</td>
+                            <td class="px-4 py-3 text-muted">CfA _PEP data _ South Africa...xlsx</td>
+                            <td class="px-4 py-3 text-muted">Local Government Candidates</td>
+                            <td class="px-4 py-3 text-right">
+                                <span class="text-blue-400 hover:text-blue-300 cursor-pointer font-medium text-xs">View Details</span>
+                            </td>
                         </tr>
                     </tbody>
                 </table>
             </div>
-        </section>
-
-        <!-- 03 Plotly Integration -->
-        <section class="section-block">
-            <div class="section-header">
-                <span class="number">03</span>
-                <h2>Shared Client-Side Plotly Theme</h2>
-            </div>
-            <div class="editorial-panel">
-                <div id="plotly-demo-chart" style="width:100%; height:350px;"></div>
-            </div>
-        </section>
-
-        <!-- Empty State Example -->
-        <section class="section-block">
-            <div class="section-header">
-                <span class="number">04</span>
-                <h2>Calm Empty State</h2>
-            </div>
-            <div class="editorial-panel">
-                <div class="empty-state">
-                    <svg viewBox="0 0 24 24" fill="none" stroke-width="1.5"><path d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"/></svg>
-                    <h3 style="font-family: var(--font-serif); font-size: 1.25rem; margin-bottom: 0.5rem;">No data yet for this filter</h3>
-                    <p>Analytics are being prepared or no matching records were found in the current date range.</p>
-                </div>
-            </div>
-        </section>
+        </div>
     </div>
 
-    <script>
-        // Plotly shared theme demonstration
-        const trace = {
-            x: ['Ward Candidates', 'PR Candidates (Local)', 'Metro Ward', 'Metro PR', 'District PR'],
-            y: [19905, 30428, 8117, 9467, 6434],
-            type: 'bar',
-            marker: { color: '#0F5C5A' }
-        };
-        const layout = {
-            title: { text: 'Candidate Distribution by Contest Type (IEC Certified Baseline)', font: { family: 'Newsreader, serif', size: 20 } },
-            paper_bgcolor: 'transparent',
-            plot_bgcolor: 'transparent',
-            font: { family: 'Inter, sans-serif', color: '#14181F' },
-            margin: { t: 50, r: 20, l: 50, b: 50 },
-            xaxis: { gridcolor: '#E2DDD5', zeroline: false },
-            yaxis: { gridcolor: '#E2DDD5', zeroline: false }
-        };
-        Plotly.newPlot('plotly-demo-chart', [trace], layout, {responsive: true, displayModeBar: false});
-    </script>
-</body>
-</html>
+    <!-- Plot Titles Update Preview -->
+    <div class="panel p-6 space-y-4">
+        <h2 class="text-xl font-display font-semibold text-white">4. Updated Plot Titles (Charts 03 & 04)</h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="bg-white/5 border border-white/10 p-5 rounded-xl">
+                <span class="text-xs font-semibold text-blue-400 uppercase tracking-wide">Plot 03 Updated Title</span>
+                <h4 class="text-lg font-bold text-white mt-1">Risk Level Distribution of Monitored Content</h4>
+                <div class="h-32 mt-4 bg-black/20 rounded-lg flex items-center justify-center border border-white/5 text-muted text-sm">
+                    [Chart 03 Visualization Container]
+                </div>
+            </div>
+            <div class="bg-white/5 border border-white/10 p-5 rounded-xl">
+                <span class="text-xs font-semibold text-blue-400 uppercase tracking-wide">Plot 04 Updated Title</span>
+                <h4 class="text-lg font-bold text-white mt-1">Daily Engagement and Post Volume Trend</h4>
+                <div class="h-32 mt-4 bg-black/20 rounded-lg flex items-center justify-center border border-white/5 text-muted text-sm">
+                    [Chart 04 Visualization Container]
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Lexicon Collections Preview -->
+    <div class="panel p-6 space-y-4">
+        <h2 class="text-xl font-display font-semibold text-white">5. Lexicon Collections Tab Preview</h2>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div class="p-4 bg-white/5 border border-white/10 rounded-xl">
+                <h3 class="font-bold text-white mb-2">Hate Speech & Slurs</h3>
+                <div class="flex flex-wrap gap-1">
+                    <span class="px-2 py-0.5 bg-white/10 rounded text-xs text-muted">diere</span>
+                    <span class="px-2 py-0.5 bg-white/10 rounded text-xs text-muted">isilwanyana</span>
+                    <span class="px-2 py-0.5 bg-white/10 rounded text-xs text-muted">amakula</span>
+                    <span class="px-2 py-0.5 bg-white/10 rounded text-xs text-muted">ikula</span>
+                </div>
+            </div>
+            <div class="p-4 bg-white/5 border border-white/10 rounded-xl">
+                <h3 class="font-bold text-white mb-2">Dehumanization</h3>
+                <div class="flex flex-wrap gap-1">
+                    <span class="px-2 py-0.5 bg-white/10 rounded text-xs text-muted">phologolo</span>
+                    <span class="px-2 py-0.5 bg-white/10 rounded text-xs text-muted">liphoofolo</span>
+                </div>
+            </div>
+            <div class="p-4 bg-white/5 border border-white/10 rounded-xl">
+                <h3 class="end font-bold text-white mb-2">Xenophobia & Slurs</h3>
+                <div class="flex flex-wrap gap-1">
+                    <span class="px-2 py-0.5 bg-white/10 rounded text-xs text-muted">lekula</span>
+                    <span class="px-2 py-0.5 bg-white/10 rounded text-xs text-muted">makwerekwere</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+{% endblock %}
