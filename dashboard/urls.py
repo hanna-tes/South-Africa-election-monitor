@@ -1,4 +1,5 @@
 from django.urls import path
+from django.views.generic import TemplateView  
 from . import views
 
 urlpatterns = [
@@ -21,6 +22,9 @@ urlpatterns = [
     path('api/trigger-llm-scan/', views.trigger_llm_scan_api, name='trigger_llm_scan'),
     path('export-new-terms-csv/', views.export_new_terms_csv, name='export_new_terms_csv'),
     path('networks/export/complete-network/', views.export_complete_network_csv, name='export_complete_network'),
+    
+    # === NEW STYLE GUIDE ROUTE ===
+    path('style-guide/', TemplateView.as_view(template_name='dashboard/style_guide.html'), name='style_guide'),
 
     # AFRO-XLMR specific endpoints
     path('api/scan-text-afro-xlmr/', views.scan_text_afro_xlmr_api, name='scan_text_afro_xlmr'),
@@ -38,20 +42,11 @@ urlpatterns = [
     # === API ENDPOINTS ===
     path('api/scan-text/', views.scan_text_api, name='scan_text_api'),
     path('api/export-posts/', views.export_posts_api, name='export_posts_api'),
-    #path('api/network-graph/', views.generate_network_graph, name='generate_network_graph'),
-#     path('api/ttp-proxy/v1/chat/completions', views.TTPProxyView.as_view(), name='ttp_proxy_api'),
-    path('api/ttp-radar-data/', views.ttp_radar_data_api, name='ttp_radar_data_api'),
-
     path('api/network-graph/', views.generate_network_graph, name='generate_network_graph'),
-    #path('api/ttp-proxy/v1/chat/completions', views.TTPProxyView.as_view(), name='ttp_proxy_api'),
-
-    #path('api/ttp-radar-data/', views.ttp_radar_data_api, name='ttp_radar_data_api'),
-
     path('api/ttp-radar-data/', views.ttp_radar_data_api, name='ttp_radar_data_api'),
 
     # Gephi CSV Exports
     path('networks/export-gephi-nodes/', views.export_gephi_nodes_csv, name='export_gephi_nodes'),
     path('networks/export-gephi-edges/', views.export_gephi_edges_csv, name='export_gephi_edges'),
     path('networks/export-gephi-edges-tweets/', views.export_gephi_edges_tweets_csv, name='export_gephi_edges_tweets'),
-
 ]
