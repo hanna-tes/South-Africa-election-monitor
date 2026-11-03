@@ -1,0 +1,261 @@
+/* dashboard/static/css/sa-election-theme.css */
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=Inter:wght@400;500;600&display=swap');
+
+:root {
+    /* --- Core Palette --- */
+    --color-page-bg: #F6F3EC;       /* Warm off-white */
+    --color-panel-bg: #FFFFFF;      /* White panels */
+    --color-text-ink: #14181F;      /* Deep ink text */
+    --color-text-muted: #5C6370;    /* Secondary text */
+    --color-border: #E5E7EB;        /* Hairline borders */
+    
+    /* --- Brand Accents --- */
+    --color-accent-teal: #0F5C5A;   /* Primary links/buttons/active */
+    --color-accent-gold: #B8923A;   /* Rules and highlights */
+    
+    /* --- Risk Scale (Always with text label) --- */
+    --risk-calm: #2E7D5B;
+    --risk-watch: #C79A1E;
+    --risk-elevated: #D4691F;
+    --risk-critical: #B3261E;
+
+    /* --- Typography --- */
+    --font-headline: 'Fraunces', Georgia, serif;
+    --font-body: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    
+    /* --- Spacing & Radius --- */
+    --radius-sm: 6px;
+    --radius-md: 8px;
+    --spacing-unit: 1rem;
+}
+
+/* --- Base Reset & Typography --- */
+body {
+    background-color: var(--color-page-bg);
+    color: var(--color-text-ink);
+    font-family: var(--font-body);
+    font-size: 16px;
+    line-height: 1.6;
+    margin: 0;
+    -webkit-font-smoothing: antialiased;
+}
+
+h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-headline);
+    font-weight: 600;
+    color: var(--color-text-ink);
+    margin-top: 0;
+}
+
+h1 { font-size: 2.5rem; letter-spacing: -0.02em; }
+h2 { font-size: 1.75rem; }
+h3 { font-size: 1.25rem; }
+
+/* --- Masthead --- */
+.sa-masthead {
+    position: sticky;
+    top: 0;
+    background: var(--color-panel-bg);
+    border-bottom: 1px solid var(--color-border);
+    padding: 1rem 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    z-index: 100;
+}
+
+.sa-masthead__logo {
+    font-family: var(--font-headline);
+    font-weight: 700;
+    font-size: 1.25rem;
+    color: var(--color-accent-teal);
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.sa-masthead__nav {
+    display: flex;
+    gap: 2rem;
+}
+
+.sa-masthead__link {
+    text-decoration: none;
+    color: var(--color-text-muted);
+    font-weight: 500;
+    font-size: 0.95rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 2px solid transparent;
+    transition: all 0.2s ease;
+}
+
+.sa-masthead__link:hover, .sa-masthead__link--active {
+    color: var(--color-accent-teal);
+    border-bottom-color: var(--color-accent-teal);
+}
+
+/* --- Hero Section --- */
+.sa-hero {
+    padding: 4rem 2rem 2rem;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.sa-hero__title {
+    font-size: 3rem;
+    margin-bottom: 0.5rem;
+}
+
+.sa-hero__subtitle {
+    font-size: 1.125rem;
+    color: var(--color-text-muted);
+    max-width: 700px;
+    margin-bottom: 2rem;
+}
+
+.sa-hero__figures {
+    display: flex;
+    gap: 3rem;
+    border-top: 1px solid var(--color-border);
+    border-bottom: 1px solid var(--color-border);
+    padding: 1.5rem 0;
+}
+
+.sa-figure {
+    display: flex;
+    flex-direction: column;
+}
+
+.sa-figure__value {
+    font-family: var(--font-headline);
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--color-text-ink);
+}
+
+.sa-figure__label {
+    font-size: 0.875rem;
+    color: var(--color-text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+/* --- Risk Badges --- */
+.sa-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.25rem 0.75rem;
+    border-radius: var(--radius-sm);
+    font-size: 0.875rem;
+    font-weight: 600;
+}
+
+.sa-badge--calm { background: rgba(46, 125, 91, 0.1); color: var(--risk-calm); }
+.sa-badge--watch { background: rgba(199, 154, 30, 0.1); color: var(--risk-watch); }
+.sa-badge--elevated { background: rgba(212, 105, 31, 0.1); color: var(--risk-elevated); }
+.sa-badge--critical { background: rgba(179, 38, 30, 0.1); color: var(--risk-critical); }
+
+/* --- Section Headings --- */
+.sa-section {
+    padding: 3rem 2rem;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.sa-section__header {
+    display: flex;
+    align-items: baseline;
+    gap: 1rem;
+    margin-bottom: 2rem;
+    border-bottom: 1px solid var(--color-border);
+    padding-bottom: 1rem;
+}
+
+.sa-section__number {
+    font-family: var(--font-body);
+    font-size: 0.875rem;
+    color: var(--color-accent-gold);
+    font-weight: 600;
+}
+
+/* --- Data Tables --- */
+.sa-table-container {
+    overflow-x: auto;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    background: var(--color-panel-bg);
+}
+
+.sa-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.9rem;
+}
+
+.sa-table th {
+    text-align: left;
+    padding: 1rem;
+    background: var(--color-page-bg);
+    border-bottom: 1px solid var(--color-border);
+    font-weight: 600;
+    color: var(--color-text-muted);
+    position: sticky;
+    top: 0;
+}
+
+.sa-table td {
+    padding: 1rem;
+    border-bottom: 1px solid var(--color-border);
+}
+
+.sa-table tr:last-child td { border-bottom: none; }
+
+/* --- Form Controls --- */
+.sa-input, .sa-select {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    background: var(--color-panel-bg);
+    font-family: var(--font-body);
+    font-size: 1rem;
+    color: var(--color-text-ink);
+    transition: border-color 0.2s;
+}
+
+.sa-input:focus, .sa-select:focus {
+    outline: none;
+    border-color: var(--color-accent-teal);
+}
+
+.sa-btn {
+    padding: 0.75rem 1.5rem;
+    border-radius: var(--radius-md);
+    font-weight: 600;
+    cursor: pointer;
+    border: none;
+    transition: opacity 0.2s;
+}
+
+.sa-btn--primary {
+    background: var(--color-accent-teal);
+    color: white;
+}
+
+.sa-btn--primary:hover { opacity: 0.9; }
+
+/* --- Empty State --- */
+.sa-empty-state {
+    text-align: center;
+    padding: 4rem 2rem;
+    color: var(--color-text-muted);
+}
+
+.sa-empty-state__icon {
+    width: 48px;
+    height: 48px;
+    margin-bottom: 1rem;
+    stroke: var(--color-border);
+}
