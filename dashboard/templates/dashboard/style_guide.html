@@ -1,190 +1,477 @@
-{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ADDO Style Guide - SA Municipal Elections</title>
-    <link rel="stylesheet" href="{% static 'css/sa-election-theme.css' %}">
-    <!-- Pinned Plotly.js -->
-    <script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
+    <title>ADDO - 2026 Municipal Elections Monitor</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        addo: {
+                            blue: '#2563EB',
+                            dark: '#1E40AF',
+                            light: '#3B82F6',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .gradient-bg {
+            background: linear-gradient(135deg, #1E40AF 0%, #3B82F6 50%, #60A5FA 100%);
+        }
+        .card-hover {
+            transition: all 0.3s ease;
+        }
+        .card-hover:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+        }
+        .tab-active {
+            border-bottom: 3px solid #2563EB;
+            color: #2563EB;
+            font-weight: 600;
+        }
+        .stat-card {
+            background: linear-gradient(135deg, #FFFFFF 0%, #F8FAFC 100%);
+        }
+        .risk-calm { background: linear-gradient(135deg, #10B981, #34D399); }
+        .risk-watch { background: linear-gradient(135deg, #F59E0B, #FBBF24); }
+        .risk-elevated { background: linear-gradient(135deg, #F97316, #FB923C); }
+        .risk-critical { background: linear-gradient(135deg, #EF4444, #F87171); }
+    </style>
 </head>
-<body>
+<body class="bg-gray-50 font-sans">
 
-    <!-- MASTHEAD -->
-    <header class="sa-masthead">
-        <a href="/" class="sa-masthead__logo">
-            <!-- Simple SVG Logo Placeholder -->
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><circle cx="12" cy="12" r="4"></circle></svg>
-            ADDO
-        </a>
-        <nav class="sa-masthead__nav">
-            <a href="#" class="sa-masthead__link sa-masthead__link--active">Home</a>
-            <a href="#" class="sa-masthead__link">Candidates</a>
-            <a href="#" class="sa-masthead__link">Narratives</a>
-            <a href="#" class="sa-masthead__link">Lexicons</a>
-            <a href="#" class="sa-masthead__link">Networks</a>
-        </nav>
-    </header>
+    <!-- Top Navigation Bar -->
+    <nav class="bg-white shadow-lg border-b-4 border-addo-blue sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-20">
+                <!-- Logo Section -->
+                <div class="flex items-center space-x-4">
+                    <div class="flex-shrink-0 flex items-center">
+                        <!-- ADDO Logo -->
+                        <div class="w-12 h-12 gradient-bg rounded-lg flex items-center justify-center text-white font-bold text-2xl mr-3">
+                            A
+                        </div>
+                        <div>
+                            <h1 class="text-2xl font-bold text-gray-900 tracking-tight">ADDO</h1>
+                            <p class="text-xs text-gray-500 font-medium">African Digital Democracy Observatory</p>
+                        </div>
+                    </div>
+                </div>
 
-    <!-- HERO SECTION -->
-    <section class="sa-hero">
-        <h1 class="sa-hero__title">2026 Municipal Elections Monitor</h1>
-        <p class="sa-hero__subtitle">Tracking social media narratives, weaponized language, and coordinated networks ahead of the 4 November 2026 local government elections.</p>
-        
-        <div class="sa-hero__figures">
-            <div class="sa-figure">
-                <span class="sa-figure__value">75,311</span>
-                <span class="sa-figure__label">Candidates in File</span>
+                <!-- Navigation Tabs -->
+                <div class="flex items-center space-x-1">
+                    <button onclick="switchTab('home')" id="tab-home" class="tab-active px-6 py-3 text-sm font-medium transition-colors duration-200">
+                        <i class="fas fa-home mr-2"></i>Home
+                    </button>
+                    <button onclick="switchTab('candidates')" id="tab-candidates" class="px-6 py-3 text-sm font-medium text-gray-600 hover:text-addo-blue transition-colors duration-200">
+                        <i class="fas fa-users mr-2"></i>Candidates
+                    </button>
+                    <button onclick="switchTab('narratives')" id="tab-narratives" class="px-6 py-3 text-sm font-medium text-gray-600 hover:text-addo-blue transition-colors duration-200">
+                        <i class="fas fa-chart-line mr-2"></i>Narratives
+                    </button>
+                    <button onclick="switchTab('lexicons')" id="tab-lexicons" class="px-6 py-3 text-sm font-medium text-gray-600 hover:text-addo-blue transition-colors duration-200">
+                        <i class="fas fa-book mr-2"></i>Lexicons
+                    </button>
+                    <button onclick="switchTab('networks')" id="tab-networks" class="px-6 py-3 text-sm font-medium text-gray-600 hover:text-addo-blue transition-colors duration-200">
+                        <i class="fas fa-project-diagram mr-2"></i>Networks
+                    </button>
+                </div>
+
+                <!-- User Profile -->
+                <div class="flex items-center space-x-4">
+                    <div class="flex items-center space-x-2 bg-gray-100 rounded-full px-4 py-2">
+                        <div class="w-8 h-8 bg-addo-blue rounded-full flex items-center justify-center text-white font-semibold">
+                            W
+                        </div>
+                        <span class="text-sm font-medium text-gray-700">Work</span>
+                    </div>
+                </div>
             </div>
-            <div class="sa-figure">
-                <span class="sa-figure__value">257</span>
-                <span class="sa-figure__label">Municipalities</span>
-            </div>
-            <div class="sa-figure">
-                <span class="sa-figure__value">579</span>
-                <span class="sa-figure__label">Parties Registered</span>
-            </div>
-            <div class="sa-figure">
-                <span class="sa-figure__value">136,790</span>
-                <span class="sa-figure__label">IEC Certified (Figures as at 16 Sept 2026)</span>
-            </div>
         </div>
-    </section>
+    </nav>
 
-    <!-- RISK BADGES & SECTION HEADING -->
-    <section class="sa-section">
-        <div class="sa-section__header">
-            <span class="sa-section__number">01</span>
-            <h2>Risk Assessment & Narrative Tone</h2>
-        </div>
-        
-        <div style="display: flex; gap: 1rem; margin-bottom: 3rem;">
-            <span class="sa-badge sa-badge--calm">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
-                Calm
-            </span>
-            <span class="sa-badge sa-badge--watch">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
-                Watch
-            </span>
-            <span class="sa-badge sa-badge--elevated">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
-                Elevated
-            </span>
-            <span class="sa-badge sa-badge--critical">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="15" y1="9" x2="9" y2="15"></line><line x1="9" y1="9" x2="15" y2="15"></line></svg>
-                Critical
-            </span>
-        </div>
+    <!-- Main Content Area -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
 
-        <!-- FILTER BAR & FORM CONTROLS -->
-        <div class="sa-section__header">
-            <span class="sa-section__number">02</span>
-            <h2>Filters & Controls</h2>
-        </div>
-        <div style="display: flex; gap: 1rem; margin-bottom: 3rem; align-items: end;">
-            <div style="flex: 1;">
-                <label style="display: block; margin-bottom: 0.5rem; font-size: 0.875rem; color: var(--color-text-muted);">Search Candidates</label>
-                <input type="text" class="sa-input" placeholder="e.g. Johannesburg, ANC, Ward 42">
+        <!-- HOME TAB CONTENT -->
+        <div id="content-home" class="tab-content space-y-8">
+            
+            <!-- Hero Section -->
+            <div class="gradient-bg rounded-2xl shadow-2xl p-8 text-white">
+                <div class="flex items-start justify-between">
+                    <div>
+                        <h1 class="text-5xl font-bold mb-4">2026 Municipal Elections Monitor</h1>
+                        <p class="text-xl text-blue-100 max-w-3xl">
+                            Tracking social media narratives, weaponized language, and coordinated networks ahead of the 4 November 2026 local government elections.
+                        </p>
+                    </div>
+                    <div class="text-right">
+                        <div class="text-3xl font-bold">16 Sept 2026</div>
+                        <div class="text-blue-200">Last Updated</div>
+                    </div>
+                </div>
             </div>
-            <div style="width: 200px;">
-                <label style="display: block; margin-bottom: 0.5rem; font-size: 0.875rem; color: var(--color-text-muted);">Province</label>
-                <select class="sa-select">
-                    <option>All Provinces</option>
-                    <option>Gauteng</option>
-                    <option>KwaZulu-Natal</option>
-                    <option>Western Cape</option>
-                </select>
+
+            <!-- Key Statistics Grid -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <div class="stat-card card-hover rounded-xl shadow-lg p-6 border-l-4 border-addo-blue">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-sm font-medium text-gray-600 uppercase tracking-wide">Candidates in File</p>
+                            <p class="text-4xl font-bold text-gray-900 mt-2">75,311</p>
+                            <p class="text-sm text-green-600 mt-1"><i class="fas fa-arrow-up mr-1"></i>2.3% this week</p>
+                        </div>
+                        <div class="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center">
+                            <i class="fas fa-user-tie text-3xl text-addo-blue"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="stat-card card-hover rounded-xl shadow-lg p-6 border-l-4 border-purple-500">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-sm font-medium text-gray-600 uppercase tracking-wide">Municipalities</p>
+                            <p class="text-4xl font-bold text-gray-900 mt-2">257</p>
+                            <p class="text-sm text-gray-500 mt-1">Across 9 provinces</p>
+                        </div>
+                        <div class="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center">
+                            <i class="fas fa-building text-3xl text-purple-600"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="stat-card card-hover rounded-xl shadow-lg p-6 border-l-4 border-orange-500">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-sm font-medium text-gray-600 uppercase tracking-wide">Parties Registered</p>
+                            <p class="text-4xl font-bold text-gray-900 mt-2">579</p>
+                            <p class="text-sm text-orange-600 mt-1"><i class="fas fa-plus mr-1"></i>12 new parties</p>
+                        </div>
+                        <div class="w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center">
+                            <i class="fas fa-flag text-3xl text-orange-600"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="stat-card card-hover rounded-xl shadow-lg p-6 border-l-4 border-green-500">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-sm font-medium text-gray-600 uppercase tracking-wide">IEC Certified</p>
+                            <p class="text-4xl font-bold text-gray-900 mt-2">136,790</p>
+                            <p class="text-sm text-gray-500 mt-1">As at 16 Sept 2026</p>
+                        </div>
+                        <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center">
+                            <i class="fas fa-check-circle text-3xl text-green-600"></i>
+                        </div>
+                    </div>
+                </div>
             </div>
-            <button class="sa-btn sa-btn--primary">Apply Filters</button>
+
+            <!-- Risk Assessment & Narrative Tone -->
+            <div class="bg-white rounded-2xl shadow-xl p-8">
+                <div class="flex items-center justify-between mb-6">
+                    <h2 class="text-3xl font-bold text-gray-900">
+                        <span class="text-addo-blue">01</span> Risk Assessment & Narrative Tone
+                    </h2>
+                    <div class="flex space-x-2">
+                        <span class="px-4 py-2 bg-gray-100 rounded-lg text-sm font-medium">Last 24 hours</span>
+                        <span class="px-4 py-2 bg-gray-100 rounded-lg text-sm font-medium">Last 7 days</span>
+                        <span class="px-4 py-2 bg-addo-blue text-white rounded-lg text-sm font-medium">Last 30 days</span>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+                    <div class="risk-calm rounded-xl p-6 text-white text-center card-hover cursor-pointer">
+                        <i class="fas fa-check-circle text-4xl mb-3"></i>
+                        <h3 class="text-2xl font-bold mb-2">Calm</h3>
+                        <p class="text-sm opacity-90">62% of narratives</p>
+                        <p class="text-xs mt-2 opacity-75">Low tension, constructive dialogue</p>
+                    </div>
+                    <div class="risk-watch rounded-xl p-6 text-white text-center card-hover cursor-pointer">
+                        <i class="fas fa-exclamation-triangle text-4xl mb-3"></i>
+                        <h3 class="text-2xl font-bold mb-2">Watch</h3>
+                        <p class="text-sm opacity-90">24% of narratives</p>
+                        <p class="text-xs mt-2 opacity-75">Moderate tension, monitoring required</p>
+                    </div>
+                    <div class="risk-elevated rounded-xl p-6 text-white text-center card-hover cursor-pointer">
+                        <i class="fas fa-exclamation-circle text-4xl mb-3"></i>
+                        <h3 class="text-2xl font-bold mb-2">Elevated</h3>
+                        <p class="text-sm opacity-90">11% of narratives</p>
+                        <p class="text-xs mt-2 opacity-75">High tension, intervention needed</p>
+                    </div>
+                    <div class="risk-critical rounded-xl p-6 text-white text-center card-hover cursor-pointer">
+                        <i class="fas fa-radiation text-4xl mb-3"></i>
+                        <h3 class="text-2xl font-bold mb-2">Critical</h3>
+                        <p class="text-sm opacity-90">3% of narratives</p>
+                        <p class="text-xs mt-2 opacity-75">Severe tension, immediate action</p>
+                    </div>
+                </div>
+
+                <!-- Trending Narratives Preview -->
+                <div class="border-t pt-6">
+                    <h3 class="text-xl font-bold text-gray-900 mb-4">Trending Narratives</h3>
+                    <div class="space-y-3">
+                        <div class="flex items-center justify-between p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors cursor-pointer">
+                            <div class="flex items-center space-x-4">
+                                <span class="px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm font-medium">Calm</span>
+                                <span class="font-medium text-gray-900">Service Delivery Improvements</span>
+                            </div>
+                            <div class="flex items-center space-x-4 text-sm text-gray-600">
+                                <span><i class="fas fa-chart-line mr-2"></i>+15.3%</span>
+                                <span><i class="fas fa-comment mr-2"></i>2,847 posts</span>
+                            </div>
+                        </div>
+                        <div class="flex items-center justify-between p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors cursor-pointer">
+                            <div class="flex items-center space-x-4">
+                                <span class="px-3 py-1 bg-yellow-100 text-yellow-800 rounded-full text-sm font-medium">Watch</span>
+                                <span class="font-medium text-gray-900">Corruption Allegations</span>
+                            </div>
+                            <div class="flex items-center space-x-4 text-sm text-gray-600">
+                                <span><i class="fas fa-chart-line mr-2"></i>+8.7%</span>
+                                <span><i class="fas fa-comment mr-2"></i>1,923 posts</span>
+                            </div>
+                        </div>
+                        <div class="flex items-center justify-between p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors cursor-pointer">
+                            <div class="flex items-center space-x-4">
+                                <span class="px-3 py-1 bg-orange-100 text-orange-800 rounded-full text-sm font-medium">Elevated</span>
+                                <span class="font-medium text-gray-900">Ethnic Tensions in Ward 42</span>
+                            </div>
+                            <div class="flex items-center space-x-4 text-sm text-gray-600">
+                                <span><i class="fas fa-chart-line mr-2"></i>+23.1%</span>
+                                <span><i class="fas fa-comment mr-2"></i>856 posts</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Filters & Controls -->
+            <div class="bg-white rounded-2xl shadow-xl p-8">
+                <h2 class="text-3xl font-bold text-gray-900 mb-6">
+                    <span class="text-addo-blue">02</span> Filters & Controls
+                </h2>
+                
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Search Candidates</label>
+                        <div class="relative">
+                            <input type="text" placeholder="Enter candidate name..." class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-addo-blue focus:border-transparent">
+                            <i class="fas fa-search absolute left-3 top-3.5 text-gray-400"></i>
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Province</label>
+                        <select class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-addo-blue focus:border-transparent">
+                            <option>All Provinces</option>
+                            <option>Gauteng</option>
+                            <option>Western Cape</option>
+                            <option>KwaZulu-Natal</option>
+                            <option>Eastern Cape</option>
+                            <option>Limpopo</option>
+                            <option>Mpumalanga</option>
+                            <option>North West</option>
+                            <option>Free State</option>
+                            <option>Northern Cape</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Risk Level</label>
+                        <select class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-addo-blue focus:border-transparent">
+                            <option>All Levels</option>
+                            <option>Calm</option>
+                            <option>Watch</option>
+                            <option>Elevated</option>
+                            <option>Critical</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="mt-6 flex space-x-4">
+                    <button class="px-6 py-3 bg-addo-blue text-white rounded-lg font-medium hover:bg-addo-dark transition-colors">
+                        <i class="fas fa-filter mr-2"></i>Apply Filters
+                    </button>
+                    <button class="px-6 py-3 bg-gray-200 text-gray-700 rounded-lg font-medium hover:bg-gray-300 transition-colors">
+                        <i class="fas fa-download mr-2"></i>Export Data
+                    </button>
+                    <button class="px-6 py-3 bg-gray-200 text-gray-700 rounded-lg font-medium hover:bg-gray-300 transition-colors">
+                        <i class="fas fa-sync mr-2"></i>Refresh
+                    </button>
+                </div>
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl p-6 text-white card-hover cursor-pointer">
+                    <i class="fas fa-upload text-4xl mb-4"></i>
+                    <h3 class="text-xl font-bold mb-2">Upload Data</h3>
+                    <p class="text-blue-100">Import new candidate lists, social media posts, or monitoring data</p>
+                </div>
+                <div class="bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl p-6 text-white card-hover cursor-pointer">
+                    <i class="fas fa-file-alt text-4xl mb-4"></i>
+                    <h3 class="text-xl font-bold mb-2">Generate Report</h3>
+                    <p class="text-purple-100">Create comprehensive analysis reports for stakeholders</p>
+                </div>
+                <div class="bg-gradient-to-br from-green-500 to-green-600 rounded-xl p-6 text-white card-hover cursor-pointer">
+                    <i class="fas fa-bell text-4xl mb-4"></i>
+                    <h3 class="text-xl font-bold mb-2">Set Alerts</h3>
+                    <p class="text-green-100">Configure automated alerts for critical narrative shifts</p>
+                </div>
+            </div>
         </div>
 
-        <!-- DATA TABLE -->
-        <div class="sa-section__header">
-            <span class="sa-section__number">03</span>
-            <h2>Candidates Data Table</h2>
-        </div>
-        <div class="sa-table-container">
-            <table class="sa-table">
-                <thead>
-                    <tr>
-                        <th>Full Name</th>
-                        <th>Party</th>
-                        <th>Office</th>
-                        <th>Municipality</th>
-                        <th>Ward / PR Order</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td>Thandiwe Modise</td>
-                        <td>African National Congress</td>
-                        <td>Local Ward Candidate</td>
-                        <td>JHB - City of Johannesburg</td>
-                        <td>Ward 112</td>
-                    </tr>
-                    <tr>
-                        <td>Sipho Nkosi</td>
-                        <td>Democratic Alliance</td>
-                        <td>Metro PR Candidate</td>
-                        <td>CPT - City of Cape Town</td>
-                        <td>List Position 14</td>
-                    </tr>
-                    <tr>
-                        <td>Pieter van der Merwe</td>
-                        <td>Independent</td>
-                        <td>Local Ward Candidate</td>
-                        <td>TSH - City of Tshwane</td>
-                        <td>Ward 88</td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
-
-        <!-- EMPTY STATE -->
-        <div class="sa-section__header" style="margin-top: 3rem;">
-            <span class="sa-section__number">04</span>
-            <h2>Empty State</h2>
-        </div>
-        <div class="sa-empty-state">
-            <svg class="sa-empty-state__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
-            <h3>No data yet</h3>
-            <p>Analytics are being prepared for this selection. Please check back shortly.</p>
+        <!-- CANDIDATES TAB CONTENT -->
+        <div id="content-candidates" class="tab-content hidden space-y-6">
+            <div class="bg-white rounded-2xl shadow-xl p-8">
+                <h2 class="text-3xl font-bold text-gray-900 mb-6">
+                    <i class="fas fa-users text-addo-blue mr-3"></i>Candidates Database
+                </h2>
+                <p class="text-gray-600 mb-6">Browse and analyze 75,311 registered candidates across 257 municipalities</p>
+                
+                <div class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-gray-200">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Candidate Name</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Party</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Municipality</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Position</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Risk Level</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white divide-y divide-gray-200">
+                            <tr class="hover:bg-gray-50">
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <div class="flex items-center">
+                                        <div class="flex-shrink-0 h-10 w-10 bg-addo-blue rounded-full flex items-center justify-center text-white font-bold">JM</div>
+                                        <div class="ml-4">
+                                            <div class="text-sm font-medium text-gray-900">John Mokoena</div>
+                                            <div class="text-sm text-gray-500">ID: 75001</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">ANC</span>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">City of Johannesburg</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Mayor</td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">Calm</span>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                    <button class="text-addo-blue hover:text-addo-dark mr-3"><i class="fas fa-eye"></i></button>
+                                    <button class="text-gray-600 hover:text-gray-900"><i class="fas fa-edit"></i></button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
         </div>
 
-        <!-- PLOTLY THEME CONTAINER -->
-        <div class="sa-section__header" style="margin-top: 3rem;">
-            <span class="sa-section__number">05</span>
-            <h2>Plotly Theme Integration</h2>
+        <!-- NARRATIVES TAB CONTENT -->
+        <div id="content-narratives" class="tab-content hidden space-y-6">
+            <div class="bg-white rounded-2xl shadow-xl p-8">
+                <h2 class="text-3xl font-bold text-gray-900 mb-6">
+                    <i class="fas fa-chart-line text-addo-blue mr-3"></i>Narrative Tracking
+                </h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="border rounded-lg p-6">
+                        <h3 class="text-lg font-bold mb-4">Trending Topics</h3>
+                        <div class="space-y-3">
+                            <div class="flex justify-between items-center">
+                                <span>Service Delivery</span>
+                                <span class="px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm">+15.3%</span>
+                            </div>
+                            <div class="flex justify-between items-center">
+                                <span>Corruption</span>
+                                <span class="px-3 py-1 bg-yellow-100 text-yellow-800 rounded-full text-sm">+8.7%</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="border rounded-lg p-6">
+                        <h3 class="text-lg font-bold mb-4">Sentiment Analysis</h3>
+                        <div class="h-48 flex items-center justify-center bg-gray-50 rounded">
+                            <p class="text-gray-500">Chart visualization here</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
-        <div id="plotly-demo" style="width: 100%; height: 400px; background: var(--color-panel-bg); border: 1px solid var(--color-border); border-radius: var(--radius-md);"></div>
-    </section>
+
+        <!-- LEXICONS TAB CONTENT -->
+        <div id="content-lexicons" class="tab-content hidden space-y-6">
+            <div class="bg-white rounded-2xl shadow-xl p-8">
+                <h2 class="text-3xl font-bold text-gray-900 mb-6">
+                    <i class="fas fa-book text-addo-blue mr-3"></i>Weaponized Language Lexicon
+                </h2>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div class="border-l-4 border-red-500 bg-red-50 p-4 rounded">
+                        <h4 class="font-bold text-red-900">Critical Terms</h4>
+                        <p class="text-2xl font-bold text-red-700 mt-2">247</p>
+                    </div>
+                    <div class="border-l-4 border-orange-500 bg-orange-50 p-4 rounded">
+                        <h4 class="font-bold text-orange-900">High Risk</h4>
+                        <p class="text-2xl font-bold text-orange-700 mt-2">589</p>
+                    </div>
+                    <div class="border-l-4 border-yellow-500 bg-yellow-50 p-4 rounded">
+                        <h4 class="font-bold text-yellow-900">Medium Risk</h4>
+                        <p class="text-2xl font-bold text-yellow-700 mt-2">1,234</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- NETWORKS TAB CONTENT -->
+        <div id="content-networks" class="tab-content hidden space-y-6">
+            <div class="bg-white rounded-2xl shadow-xl p-8">
+                <h2 class="text-3xl font-bold text-gray-900 mb-6">
+                    <i class="fas fa-project-diagram text-addo-blue mr-3"></i>Coordination Networks
+                </h2>
+                <div class="h-96 bg-gray-50 rounded-lg flex items-center justify-center">
+                    <div class="text-center">
+                        <i class="fas fa-project-diagram text-6xl text-gray-300 mb-4"></i>
+                        <p class="text-gray-500">Network visualization graph will appear here</p>
+                        <p class="text-sm text-gray-400 mt-2">Showing coordinated inauthentic behavior patterns</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </main>
 
     <script>
-        // Shared Plotly Theme Configuration
-        const saPlotlyTheme = {
-            font: { family: 'Inter, sans-serif', color: '#14181F' },
-            paper_bgcolor: 'rgba(0,0,0,0)',
-            plot_bgcolor: 'rgba(0,0,0,0)',
-            margin: { t: 40, r: 20, b: 40, l: 60 },
-            xaxis: { gridcolor: '#E5E7EB', zerolinecolor: '#E5E7EB' },
-            yaxis: { gridcolor: '#E5E7EB', zerolinecolor: '#E5E7EB' },
-            showlegend: true,
-            legend: { orientation: 'h', y: -0.2 },
-            modebar: { remove: ['toImage', 'sendDataToCloud', 'autoScale2d', 'resetScale2d', 'hoverClosestCartesian', 'hoverCompareCartesian'] }
-        };
-
-        // Demo Chart
-        Plotly.newPlot('plotly-demo', [{
-            x: ['Buffalo City', 'Cape Town', 'Ekurhuleni', 'eThekwini', 'Johannesburg', 'Mangaung', 'Nelson Mandela Bay', 'Tshwane'],
-            y: [4500, 12000, 9800, 11500, 18000, 3200, 8900, 14000],
-            type: 'bar',
-            marker: { color: '#0F5C5A' }
-        }], {
-            ...saPlotlyTheme,
-            title: { text: 'Candidates by Metro Municipality', font: { family: 'Fraunces, serif', size: 18 } }
-        });
+        function switchTab(tabName) {
+            // Hide all tab contents
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.add('hidden');
+            });
+            
+            // Show selected tab content
+            document.getElementById(`content-${tabName}`).classList.remove('hidden');
+            
+            // Update tab styling
+            document.querySelectorAll('nav button').forEach(btn => {
+                btn.classList.remove('tab-active');
+                btn.classList.add('text-gray-600');
+            });
+            
+            const activeTab = document.getElementById(`tab-${tabName}`);
+            activeTab.classList.add('tab-active');
+            activeTab.classList.remove('text-gray-600');
+        }
     </script>
 </body>
 </html>
