@@ -3,475 +3,435 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ADDO - 2026 Municipal Elections Monitor</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    fontFamily: {
-                        sans: ['Inter', 'sans-serif'],
-                    },
-                    colors: {
-                        addo: {
-                            blue: '#2563EB',
-                            dark: '#1E40AF',
-                            light: '#3B82F6',
-                        }
-                    }
-                }
-            }
-        }
-    </script>
+    <title>Design System & Style Guide | SA Municipal Elections Monitor</title>
+    <!-- Fonts: Newsreader for serif headlines, Inter for UI/body -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400&display=swap" rel="stylesheet">
+    <script src="https://cdn.plot.ly/plotly-2.32.0.min.js"></script>
     <style>
-        .gradient-bg {
-            background: linear-gradient(135deg, #1E40AF 0%, #3B82F6 50%, #60A5FA 100%);
+        :root {
+            --bg-canvas: #F6F3EC;
+            --bg-surface: #FFFFFF;
+            --text-ink: #14181F;
+            --text-muted: #596374;
+            --accent-teal: #0F5C5A;
+            --accent-gold: #B8923A;
+            --border-hairline: #E2DDD5;
+            
+            --risk-calm: #2E7D5B;
+            --risk-watch: #C79A1E;
+            --risk-elevated: #D4691F;
+            --risk-critical: #B3261E;
+            
+            --font-serif: 'Newsreader', Georgia, serif;
+            --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            --radius-default: 6px;
         }
-        .card-hover {
-            transition: all 0.3s ease;
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            background-color: var(--bg-canvas);
+            color: var(--text-ink);
+            font-family: var(--font-sans);
+            font-size: 16px;
+            line-height: 1.6;
+            -webkit-font-smoothing: antialiased;
         }
-        .card-hover:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+
+        /* Masthead */
+        header.site-masthead {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            background: var(--bg-surface);
+            border-bottom: 1px solid var(--border-hairline);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0.75rem 2rem;
         }
-        .tab-active {
-            border-bottom: 3px solid #2563EB;
-            color: #2563EB;
+        .brand-lockup {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            text-decoration: none;
+            color: var(--text-ink);
+        }
+        .brand-lockup svg { width: 24px; height: 24px; fill: var(--accent-teal); }
+        .brand-title { font-family: var(--font-serif); font-weight: 600; font-size: 1.15rem; }
+        
+        nav.nav-links {
+            display: flex;
+            align-items: center;
+            gap: 2rem;
+        }
+        nav.nav-links a {
+            text-decoration: none;
+            color: var(--text-muted);
+            font-size: 0.925rem;
+            font-weight: 500;
+            padding-bottom: 2px;
+            border-bottom: 2px solid transparent;
+            transition: color 0.15s, border-color 0.15s;
+        }
+        nav.nav-links a.active, nav.nav-links a:hover {
+            color: var(--accent-teal);
+            border-bottom-color: var(--accent-teal);
+        }
+
+        /* Container */
+        .container {
+            max-width: 1280px;
+            margin: 0 auto;
+            padding: 3rem 2rem;
+        }
+
+        /* Hero */
+        .editorial-hero {
+            border-bottom: 1px solid var(--border-hairline);
+            padding-bottom: 2.5rem;
+            margin-bottom: 3rem;
+        }
+        .editorial-hero h1 {
+            font-family: var(--font-serif);
+            font-size: 3rem;
+            font-weight: 500;
+            line-height: 1.15;
+            margin-bottom: 1rem;
+            color: var(--text-ink);
+        }
+        .editorial-hero p.lead {
+            font-size: 1.15rem;
+            color: var(--text-muted);
+            max-width: 800px;
+            margin-bottom: 2rem;
+        }
+
+        /* Key Figure Strip (No boxed cards) */
+        .key-figure-strip {
+            display: flex;
+            gap: 3rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid var(--border-hairline);
+            flex-wrap: wrap;
+        }
+        .key-figure {
+            display: flex;
+            flex-direction: column;
+        }
+        .key-figure .label {
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+            margin-bottom: 0.25rem;
+        }
+        .key-figure .value {
+            font-family: var(--font-serif);
+            font-size: 2.25rem;
+            font-weight: 600;
+            color: var(--text-ink);
+            line-height: 1;
+        }
+        .key-figure .value.dominant {
+            color: var(--accent-teal);
+        }
+        .key-figure .subnote {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            margin-top: 0.25rem;
+        }
+
+        /* Section Headings */
+        .section-block {
+            margin-bottom: 4rem;
+        }
+        .section-header {
+            display: flex;
+            align-items: baseline;
+            gap: 1rem;
+            border-bottom: 1px solid var(--border-hairline);
+            padding-bottom: 0.75rem;
+            margin-bottom: 1.5rem;
+        }
+        .section-header span.number {
+            font-family: var(--font-serif);
+            font-size: 1.25rem;
+            color: var(--accent-gold);
             font-weight: 600;
         }
-        .stat-card {
-            background: linear-gradient(135deg, #FFFFFF 0%, #F8FAFC 100%);
+        .section-header h2 {
+            font-family: var(--font-serif);
+            font-size: 1.85rem;
+            font-weight: 500;
         }
-        .risk-calm { background: linear-gradient(135deg, #10B981, #34D399); }
-        .risk-watch { background: linear-gradient(135deg, #F59E0B, #FBBF24); }
-        .risk-elevated { background: linear-gradient(135deg, #F97316, #FB923C); }
-        .risk-critical { background: linear-gradient(135deg, #EF4444, #F87171); }
+
+        /* Panels & Tables */
+        .editorial-panel {
+            background: var(--bg-surface);
+            border: 1px solid var(--border-hairline);
+            border-radius: var(--radius-default);
+            padding: 2rem;
+            margin-bottom: 2rem;
+        }
+        
+        table.editorial-table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+            font-size: 0.925rem;
+        }
+        table.editorial-table th {
+            font-weight: 600;
+            color: var(--text-muted);
+            border-bottom: 2px solid var(--border-hairline);
+            padding: 0.75rem 1rem;
+            background: #FAF8F5;
+        }
+        table.editorial-table td {
+            padding: 0.875rem 1rem;
+            border-bottom: 1px solid var(--border-hairline);
+            font-variant-numeric: tabular-nums;
+        }
+        table.editorial-table tr:hover td {
+            background: #FAF8F5;
+        }
+
+        /* Badges & Risk Pills */
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+            padding: 0.2rem 0.6rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.03em;
+        }
+        .badge.calm { background: #EAF3ED; color: var(--risk-calm); }
+        .badge.watch { background: #FDF6E2; color: var(--risk-watch); }
+        .badge.elevated { background: #FAEDE5; color: var(--risk-elevated); }
+        .badge.critical { background: #FCE8E6; color: var(--risk-critical); }
+
+        /* Form Controls */
+        .form-group {
+            margin-bottom: 1.25rem;
+        }
+        .form-label {
+            display: block;
+            font-size: 0.875rem;
+            font-weight: 500;
+            margin-bottom: 0.375rem;
+        }
+        .form-control {
+            width: 100%;
+            padding: 0.625rem 0.875rem;
+            background: var(--bg-surface);
+            border: 1px solid var(--border-hairline);
+            border-radius: var(--radius-default);
+            font-family: var(--font-sans);
+            font-size: 0.925rem;
+            color: var(--text-ink);
+        }
+        .form-control:focus {
+            outline: none;
+            border-color: var(--accent-teal);
+            box-shadow: 0 0 0 2px rgba(15, 92, 90, 0.1);
+        }
+
+        /* Buttons */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0.625rem 1.25rem;
+            border-radius: var(--radius-default);
+            font-weight: 500;
+            font-size: 0.925rem;
+            cursor: pointer;
+            text-decoration: none;
+            border: 1px solid transparent;
+            transition: background 0.15s;
+        }
+        .btn-primary {
+            background: var(--accent-teal);
+            color: white;
+        }
+        .btn-primary:hover { background: #0b4745; }
+        .btn-secondary {
+            background: transparent;
+            border-color: var(--border-hairline);
+            color: var(--text-ink);
+        }
+        .btn-secondary:hover { background: #EAF1F1; }
+
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 3rem 1.5rem;
+            color: var(--text-muted);
+        }
+        .empty-state svg { width: 40px; height: 40px; margin-bottom: 1rem; stroke: var(--text-muted); }
     </style>
 </head>
-<body class="bg-gray-50 font-sans">
+<body>
 
-    <!-- Top Navigation Bar -->
-    <nav class="bg-white shadow-lg border-b-4 border-addo-blue sticky top-0 z-50">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex justify-between h-20">
-                <!-- Logo Section -->
-                <div class="flex items-center space-x-4">
-                    <div class="flex-shrink-0 flex items-center">
-                        <!-- ADDO Logo -->
-                        <div class="w-12 h-12 gradient-bg rounded-lg flex items-center justify-center text-white font-bold text-2xl mr-3">
-                            A
-                        </div>
-                        <div>
-                            <h1 class="text-2xl font-bold text-gray-900 tracking-tight">ADDO</h1>
-                            <p class="text-xs text-gray-500 font-medium">African Digital Democracy Observatory</p>
-                        </div>
-                    </div>
-                </div>
+    <!-- Masthead -->
+    <header class="site-masthead">
+        <a href="#" class="brand-lockup">
+            <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="2"/></svg>
+            <span class="brand-title">SA Municipal Elections Monitor</span>
+        </a>
+        <nav class="nav-links">
+            <a href="#" class="active">Overview</a>
+            <a href="#">Municipal Candidates</a>
+            <a href="#">Narratives</a>
+            <a href="#">Networks & TTPs</a>
+            <a href="#">Upload Data</a>
+        </nav>
+    </header>
 
-                <!-- Navigation Tabs -->
-                <div class="flex items-center space-x-1">
-                    <button onclick="switchTab('home')" id="tab-home" class="tab-active px-6 py-3 text-sm font-medium transition-colors duration-200">
-                        <i class="fas fa-home mr-2"></i>Home
-                    </button>
-                    <button onclick="switchTab('candidates')" id="tab-candidates" class="px-6 py-3 text-sm font-medium text-gray-600 hover:text-addo-blue transition-colors duration-200">
-                        <i class="fas fa-users mr-2"></i>Candidates
-                    </button>
-                    <button onclick="switchTab('narratives')" id="tab-narratives" class="px-6 py-3 text-sm font-medium text-gray-600 hover:text-addo-blue transition-colors duration-200">
-                        <i class="fas fa-chart-line mr-2"></i>Narratives
-                    </button>
-                    <button onclick="switchTab('lexicons')" id="tab-lexicons" class="px-6 py-3 text-sm font-medium text-gray-600 hover:text-addo-blue transition-colors duration-200">
-                        <i class="fas fa-book mr-2"></i>Lexicons
-                    </button>
-                    <button onclick="switchTab('networks')" id="tab-networks" class="px-6 py-3 text-sm font-medium text-gray-600 hover:text-addo-blue transition-colors duration-200">
-                        <i class="fas fa-project-diagram mr-2"></i>Networks
-                    </button>
-                </div>
-
-                <!-- User Profile -->
-                <div class="flex items-center space-x-4">
-                    <div class="flex items-center space-x-2 bg-gray-100 rounded-full px-4 py-2">
-                        <div class="w-8 h-8 bg-addo-blue rounded-full flex items-center justify-center text-white font-semibold">
-                            W
-                        </div>
-                        <span class="text-sm font-medium text-gray-700">Work</span>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </nav>
-
-    <!-- Main Content Area -->
-    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-
-        <!-- HOME TAB CONTENT -->
-        <div id="content-home" class="tab-content space-y-8">
+    <div class="container">
+        <!-- Hero Section -->
+        <section class="editorial-hero">
+            <h1>Design System & Style Guide</h1>
+            <p class="lead">Establishing a rigorous editorial data-journalism standard for South Africa's 4 November 2026 municipal election monitoring operations.</p>
             
-            <!-- Hero Section -->
-            <div class="gradient-bg rounded-2xl shadow-2xl p-8 text-white">
-                <div class="flex items-start justify-between">
-                    <div>
-                        <h1 class="text-5xl font-bold mb-4">2026 Municipal Elections Monitor</h1>
-                        <p class="text-xl text-blue-100 max-w-3xl">
-                            Tracking social media narratives, weaponized language, and coordinated networks ahead of the 4 November 2026 local government elections.
-                        </p>
-                    </div>
-                    <div class="text-right">
-                        <div class="text-3xl font-bold">16 Sept 2026</div>
-                        <div class="text-blue-200">Last Updated</div>
-                    </div>
+            <div class="key-figure-strip">
+                <div class="key-figure">
+                    <span class="label">Certified Candidates</span>
+                    <span class="value dominant">75,311</span>
+                    <span class="subnote">Covering ~55% of IEC total</span>
+                </div>
+                <div class="key-figure">
+                    <span class="label">Municipalities</span>
+                    <span class="value">257</span>
+                    <span class="subnote">8 Metros, 44 Districts, 205 Locals</span>
+                </div>
+                <div class="key-figure">
+                    <span class="label">Active Risk Status</span>
+                    <span class="value" style="color: var(--risk-watch);">Watch</span>
+                    <span class="subnote">Elevated coordination detected</span>
                 </div>
             </div>
+        </section>
 
-            <!-- Key Statistics Grid -->
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                <div class="stat-card card-hover rounded-xl shadow-lg p-6 border-l-4 border-addo-blue">
-                    <div class="flex items-center justify-between">
-                        <div>
-                            <p class="text-sm font-medium text-gray-600 uppercase tracking-wide">Candidates in File</p>
-                            <p class="text-4xl font-bold text-gray-900 mt-2">75,311</p>
-                            <p class="text-sm text-green-600 mt-1"><i class="fas fa-arrow-up mr-1"></i>2.3% this week</p>
-                        </div>
-                        <div class="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center">
-                            <i class="fas fa-user-tie text-3xl text-addo-blue"></i>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="stat-card card-hover rounded-xl shadow-lg p-6 border-l-4 border-purple-500">
-                    <div class="flex items-center justify-between">
-                        <div>
-                            <p class="text-sm font-medium text-gray-600 uppercase tracking-wide">Municipalities</p>
-                            <p class="text-4xl font-bold text-gray-900 mt-2">257</p>
-                            <p class="text-sm text-gray-500 mt-1">Across 9 provinces</p>
-                        </div>
-                        <div class="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center">
-                            <i class="fas fa-building text-3xl text-purple-600"></i>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="stat-card card-hover rounded-xl shadow-lg p-6 border-l-4 border-orange-500">
-                    <div class="flex items-center justify-between">
-                        <div>
-                            <p class="text-sm font-medium text-gray-600 uppercase tracking-wide">Parties Registered</p>
-                            <p class="text-4xl font-bold text-gray-900 mt-2">579</p>
-                            <p class="text-sm text-orange-600 mt-1"><i class="fas fa-plus mr-1"></i>12 new parties</p>
-                        </div>
-                        <div class="w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center">
-                            <i class="fas fa-flag text-3xl text-orange-600"></i>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="stat-card card-hover rounded-xl shadow-lg p-6 border-l-4 border-green-500">
-                    <div class="flex items-center justify-between">
-                        <div>
-                            <p class="text-sm font-medium text-gray-600 uppercase tracking-wide">IEC Certified</p>
-                            <p class="text-4xl font-bold text-gray-900 mt-2">136,790</p>
-                            <p class="text-sm text-gray-500 mt-1">As at 16 Sept 2026</p>
-                        </div>
-                        <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center">
-                            <i class="fas fa-check-circle text-3xl text-green-600"></i>
-                        </div>
-                    </div>
+        <!-- 01 Typography & Risk Scale -->
+        <section class="section-block">
+            <div class="section-header">
+                <span class="number">01</span>
+                <h2>Visual & Risk Hierarchy</h2>
+            </div>
+            <div class="editorial-panel">
+                <p style="margin-bottom: 1rem;">Standardised risk status badges with mandatory text labelling:</p>
+                <div style="display: flex; gap: 1rem; align-items: center; flex-wrap: wrap;">
+                    <span class="badge calm">Calm #2E7D5B</span>
+                    <span class="badge watch">Watch #C79A1E</span>
+                    <span class="badge elevated">Elevated #D4691F</span>
+                    <span class="badge critical">Critical #B3261E</span>
                 </div>
             </div>
+        </section>
 
-            <!-- Risk Assessment & Narrative Tone -->
-            <div class="bg-white rounded-2xl shadow-xl p-8">
-                <div class="flex items-center justify-between mb-6">
-                    <h2 class="text-3xl font-bold text-gray-900">
-                        <span class="text-addo-blue">01</span> Risk Assessment & Narrative Tone
-                    </h2>
-                    <div class="flex space-x-2">
-                        <span class="px-4 py-2 bg-gray-100 rounded-lg text-sm font-medium">Last 24 hours</span>
-                        <span class="px-4 py-2 bg-gray-100 rounded-lg text-sm font-medium">Last 7 days</span>
-                        <span class="px-4 py-2 bg-addo-blue text-white rounded-lg text-sm font-medium">Last 30 days</span>
-                    </div>
-                </div>
-
-                <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
-                    <div class="risk-calm rounded-xl p-6 text-white text-center card-hover cursor-pointer">
-                        <i class="fas fa-check-circle text-4xl mb-3"></i>
-                        <h3 class="text-2xl font-bold mb-2">Calm</h3>
-                        <p class="text-sm opacity-90">62% of narratives</p>
-                        <p class="text-xs mt-2 opacity-75">Low tension, constructive dialogue</p>
-                    </div>
-                    <div class="risk-watch rounded-xl p-6 text-white text-center card-hover cursor-pointer">
-                        <i class="fas fa-exclamation-triangle text-4xl mb-3"></i>
-                        <h3 class="text-2xl font-bold mb-2">Watch</h3>
-                        <p class="text-sm opacity-90">24% of narratives</p>
-                        <p class="text-xs mt-2 opacity-75">Moderate tension, monitoring required</p>
-                    </div>
-                    <div class="risk-elevated rounded-xl p-6 text-white text-center card-hover cursor-pointer">
-                        <i class="fas fa-exclamation-circle text-4xl mb-3"></i>
-                        <h3 class="text-2xl font-bold mb-2">Elevated</h3>
-                        <p class="text-sm opacity-90">11% of narratives</p>
-                        <p class="text-xs mt-2 opacity-75">High tension, intervention needed</p>
-                    </div>
-                    <div class="risk-critical rounded-xl p-6 text-white text-center card-hover cursor-pointer">
-                        <i class="fas fa-radiation text-4xl mb-3"></i>
-                        <h3 class="text-2xl font-bold mb-2">Critical</h3>
-                        <p class="text-sm opacity-90">3% of narratives</p>
-                        <p class="text-xs mt-2 opacity-75">Severe tension, immediate action</p>
-                    </div>
-                </div>
-
-                <!-- Trending Narratives Preview -->
-                <div class="border-t pt-6">
-                    <h3 class="text-xl font-bold text-gray-900 mb-4">Trending Narratives</h3>
-                    <div class="space-y-3">
-                        <div class="flex items-center justify-between p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors cursor-pointer">
-                            <div class="flex items-center space-x-4">
-                                <span class="px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm font-medium">Calm</span>
-                                <span class="font-medium text-gray-900">Service Delivery Improvements</span>
-                            </div>
-                            <div class="flex items-center space-x-4 text-sm text-gray-600">
-                                <span><i class="fas fa-chart-line mr-2"></i>+15.3%</span>
-                                <span><i class="fas fa-comment mr-2"></i>2,847 posts</span>
-                            </div>
-                        </div>
-                        <div class="flex items-center justify-between p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors cursor-pointer">
-                            <div class="flex items-center space-x-4">
-                                <span class="px-3 py-1 bg-yellow-100 text-yellow-800 rounded-full text-sm font-medium">Watch</span>
-                                <span class="font-medium text-gray-900">Corruption Allegations</span>
-                            </div>
-                            <div class="flex items-center space-x-4 text-sm text-gray-600">
-                                <span><i class="fas fa-chart-line mr-2"></i>+8.7%</span>
-                                <span><i class="fas fa-comment mr-2"></i>1,923 posts</span>
-                            </div>
-                        </div>
-                        <div class="flex items-center justify-between p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors cursor-pointer">
-                            <div class="flex items-center space-x-4">
-                                <span class="px-3 py-1 bg-orange-100 text-orange-800 rounded-full text-sm font-medium">Elevated</span>
-                                <span class="font-medium text-gray-900">Ethnic Tensions in Ward 42</span>
-                            </div>
-                            <div class="flex items-center space-x-4 text-sm text-gray-600">
-                                <span><i class="fas fa-chart-line mr-2"></i>+23.1%</span>
-                                <span><i class="fas fa-comment mr-2"></i>856 posts</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+        <!-- 02 Data Table & Forms -->
+        <section class="section-block">
+            <div class="section-header">
+                <span class="number">02</span>
+                <h2>Dense Editorial Tables & Controls</h2>
             </div>
-
-            <!-- Filters & Controls -->
-            <div class="bg-white rounded-2xl shadow-xl p-8">
-                <h2 class="text-3xl font-bold text-gray-900 mb-6">
-                    <span class="text-addo-blue">02</span> Filters & Controls
-                </h2>
-                
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Search Candidates</label>
-                        <div class="relative">
-                            <input type="text" placeholder="Enter candidate name..." class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-addo-blue focus:border-transparent">
-                            <i class="fas fa-search absolute left-3 top-3.5 text-gray-400"></i>
-                        </div>
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Province</label>
-                        <select class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-addo-blue focus:border-transparent">
-                            <option>All Provinces</option>
-                            <option>Gauteng</option>
-                            <option>Western Cape</option>
-                            <option>KwaZulu-Natal</option>
-                            <option>Eastern Cape</option>
-                            <option>Limpopo</option>
-                            <option>Mpumalanga</option>
-                            <option>North West</option>
-                            <option>Free State</option>
-                            <option>Northern Cape</option>
+            <div class="editorial-panel">
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 2rem;">
+                    <div class="form-group">
+                        <label class="form-label">Municipality Filter</label>
+                        <select class="form-control">
+                            <option>City of Cape Town (CPT)</option>
+                            <option>Johannesburg (JHB)</option>
+                            <option>eThekwini (ETH)</option>
                         </select>
                     </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Risk Level</label>
-                        <select class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-addo-blue focus:border-transparent">
-                            <option>All Levels</option>
-                            <option>Calm</option>
-                            <option>Watch</option>
-                            <option>Elevated</option>
-                            <option>Critical</option>
-                        </select>
+                    <div class="form-group">
+                        <label class="form-label">Search Candidate Name</label>
+                        <input type="text" class="form-control" placeholder="Enter candidate or party...">
                     </div>
                 </div>
 
-                <div class="mt-6 flex space-x-4">
-                    <button class="px-6 py-3 bg-addo-blue text-white rounded-lg font-medium hover:bg-addo-dark transition-colors">
-                        <i class="fas fa-filter mr-2"></i>Apply Filters
-                    </button>
-                    <button class="px-6 py-3 bg-gray-200 text-gray-700 rounded-lg font-medium hover:bg-gray-300 transition-colors">
-                        <i class="fas fa-download mr-2"></i>Export Data
-                    </button>
-                    <button class="px-6 py-3 bg-gray-200 text-gray-700 rounded-lg font-medium hover:bg-gray-300 transition-colors">
-                        <i class="fas fa-sync mr-2"></i>Refresh
-                    </button>
+                <table class="editorial-table">
+                    <thead>
+                        <tr>
+                            <th>Candidate Full Name</th>
+                            <th>Party</th>
+                            <th>Office</th>
+                            <th>Municipality</th>
+                            <th>Risk Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>Nkosazana Dlamini</strong></td>
+                            <td>African National Congress</td>
+                            <td>Local Ward Candidate</td>
+                            <td>Buffalo City (BUF)</td>
+                            <td><span class="badge calm">Calm</span></td>
+                        </tr>
+                        <tr>
+                            <td><strong>Pieter van der Merwe</strong></td>
+                            <td>Democratic Alliance</td>
+                            <td>Metro PR Candidate</td>
+                            <td>City of Cape Town (CPT)</td>
+                            <td><span class="badge watch">Watch</span></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- 03 Plotly Integration -->
+        <section class="section-block">
+            <div class="section-header">
+                <span class="number">03</span>
+                <h2>Shared Client-Side Plotly Theme</h2>
+            </div>
+            <div class="editorial-panel">
+                <div id="plotly-demo-chart" style="width:100%; height:350px;"></div>
+            </div>
+        </section>
+
+        <!-- Empty State Example -->
+        <section class="section-block">
+            <div class="section-header">
+                <span class="number">04</span>
+                <h2>Calm Empty State</h2>
+            </div>
+            <div class="editorial-panel">
+                <div class="empty-state">
+                    <svg viewBox="0 0 24 24" fill="none" stroke-width="1.5"><path d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"/></svg>
+                    <h3 style="font-family: var(--font-serif); font-size: 1.25rem; margin-bottom: 0.5rem;">No data yet for this filter</h3>
+                    <p>Analytics are being prepared or no matching records were found in the current date range.</p>
                 </div>
             </div>
-
-            <!-- Quick Actions -->
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div class="bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl p-6 text-white card-hover cursor-pointer">
-                    <i class="fas fa-upload text-4xl mb-4"></i>
-                    <h3 class="text-xl font-bold mb-2">Upload Data</h3>
-                    <p class="text-blue-100">Import new candidate lists, social media posts, or monitoring data</p>
-                </div>
-                <div class="bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl p-6 text-white card-hover cursor-pointer">
-                    <i class="fas fa-file-alt text-4xl mb-4"></i>
-                    <h3 class="text-xl font-bold mb-2">Generate Report</h3>
-                    <p class="text-purple-100">Create comprehensive analysis reports for stakeholders</p>
-                </div>
-                <div class="bg-gradient-to-br from-green-500 to-green-600 rounded-xl p-6 text-white card-hover cursor-pointer">
-                    <i class="fas fa-bell text-4xl mb-4"></i>
-                    <h3 class="text-xl font-bold mb-2">Set Alerts</h3>
-                    <p class="text-green-100">Configure automated alerts for critical narrative shifts</p>
-                </div>
-            </div>
-        </div>
-
-        <!-- CANDIDATES TAB CONTENT -->
-        <div id="content-candidates" class="tab-content hidden space-y-6">
-            <div class="bg-white rounded-2xl shadow-xl p-8">
-                <h2 class="text-3xl font-bold text-gray-900 mb-6">
-                    <i class="fas fa-users text-addo-blue mr-3"></i>Candidates Database
-                </h2>
-                <p class="text-gray-600 mb-6">Browse and analyze 75,311 registered candidates across 257 municipalities</p>
-                
-                <div class="overflow-x-auto">
-                    <table class="min-w-full divide-y divide-gray-200">
-                        <thead class="bg-gray-50">
-                            <tr>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Candidate Name</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Party</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Municipality</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Position</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Risk Level</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody class="bg-white divide-y divide-gray-200">
-                            <tr class="hover:bg-gray-50">
-                                <td class="px-6 py-4 whitespace-nowrap">
-                                    <div class="flex items-center">
-                                        <div class="flex-shrink-0 h-10 w-10 bg-addo-blue rounded-full flex items-center justify-center text-white font-bold">JM</div>
-                                        <div class="ml-4">
-                                            <div class="text-sm font-medium text-gray-900">John Mokoena</div>
-                                            <div class="text-sm text-gray-500">ID: 75001</div>
-                                        </div>
-                                    </div>
-                                </td>
-                                <td class="px-6 py-4 whitespace-nowrap">
-                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">ANC</span>
-                                </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">City of Johannesburg</td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Mayor</td>
-                                <td class="px-6 py-4 whitespace-nowrap">
-                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">Calm</span>
-                                </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                    <button class="text-addo-blue hover:text-addo-dark mr-3"><i class="fas fa-eye"></i></button>
-                                    <button class="text-gray-600 hover:text-gray-900"><i class="fas fa-edit"></i></button>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-
-        <!-- NARRATIVES TAB CONTENT -->
-        <div id="content-narratives" class="tab-content hidden space-y-6">
-            <div class="bg-white rounded-2xl shadow-xl p-8">
-                <h2 class="text-3xl font-bold text-gray-900 mb-6">
-                    <i class="fas fa-chart-line text-addo-blue mr-3"></i>Narrative Tracking
-                </h2>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div class="border rounded-lg p-6">
-                        <h3 class="text-lg font-bold mb-4">Trending Topics</h3>
-                        <div class="space-y-3">
-                            <div class="flex justify-between items-center">
-                                <span>Service Delivery</span>
-                                <span class="px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm">+15.3%</span>
-                            </div>
-                            <div class="flex justify-between items-center">
-                                <span>Corruption</span>
-                                <span class="px-3 py-1 bg-yellow-100 text-yellow-800 rounded-full text-sm">+8.7%</span>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="border rounded-lg p-6">
-                        <h3 class="text-lg font-bold mb-4">Sentiment Analysis</h3>
-                        <div class="h-48 flex items-center justify-center bg-gray-50 rounded">
-                            <p class="text-gray-500">Chart visualization here</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- LEXICONS TAB CONTENT -->
-        <div id="content-lexicons" class="tab-content hidden space-y-6">
-            <div class="bg-white rounded-2xl shadow-xl p-8">
-                <h2 class="text-3xl font-bold text-gray-900 mb-6">
-                    <i class="fas fa-book text-addo-blue mr-3"></i>Weaponized Language Lexicon
-                </h2>
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div class="border-l-4 border-red-500 bg-red-50 p-4 rounded">
-                        <h4 class="font-bold text-red-900">Critical Terms</h4>
-                        <p class="text-2xl font-bold text-red-700 mt-2">247</p>
-                    </div>
-                    <div class="border-l-4 border-orange-500 bg-orange-50 p-4 rounded">
-                        <h4 class="font-bold text-orange-900">High Risk</h4>
-                        <p class="text-2xl font-bold text-orange-700 mt-2">589</p>
-                    </div>
-                    <div class="border-l-4 border-yellow-500 bg-yellow-50 p-4 rounded">
-                        <h4 class="font-bold text-yellow-900">Medium Risk</h4>
-                        <p class="text-2xl font-bold text-yellow-700 mt-2">1,234</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- NETWORKS TAB CONTENT -->
-        <div id="content-networks" class="tab-content hidden space-y-6">
-            <div class="bg-white rounded-2xl shadow-xl p-8">
-                <h2 class="text-3xl font-bold text-gray-900 mb-6">
-                    <i class="fas fa-project-diagram text-addo-blue mr-3"></i>Coordination Networks
-                </h2>
-                <div class="h-96 bg-gray-50 rounded-lg flex items-center justify-center">
-                    <div class="text-center">
-                        <i class="fas fa-project-diagram text-6xl text-gray-300 mb-4"></i>
-                        <p class="text-gray-500">Network visualization graph will appear here</p>
-                        <p class="text-sm text-gray-400 mt-2">Showing coordinated inauthentic behavior patterns</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-    </main>
+        </section>
+    </div>
 
     <script>
-        function switchTab(tabName) {
-            // Hide all tab contents
-            document.querySelectorAll('.tab-content').forEach(content => {
-                content.classList.add('hidden');
-            });
-            
-            // Show selected tab content
-            document.getElementById(`content-${tabName}`).classList.remove('hidden');
-            
-            // Update tab styling
-            document.querySelectorAll('nav button').forEach(btn => {
-                btn.classList.remove('tab-active');
-                btn.classList.add('text-gray-600');
-            });
-            
-            const activeTab = document.getElementById(`tab-${tabName}`);
-            activeTab.classList.add('tab-active');
-            activeTab.classList.remove('text-gray-600');
-        }
+        // Plotly shared theme demonstration
+        const trace = {
+            x: ['Ward Candidates', 'PR Candidates (Local)', 'Metro Ward', 'Metro PR', 'District PR'],
+            y: [19905, 30428, 8117, 9467, 6434],
+            type: 'bar',
+            marker: { color: '#0F5C5A' }
+        };
+        const layout = {
+            title: { text: 'Candidate Distribution by Contest Type (IEC Certified Baseline)', font: { family: 'Newsreader, serif', size: 20 } },
+            paper_bgcolor: 'transparent',
+            plot_bgcolor: 'transparent',
+            font: { family: 'Inter, sans-serif', color: '#14181F' },
+            margin: { t: 50, r: 20, l: 50, b: 50 },
+            xaxis: { gridcolor: '#E2DDD5', zeroline: false },
+            yaxis: { gridcolor: '#E2DDD5', zeroline: false }
+        };
+        Plotly.newPlot('plotly-demo-chart', [trace], layout, {responsive: true, displayModeBar: false});
     </script>
 </body>
 </html>
