@@ -7181,7 +7181,61 @@ def generate_network_graph(request):
             'avg_degree': sum(d for _, d in G_top.degree()) / G_top.number_of_nodes() if G_top.number_of_nodes() > 0 else 0
         }
     })
+# ==========================================
+# TTP PROXY VIEW (Required by urls.py)
+# ==========================================
+class TTPProxyView(View):
+    """
+    Proxy view for TTP API.
+    Forwards requests to the configured LLM (OpenRouter) and returns the response
+    in an OpenAI-compatible format.
+    """
+    def post(self, request):
+        try:
+            # Parse the incoming JSON request
+            body = json.loads(request.body)
+            messages = body.get('messages', [])
+            model = body.get('model', 'meta-llama/llama-3.3-70b-instruct')
+            
+            # Construct a prompt from the messages
+            prompt = ""
+            for msg in messages:
+                if msg.get('role') == 'user':
+                    prompt += msg.get('content', '') + "\n"
+            
+            if not prompt:
+                return JsonResponse({'error': 'No user message found'}, status=400)
 
+            # Call the LLM using your existing safe_llm_call function
+            response_content = safe_llm_call(prompt, max_tokens=2048)
+            
+            # Construct OpenAI-compatible response structure
+            return JsonResponse({
+                'id': 'chatcmpl-sa-monitor',
+                'object': 'chat.completion',
+                'created': 1677652288,
+                'model': model,
+                'choices': [{
+                    'index': 0,
+                    'message': {
+                        'role': 'assistant',
+                        'content': response_content if response_content else "No response generated."
+                    },
+                    'finish_reason': 'stop'
+                }],
+                'usage': {
+                    'prompt_tokens': 0,
+                    'completion_tokens': 0,
+                    'total_tokens': 0
+                }
+            })
+            
+        except json.JSONDecodeError:
+            return JsonResponse({'error': 'Invalid JSON'}, status=400)
+        except Exception as e:
+            logger.error(f"TTPProxyView error: {e}")
+            return JsonResponse({'error': str(e)}, status=500)
+            
 def ttp_radar_data_api(request):
     """Return election-related posts as JSON for the TTP Radar UI"""
     from django.http import JsonResponse
