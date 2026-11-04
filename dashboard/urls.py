@@ -21,6 +21,7 @@ urlpatterns = [
     path('networks/export/gephi-edges/', views.export_gephi_edges_csv, name='export_gephi_edges_csv'),
     path('api/trigger-llm-scan/', views.trigger_llm_scan_api, name='trigger_llm_scan'),
     path('export-new-terms-csv/', views.export_new_terms_csv, name='export_new_terms_csv'),
+    path('api/ttp-proxy/v1/chat/completions', views.TTPProxyView.as_view(), name='ttp_proxy_api'),
     path('networks/export/complete-network/', views.export_complete_network_csv, name='export_complete_network'),
     
     # === NEW STYLE GUIDE ROUTE ===
