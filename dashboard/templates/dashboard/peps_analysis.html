@@ -1,320 +1,125 @@
 {% extends 'dashboard/base.html' %}
-{% block title %}PEP Analysis - Ethiopia Election Monitor{% endblock %}
-
-{% block extra_head %}
-<style>
-    .pep-card-dark {
-        background: rgba(30, 41, 59, 0.4);
-        backdrop-filter: blur(12px);
-        border: 1px solid rgba(255, 255, 255, 0.06);
-        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    }
-    .pep-card-dark:hover {
-        transform: translateY(-4px);
-        border-color: rgba(59, 130, 246, 0.3);
-        background: rgba(30, 41, 59, 0.6);
-        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3);
-    }
-    .metric-pill-dark {
-        background: rgba(15, 23, 42, 0.6);
-        border: 1px solid rgba(255, 255, 255, 0.08);
-        transition: all 0.2s ease;
-    }
-    .metric-pill-dark:hover {
-        transform: scale(1.02);
-        border-color: rgba(59, 130, 246, 0.4);
-    }
-    .hashtag-tag-dark {
-        background: rgba(255, 255, 255, 0.04);
-        border: 1px solid rgba(255, 255, 255, 0.06);
-        transition: all 0.2s ease;
-    }
-    .hashtag-tag-dark:hover {
-        background: #2563eb;
-        color: #ffffff;
-        border-color: #3b82f6;
-    }
-    .velocity-indicator { animation: pulse 2s infinite; }
-    @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.6; } }
-    .critical-post-link {
-        color: #60a5fa;
-        text-decoration: none;
-        transition: all 0.2s ease;
-    }
-    .critical-post-link:hover {
-        color: #93c5fd;
-        text-decoration: underline;
-    }
-    /* Sentiment bar styles */
-    .sentiment-bar {
-        height: 8px;
-        border-radius: 4px;
-        overflow: hidden;
-        display: flex;
-        background: rgba(15, 23, 42, 0.8);
-    }
-    .sentiment-negative { background: linear-gradient(90deg, #ef4444, #dc2626); }
-    .sentiment-neutral { background: linear-gradient(90deg, #6b7280, #4b5563); }
-    .sentiment-positive { background: linear-gradient(90deg, #10b981, #059669); }
-    .sentiment-mixed { background: linear-gradient(90deg, #f59e0b, #d97706); }
-    
-    .sentiment-legend-item {
-        display: flex;
-        align-items: center;
-        gap: 4px;
-        font-size: 10px;
-        color: #94a3b8;
-    }
-    .sentiment-dot {
-        width: 8px;
-        height: 8px;
-        border-radius: 50%;
-    }
-</style>
-{% endblock %}
+{% block title %}Candidate Narrative Analysis - ADDO SA Elections{% endblock %}
 
 {% block content %}
-<div class="space-y-6 text-slate-100">
-    
-    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-800">
-        <div>
-            <h1 class="text-2xl font-bold text-white tracking-tight flex items-center gap-2">🎯 PEP Mention & Narrative Analysis</h1>
-            <p class="text-sm text-slate-400 mt-1">Advanced threat intelligence across <span class="text-blue-400 font-semibold">{{ pep_analysis|length }}</span> analyzed officials.</p>
-        </div>
-        <a href="{% url 'peps' %}" class="inline-flex items-center gap-2 text-xs font-semibold text-slate-300 bg-slate-800/80 hover:bg-slate-700 hover:text-white px-3 py-2 rounded-xl border border-slate-700/60 transition-all">
-            ← Back to PEPs Tracker
-        </a>
+<section class="hero">
+    <h1>Candidate Mention & Narrative Analysis</h1>
+    <p class="hero-subtitle">Advanced threat intelligence and sentiment tracking across {{ pep_analysis|length }} analyzed candidates and officials.</p>
+    <div class="hero-meta">
+        <a href="{% url 'peps' %}" class="sa-link">← Back to Candidates Tracker</a>
+        <span>&bull;</span>
+        <span>Analysis Period: Last 90 Days</span>
     </div>
-    
-    <div class="bg-blue-950/30 border border-blue-800/40 rounded-xl p-4 flex items-start gap-3">
-        <span class="text-xl shrink-0 mt-0.5">📊</span>
-        <div>
-            <h3 class="text-sm font-semibold text-blue-300">Enhanced with Regional Council (RC) Members</h3>
-            <p class="text-xs text-slate-400 mt-1 leading-relaxed">
-                This analysis automatically includes officials from the <strong>RC_Members.xlsx</strong> dataset alongside standard PEPs. Any mentions, narrative clusters, or bot activity targeting these regional officials will be flagged here.
-            </p>
-        </div>
-    </div>
+</section>
 
-    <div class="grid grid-cols-1 xl:grid-cols-2 gap-6">
-        {% for pep in pep_analysis %}
-        <div class="pep-card-dark rounded-xl overflow-hidden shadow-xl">
-            <div class="bg-slate-900/40 px-6 py-4 border-b border-slate-800/60 flex justify-between items-start gap-4">
-                <div>
-                    <h3 class="text-lg font-bold text-white tracking-tight">{{ pep.pep_name }}</h3>
-                    <div class="flex flex-wrap items-center gap-3 mt-1.5 text-xs text-slate-400 font-medium">
-                        <span class="flex items-center gap-1">💬 {{ pep.mention_count }} mentions</span>
-                        <span class="text-slate-700">|</span>
-                        <span>
-                            {% if pep.sentiment == 'Positive' %}
-                                <span class="text-emerald-400 font-semibold">🟢 Mostly Positive</span>
-                            {% elif pep.sentiment == 'Negative' %}
-                                <span class="text-rose-400 font-semibold">🔴 High Criticism</span>
-                            {% elif pep.sentiment == 'Mixed' %}
-                                <span class="text-amber-400 font-semibold">🟡 Mixed Sentiment</span>
-                            {% else %}
-                                <span class="text-slate-400 font-semibold">⚪ Neutral / Informational</span>
-                            {% endif %}
-                        </span>
-                    </div>
-                </div>
-                <div class="text-right">
-                    <div class="text-2xl font-black text-blue-400 tracking-tight">{{ pep.risk_score }}/10</div>
-                    <div class="text-[10px] font-bold text-slate-500 uppercase tracking-wider mt-0.5">Risk Score</div>
-                </div>
-            </div>
-
-            <div class="p-6 space-y-5">
-                <!-- NEW: Sentiment Breakdown Visualization -->
-                {% if pep.sentiment_counts %}
-                <div>
-                    <h4 class="text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-2.5">📊 Sentiment Breakdown</h4>
-                    
-                    <!-- Stacked Bar Chart -->
-                    <div class="sentiment-bar mb-2">
-                        {% if pep.sentiment_counts.negative > 0 %}
-                        <div class="sentiment-negative" style="width: {{ pep.sentiment_counts.negative|floatformat:0 }}%"></div>
-                        {% endif %}
-                        {% if pep.sentiment_counts.mixed > 0 %}
-                        <div class="sentiment-mixed" style="width: {{ pep.sentiment_counts.mixed|floatformat:0 }}%"></div>
-                        {% endif %}
-                        {% if pep.sentiment_counts.neutral > 0 %}
-                        <div class="sentiment-neutral" style="width: {{ pep.sentiment_counts.neutral|floatformat:0 }}%"></div>
-                        {% endif %}
-                        {% if pep.sentiment_counts.positive > 0 %}
-                        <div class="sentiment-positive" style="width: {{ pep.sentiment_counts.positive|floatformat:0 }}%"></div>
-                        {% endif %}
-                    </div>
-                    
-                    <!-- Legend with counts -->
-                    <div class="flex flex-wrap gap-3">
-                        <div class="sentiment-legend-item">
-                            <div class="sentiment-dot" style="background: #ef4444;"></div>
-                            <span>Critical: {{ pep.sentiment_counts.negative }}</span>
-                        </div>
-                        <div class="sentiment-legend-item">
-                            <div class="sentiment-dot" style="background: #6b7280;"></div>
-                            <span>Neutral: {{ pep.sentiment_counts.neutral }}</span>
-                        </div>
-                        {% if pep.sentiment_counts.mixed > 0 %}
-                        <div class="sentiment-legend-item">
-                            <div class="sentiment-dot" style="background: #f59e0b;"></div>
-                            <span>Mixed: {{ pep.sentiment_counts.mixed }}</span>
-                        </div>
-                        {% endif %}
-                        {% if pep.sentiment_counts.positive > 0 %}
-                        <div class="sentiment-legend-item">
-                            <div class="sentiment-dot" style="background: #10b981;"></div>
-                            <span>Positive: {{ pep.sentiment_counts.positive }}</span>
-                        </div>
-                        {% endif %}
-                    </div>
-                </div>
-                {% endif %}
-
-                <div>
-                    <h4 class="text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-2.5">📱 Platform Distribution</h4>
-                    <div class="flex flex-wrap gap-2">
-                        {% for platform in pep.platform_breakdown %}
-                        <div class="metric-pill-dark text-slate-300 px-2.5 py-1 rounded-lg text-xs font-medium">
-                            <span class="text-blue-400 font-semibold">{{ platform.name }}</span>: {{ platform.percent }}%
-                        </div>
-                        {% endfor %}
-                    </div>
-                </div>
-
-                <div class="grid grid-cols-2 gap-4">
-                    <div class="bg-slate-950/40 rounded-xl p-3 border border-slate-800/60">
-                        <div class="flex items-center gap-2 mb-1">
-                            <span class="text-xs">⚡</span>
-                            <span class="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Velocity</span>
-                            {% if pep.velocity_alert %}
-                            <span class="velocity-indicator text-xs bg-red-950 text-red-400 px-1.5 py-0.2 rounded-full font-bold border border-red-900/50">⚠️</span>
-                            {% endif %}
-                        </div>
-                        <div class="text-xs text-slate-300">Peak: {{ pep.peak_hour }}:00</div>
-                    </div>
-                    <div class="bg-slate-950/40 rounded-xl p-3 border border-slate-800/60">
-                        <div class="flex items-center gap-2 mb-1">
-                            <span class="text-xs">🤖</span>
-                            <span class="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Bot Activity</span>
-                        </div>
-                        <div class="text-xs text-slate-300 font-medium">
-                            {{ pep.bot_level }} <span class="text-slate-500">({{ pep.bot_score }}%)</span>
-                        </div>
-                    </div>
-                </div>
-
-                {% if pep.is_gendered_target %}
-                <div class="bg-rose-950/20 border-l-4 border-rose-500 p-3 rounded-r-xl border border-y-rose-950/40 border-r-rose-950/40">
-                    <div class="flex items-start gap-2.5">
-                        <span class="text-base">⚠️</span>
-                        <div>
-                            <h4 class="font-bold text-rose-300 text-xs">
-                                TFGBV Detected in {{ pep.tfgbv_post_count }} post{{ pep.tfgbv_post_count|pluralize }}
-                            </h4>
-                            {% if pep.tfgbv_matches %}
-                            <div class="flex flex-wrap gap-1.5 mt-2">
-                                {% for match in pep.tfgbv_matches %}
-                                <span class="text-[10px] px-2 py-0.5 rounded-full font-medium border
-                                    {% if match.severity == 'critical' %}bg-red-950 text-red-300 border-red-800
-                                    {% elif match.severity == 'high' %}bg-orange-950 text-orange-300 border-orange-800
-                                    {% else %}bg-amber-950 text-amber-300 border-amber-800{% endif %}">
-                                    {{ match.term }} ({{ match.severity }})
-                                </span>
-                                {% endfor %}
-                            </div>
-                            {% endif %}
-                        </div>
-                    </div>
-                </div>
-                {% endif %}
-
-                {% if pep.top_hashtags %}
-                <div>
-                    <h4 class="text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-2">#️⃣ Weaponized Hashtags</h4>
-                    <div class="flex flex-wrap gap-1.5">
-                        {% for hashtag in pep.top_hashtags %}
-                        <span class="hashtag-tag-dark text-slate-300 px-2.5 py-1 rounded-md text-xs font-medium cursor-pointer">
-                            #{{ hashtag.tag }} <span class="text-slate-500 font-normal ml-0.5">({{ hashtag.count }})</span>
-                        </span>
-                        {% endfor %}
-                    </div>
-                </div>
-                {% endif %}
-
-                {% if pep.narrative_clusters %}
-                <div>
-                    <h4 class="text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-2">🎭 Narrative Clusters</h4>
-                    <div class="space-y-2">
-                        {% for cluster in pep.narrative_clusters %}
-                        <div class="cluster-badge bg-slate-950/40 border border-slate-800/80 rounded-lg p-3 flex justify-between items-center gap-4">
-                            <span class="text-xs sm:text-sm font-medium text-slate-200">{{ cluster.name }}</span>
-                            <span class="text-[10px] bg-blue-950 text-blue-400 border border-blue-900/60 px-2 py-0.5 rounded-full font-bold shrink-0">{{ cluster.count }} posts</span>
-                        </div>
-                        {% endfor %}
-                    </div>
-                </div>
-                {% endif %}
-
-                {% if pep.critical_posts %}
-                <div class="bg-red-950/20 border border-red-800/40 rounded-xl p-4">
-                    <h4 class="text-[11px] font-bold text-red-400 uppercase tracking-wider mb-3">⚠️ Critical Posts Detected ({{ pep.critical_posts|length }})</h4>
-                    <div class="space-y-2">
-                        {% for post in pep.critical_posts %}
-                        <div class="bg-slate-950/60 p-3 rounded-lg text-xs border border-red-900/30">
-                            <p class="text-slate-300 mb-2 leading-relaxed">{{ post.text }}{% if post.text|length > 200 %}...{% endif %}</p>
-                            <div class="flex items-center gap-3 text-[11px] text-slate-500">
-                                <span>{{ post.platform }}</span>
-                                <span>•</span>
-                                <span>{{ post.timestamp|date:"M d, H:i" }}</span>
-                                {% if post.url %}
-                                <span>•</span>
-                                <a href="{{ post.url }}" target="_blank" rel="noopener noreferrer" class="critical-post-link font-medium">
-                                    View Post →
-                                </a>
-                                {% endif %}
-                            </div>
-                        </div>
-                        {% endfor %}
-                    </div>
-                </div>
-                {% endif %}
-
-                {% if pep.sample_posts %}
-                <div>
-                    <h4 class="text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-2">📄 Recent Examples</h4>
-                    <div class="space-y-2">
-                        {% for post in pep.sample_posts %}
-                        <div class="bg-slate-950/40 rounded-xl p-3 text-xs border border-slate-800/60 hover:border-slate-700/80 transition-all">
-                            <div class="flex items-center gap-2 mb-1.5 text-[11px] text-slate-500 font-medium">
-                                <span>{{ post.platform }}</span>
-                                <span>•</span>
-                                <span>{{ post.timestamp|date:"M d, H:i" }}</span>
-                                {% if post.risk_level == 'high' or post.risk_level == 'critical' %}
-                                <span class="text-rose-400 font-bold ml-auto">⚠️</span>
-                                {% endif %}
-                            </div>
-                            <p class="text-slate-300 leading-relaxed">{{ post.text }}{% if post.text|length > 150 %}...{% endif %}</p>
-                            {% if post.url %}
-                            <div class="mt-2">
-                                <a href="{{ post.url }}" target="_blank" rel="noopener noreferrer" class="critical-post-link text-[11px]">
-                                    🔗 View Original Post
-                                </a>
-                            </div>
-                            {% endif %}
-                        </div>
-                        {% endfor %}
-                    </div>
-                </div>
-                {% endif %}
-            </div>
-        </div>
-        {% empty %}
-        <div class="col-span-2 text-center py-12 bg-slate-900/20 rounded-xl border border-slate-800/80">
-            <p class="text-slate-400 text-sm font-medium">📊 No PEP mentions monitored currently. Ingest modern network variables to populate.</p>
-        </div>
-        {% endfor %}
-    </div>
+<div class="card" style="padding: 1.5rem; margin-bottom: 2rem; background: var(--bg-page); border-left: 4px solid var(--accent-teal);">
+    <h3 style="margin-bottom: 0.5rem; font-family: var(--font-sans); font-size: 1.1rem;">Enhanced with 2026 Municipal Candidates Data</h3>
+    <p style="color: var(--text-muted); margin: 0; font-size: 0.9rem;">
+        This analysis automatically includes candidates from the <strong>2026 Local Government Election Candidates</strong> dataset alongside standard PEPs. Any mentions, narrative clusters, or bot activity targeting these municipal candidates will be flagged here.
+    </p>
 </div>
+
+{% for pep in pep_analysis %}
+<div class="card" style="padding: 1.5rem; margin-bottom: 1.5rem;">
+    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1rem; border-bottom: 1px solid var(--border-hairline); padding-bottom: 1rem;">
+        <div>
+            <h2 class="section-title" style="margin: 0; font-size: 1.5rem;">{{ pep.pep_name }}</h2>
+            <span style="font-size: 0.9rem; color: var(--text-muted);">{{ pep.mention_count }} mentions detected</span>
+        </div>
+        <div style="text-align: right;">
+            <span class="sa-badge sa-badge--{% if pep.sentiment == 'Negative' %}critical{% elif pep.sentiment == 'Positive' %}calm{% elif pep.sentiment == 'Mixed' %}watch{% else %}watch{% endif %}">
+                {{ pep.sentiment_label }}
+            </span>
+            <div style="font-size: 0.8rem; color: var(--text-muted); margin-top: 0.5rem;">
+                Risk Score: {{ pep.risk_score }}/10
+            </div>
+        </div>
+    </div>
+
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 1.5rem;">
+        <!-- Platform Distribution -->
+        <div style="background: var(--bg-page); padding: 1rem; border-radius: var(--radius-sm);">
+            <h4 style="font-size: 0.8rem; text-transform: uppercase; color: var(--text-muted); margin-bottom: 0.5rem;">Platform Distribution</h4>
+            {% for platform in pep.platform_breakdown %}
+            <div style="display: flex; justify-content: space-between; font-size: 0.9rem; margin-bottom: 0.25rem;">
+                <span>{{ platform.name }}</span>
+                <span style="font-weight: 600;">{{ platform.percent }}%</span>
+            </div>
+            {% endfor %}
+        </div>
+
+        <!-- Velocity & Bot Activity -->
+        <div style="background: var(--bg-page); padding: 1rem; border-radius: var(--radius-sm);">
+            <h4 style="font-size: 0.8rem; text-transform: uppercase; color: var(--text-muted); margin-bottom: 0.5rem;">Activity Metrics</h4>
+            <div style="font-size: 0.9rem; margin-bottom: 0.5rem;">
+                <strong>Peak Hour:</strong> {{ pep.peak_hour }}:00 
+                {% if pep.velocity_alert %}<span class="sa-badge sa-badge--watch" style="font-size: 0.7rem; padding: 2px 6px;">Late Night</span>{% endif %}
+            </div>
+            <div style="font-size: 0.9rem;">
+                <strong>Bot Activity:</strong> {{ pep.bot_level }}
+            </div>
+        </div>
+    </div>
+
+    <!-- Narrative Clusters -->
+    {% if pep.narrative_clusters %}
+    <div style="margin-bottom: 1.5rem;">
+        <h4 style="font-size: 1rem; margin-bottom: 0.75rem; font-family: var(--font-sans);">Narrative Clusters</h4>
+        <div style="display: flex; flex-wrap: wrap; gap: 0.5rem;">
+            {% for cluster in pep.narrative_clusters %}
+            <span class="sa-badge sa-badge--watch">
+                {{ cluster.name }} ({{ cluster.count }} posts)
+            </span>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Critical Posts -->
+    {% if pep.critical_posts %}
+    <div style="margin-bottom: 1.5rem;">
+        <h4 style="font-size: 1rem; margin-bottom: 0.75rem; font-family: var(--font-sans); color: var(--risk-critical);">Critical / High-Risk Posts</h4>
+        <div style="display: flex; flex-direction: column; gap: 0.75rem;">
+            {% for post in pep.critical_posts %}
+            <div style="background: rgba(220, 38, 38, 0.05); border: 1px solid rgba(220, 38, 38, 0.2); padding: 1rem; border-radius: var(--radius-sm);">
+                <p style="margin: 0 0 0.5rem 0; font-size: 0.95rem; line-height: 1.5;">{{ post.text }}</p>
+                <div style="font-size: 0.8rem; color: var(--text-muted); display: flex; justify-content: space-between;">
+                    <span>{{ post.platform }} &bull; {{ post.timestamp|date:"M d, H:i" }}</span>
+                    {% if post.url %}
+                        <a href="{{ post.url }}" target="_blank" class="sa-link">View Original</a>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Sample Posts -->
+    {% if pep.sample_posts %}
+    <div>
+        <h4 style="font-size: 1rem; margin-bottom: 0.75rem; font-family: var(--font-sans);">Recent Examples</h4>
+        <div style="display: flex; flex-direction: column; gap: 0.75rem;">
+            {% for post in pep.sample_posts %}
+            <div style="background: var(--bg-page); padding: 1rem; border-radius: var(--radius-sm); border: 1px solid var(--border-hairline);">
+                <p style="margin: 0 0 0.5rem 0; font-size: 0.95rem;">{{ post.text }}</p>
+                <div style="font-size: 0.8rem; color: var(--text-muted); display: flex; justify-content: space-between; align-items: center;">
+                    <span>{{ post.platform }} &bull; {{ post.timestamp|date:"M d, H:i" }}</span>
+                    <span class="sa-badge sa-badge--{% if post.sentiment == 'negative' %}critical{% else %}calm{% endif %}" style="font-size: 0.7rem;">
+                        {{ post.sentiment|title }}
+                    </span>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% empty %}
+<div class="card" style="padding: 3rem; text-align: center;">
+    <h3>No candidate mentions monitored currently.</h3>
+    <p style="color: var(--text-muted);">Ingest social media data to populate narrative analysis.</p>
+</div>
+{% endfor %}
+
 {% endblock %}
