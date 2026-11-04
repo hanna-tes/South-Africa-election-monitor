@@ -4,7 +4,9 @@ Django settings for election_monitor project.
 import os
 from pathlib import Path
 from dotenv import load_dotenv
+
 os.environ['PGSSLMODE'] = 'disable'
+os.environ['PGREQUIRESSL'] = '0'
 
 # Load environment variables from .env file
 load_dotenv()
@@ -74,11 +76,10 @@ DATABASES = {
         'NAME': os.environ.get('DB_NAME', 'election_monitor'),
         'USER': os.environ.get('DB_USER', 'postgres'),
         'PASSWORD': os.environ.get('DB_PASSWORD', 'postgres'),
-        'HOST': os.environ.get('DB_HOST', '127.0.0.1'),  # Use IP instead of localhost
+        'HOST': os.environ.get('DB_HOST', '127.0.0.1'),
         'PORT': os.environ.get('DB_PORT', '5432'),
         'OPTIONS': {
             'sslmode': 'disable',
-            'connect_timeout': 10,
         },
     }
 }
