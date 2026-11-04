@@ -1,139 +1,109 @@
 {% extends 'dashboard/base.html' %}
 {% load static %}
 
-{% block title %}ADD O - Style Guide & UI Component Preview{% endblock %}
+{% block title %}ADD O - Modern Web Platform Design System{% endblock %}
 
 {% block content %}
-<div class="max-w-7xl mx-auto space-y-10 pb-16">
+<div class="space-y-12 pb-16">
 
-    <!-- Header Section with ADD O Branding / Logo Replacement -->
-    <div class="panel p-8 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
-        <div class="flex items-center space-x-5">
-            <div class="bg-blue-600/20 p-3.5 rounded-2xl border border-blue-500/30 backdrop-blur-md flex items-center justify-center text-blue-400 font-display font-bold text-xl">
-                ADD<span class="text-white">O</span>
+    <!-- Hero Section (Editorial Web Style) -->
+    <div class="web-card p-10 relative overflow-hidden">
+        <div class="absolute -right-20 -top-20 w-80 h-80 bg-blue-500/10 rounded-full blur-3xl pointer-events-none"></div>
+        <div class="max-w-3xl space-y-4">
+            <div class="inline-flex items-center space-x-2 px-3.5 py-1.5 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-400 text-xs font-semibold uppercase tracking-wider">
+                <span>🏛️ African Digital Democracy Observatory</span>
             </div>
-            <div>
-                <span class="px-3 py-1 bg-blue-500/20 text-blue-400 rounded-full text-xs font-semibold tracking-wide uppercase">African Digital Democracy Observatory</span>
-                <h1 class="text-3xl font-display font-bold text-white mt-1">Design System & Style Guide Preview</h1>
-                <p class="text-muted text-sm mt-1">Reviewing updated components, navigation tabs, plot titles, social media cards, and dataset tables.</p>
-            </div>
-        </div>
-        <div class="flex items-center gap-3">
-            <a href="{% url 'home' %}" class="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-xl text-sm font-medium transition shadow-lg shadow-blue-600/20">Back to Dashboard</a>
-        </div>
-    </div>
-
-    <!-- Navigation Tabs Preview -->
-    <div class="panel p-6 space-y-4">
-        <div class="flex items-center justify-between">
-            <h2 class="text-xl font-display font-semibold text-white">1. Navigation Tabs & Structure</h2>
-            <span class="text-xs text-muted">Includes the new Lexicons tab & PEPs reorganization</span>
-        </div>
-        <div class="flex flex-wrap gap-2 border-b border-white/10 pb-4">
-            <a href="#" class="px-4 py-2 rounded-xl text-sm font-medium text-muted hover:text-white hover:bg-white/5 transition flex items-center gap-2">🏠 Home</a>
-            <a href="#" class="px-4 py-2 rounded-xl text-sm font-medium text-muted hover:text-white hover:bg-white/5 transition flex items-center gap-2">👤 PEPs Tab</a>
-            <a href="#" class="px-4 py-2 rounded-xl text-sm font-medium bg-blue-600/20 text-blue-400 border border-blue-500/30 shadow-sm flex items-center gap-2">🗣️ Lexicons</a>
-            <a href="#" class="px-4 py-2 rounded-xl text-sm font-medium text-muted hover:text-white hover:bg-white/5 transition flex items-center gap-2">📰 Trending Narratives</a>
-            <a href="#" class="px-4 py-2 rounded-xl text-sm font-medium text-muted hover:text-white hover:bg-white/5 transition flex items-center gap-2">🕸️ Networks & TTPs</a>
-            <a href="#" class="px-4 py-2 rounded-xl text-sm font-medium text-muted hover:text-white hover:bg-white/5 transition flex items-center gap-2">⚙️ Lexicon Management</a>
-            <a href="#" class="px-4 py-2 rounded-xl text-sm font-medium text-muted hover:text-white hover:bg-white/5 transition flex items-center gap-2">📑 Reports</a>
+            <h1 class="text-4xl sm:text-5xl font-display font-bold text-white tracking-tight leading-tight">
+                Modern Web Platform Style Guide
+            </h1>
+            <p class="text-gray-400 text-base sm:text-lg leading-relaxed">
+                Transitioning from a dense dashboard layout to a professional, top-navigated web portal for election monitoring, civic intelligence, and municipal candidate analysis.
+            </p>
         </div>
     </div>
 
-    <!-- Social Media Stats (Ethiopia Views Style) -->
-    <div class="space-y-4">
-        <h2 class="text-xl font-display font-semibold text-white">2. Social Media Statistics & Analytics Cards (Ethiopia Views Style)</h2>
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div class="panel p-6 relative overflow-hidden group hover:border-blue-500/40 transition">
-                <div class="absolute -right-6 -bottom-6 w-24 h-24 bg-blue-500/10 rounded-full blur-xl group-hover:bg-blue-500/20 transition"></div>
-                <span class="text-xs uppercase font-semibold text-blue-400 tracking-wider">Top Monitored Platform</span>
-                <p class="text-3xl font-display font-bold text-white mt-2">Telegram</p>
-                <div class="mt-4 flex items-center justify-between text-xs text-muted pt-3 border-t border-white/10">
-                    <span>Total Volume Share</span>
-                    <span class="text-emerald-400 font-semibold">48.2%</span>
-                </div>
-            </div>
-            
-            <div class="panel p-6 relative overflow-hidden group hover:border-indigo-500/40 transition">
-                <div class="absolute -right-6 -bottom-6 w-24 h-24 bg-indigo-500/10 rounded-full blur-xl group-hover:bg-indigo-500/20 transition"></div>
-                <span class="text-xs uppercase font-semibold text-indigo-400 tracking-wider">Total Lexicons Mapped</span>
-                <p class="text-3xl font-display font-bold text-white mt-2">1,248</p>
-                <div class="mt-4 flex items-center justify-between text-xs text-muted pt-3 border-t border-white/10">
-                    <span>Active Categories</span>
-                    <span class="text-indigo-400 font-semibold">18 Categories</span>
-                </div>
-            </div>
-
-            <div class="panel p-6 relative overflow-hidden group hover:border-purple-500/40 transition">
-                <div class="absolute -right-6 -bottom-6 w-24 h-24 bg-purple-500/10 rounded-full blur-xl group-hover:bg-purple-500/20 transition"></div>
-                <span class="text-xs uppercase font-semibold text-purple-400 tracking-wider">Municipal Candidates Mapped</span>
-                <p class="text-3xl font-display font-bold text-white mt-2">3,450</p>
-                <div class="mt-4 flex items-center justify-between text-xs text-muted pt-3 border-t border-white/10">
-                    <span>Source Files</span>
-                    <span class="text-purple-400 font-semibold">1 Excel Sheet</span>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- PEPs Tab Reorganization Preview (Municipal Election Details & Candidates) -->
+    <!-- Section 1: Modern Metric Highlights (Ethiopia Views Style Refined) -->
     <div class="space-y-6">
-        <h2 class="text-xl font-display font-semibold text-white">3. PEPs Tab Reorganization (Municipal Candidates Section)</h2>
-        
-        <!-- Section 1: Municipal Election Statistics -->
-        <div class="panel p-6">
-            <h3 class="text-lg font-semibold text-white mb-4 flex items-center gap-2">
-                <span>📊</span> Municipal Election Statistics Overview
-            </h3>
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div class="bg-white/5 border border-white/10 p-4 rounded-xl">
-                    <span class="text-xs text-muted uppercase">Total Candidate Records</span>
-                    <p class="text-2xl font-bold text-white mt-1">3,450</p>
+        <div class="flex items-center justify-between">
+            <h2 class="text-2xl font-display font-bold text-white">Platform Activity Metrics</h2>
+            <span class="text-xs text-gray-400">Live aggregated telemetry</span>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div class="web-card p-6 relative group hover:border-blue-500/40 transition">
+                <span class="text-xs uppercase font-semibold text-blue-400 tracking-wider">Top Monitored Platform</span>
+                <div class="flex items-baseline justify-between mt-3">
+                    <span class="text-3xl font-display font-bold text-white">Telegram</span>
+                    <span class="text-xs text-emerald-400 font-semibold bg-emerald-500/10 px-2.5 py-1 rounded-full">+14.2% this week</span>
                 </div>
-                <div class="bg-white/5 border border-white/10 p-4 rounded-xl">
-                    <span class="text-xs text-muted uppercase">Source Spreadsheets</span>
-                    <p class="text-2xl font-bold text-white mt-1">1 File</p>
+                <p class="text-xs text-gray-400 mt-4 pt-3 border-t border-white/5">Primary channel for rapid political discourse distribution.</p>
+            </div>
+
+            <div class="web-card p-6 relative group hover:border-indigo-500/40 transition">
+                <span class="text-xs uppercase font-semibold text-indigo-400 tracking-wider">Total Lexicons Mapped</span>
+                <div class="flex items-baseline justify-between mt-3">
+                    <span class="text-3xl font-display font-bold text-white">1,248</span>
+                    <span class="text-xs text-indigo-400 font-semibold bg-indigo-500/10 px-2.5 py-1 rounded-full">18 Categories</span>
                 </div>
-                <div class="bg-white/5 border border-white/10 p-4 rounded-xl">
-                    <span class="text-xs text-muted uppercase">Data Sheets</span>
-                    <p class="text-2xl font-bold text-white mt-1">1 Sheet</p>
+                <p class="text-xs text-gray-400 mt-4 pt-3 border-t border-white/5">Multilingual slur and hate speech detection patterns.</p>
+            </div>
+
+            <div class="web-card p-6 relative group hover:border-purple-500/40 transition">
+                <span class="text-xs uppercase font-semibold text-purple-400 tracking-wider">Municipal Candidates</span>
+                <div class="flex items-baseline justify-between mt-3">
+                    <span class="text-3xl font-display font-bold text-white">3,450</span>
+                    <span class="text-xs text-purple-400 font-semibold bg-purple-500/10 px-2.5 py-1 rounded-full">Verified Dataset</span>
                 </div>
+                <p class="text-xs text-gray-400 mt-4 pt-3 border-t border-white/5">Local government election candidate registry records.</p>
             </div>
         </div>
+    </div>
 
-        <!-- Section 2: Municipal Candidates Table -->
-        <div class="panel p-6 space-y-4">
-            <div class="flex items-center justify-between">
-                <h3 class="text-lg font-semibold text-white flex items-center gap-2">
-                    <span>👥</span> Municipal Candidates Dataset
-                </h3>
-                <span class="text-xs bg-blue-500/20 text-blue-400 px-3 py-1 rounded-full">Filtered & Sorted</span>
+    <!-- Section 2: PEPs Tab Reorganization & Municipal Candidates Table -->
+    <div class="space-y-6">
+        <div class="flex items-center justify-between">
+            <div>
+                <h2 class="text-2xl font-display font-bold text-white">PEPs & Municipal Candidates Directory</h2>
+                <p class="text-sm text-gray-400 mt-1">Structured candidate records and officeholder analytics.</p>
+            </div>
+            <a href="{% url 'peps' %}" class="text-xs text-blue-400 hover:text-blue-300 font-semibold">View Full Directory →</a>
+        </div>
+
+        <div class="web-card overflow-hidden">
+            <div class="p-6 border-b border-white/10 flex items-center justify-between">
+                <h3 class="font-display font-semibold text-white">Recent Municipal Candidates</h3>
+                <span class="text-xs bg-white/5 border border-white/10 text-gray-300 px-3 py-1 rounded-lg">Showing 10 of 3,450 records</span>
             </div>
             <div class="overflow-x-auto">
                 <table class="min-w-full divide-y divide-white/10 text-left">
                     <thead>
-                        <tr class="text-xs uppercase text-muted tracking-wider">
-                            <th class="px-4 py-3 font-semibold">Candidate Name</th>
-                            <th class="px-4 py-3 font-semibold">Source File</th>
-                            <th class="px-4 py-3 font-semibold">Sheet Name</th>
-                            <th class="px-4 py-3 font-semibold text-right">Action</th>
+                        <tr class="text-xs uppercase text-gray-400 tracking-wider bg-white/[02]">
+                            <th class="px-6 py-4 font-semibold">Candidate Full Name</th>
+                            <th class="px-6 py-4 font-semibold">Source Spreadsheets</th>
+                            <th class="px-6 py-4 font-semibold">Data Sheet</th>
+                            <th class="px-6 py-4 font-semibold text-right">Actions</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-white/5 text-sm">
-                        <tr class="hover:bg-white/5 transition">
-                            <td class="px-4 py-3 font-medium text-white">Abebe Bekele Tadesse</td>
-                            <td class="px-4 py-3 text-muted">CfA _PEP data _ South Africa...xlsx</td>
-                            <td class="px-4 py-3 text-muted">Local Government Candidates</td>
-                            <td class="px-4 py-3 text-right">
-                                <span class="text-blue-400 hover:text-blue-300 cursor-pointer font-medium text-xs">View Details</span>
+                        <tr class="hover:bg-white/[02] transition">
+                            <td class="px-6 py-4 font-medium text-white flex items-center gap-3">
+                                <div class="w-8 h-8 rounded-full bg-blue-500/20 flex items-center justify-center text-blue-400 font-bold text-xs">AB</div>
+                                Abebe Bekele Tadesse
+                            </td>
+                            <td class="px-6 py-4 text-gray-400">CfA _PEP data _ South Africa...xlsx</td>
+                            <td class="px-6 py-4 text-gray-400">Local Government Candidates</td>
+                            <td class="px-6 py-4 text-right">
+                                <button class="px-3 py-1.5 rounded-lg bg-blue-600/20 hover:bg-blue-600/30 text-blue-400 text-xs font-semibold transition">Inspect Profile</button>
                             </td>
                         </tr>
-                        <tr class="hover:bg-white/5 transition">
-                            <td class="px-4 py-3 font-medium text-white">Tigist Mamo Dinku</td>
-                            <td class="px-4 py-3 text-muted">CfA _PEP data _ South Africa...xlsx</td>
-                            <td class="px-4 py-3 text-muted">Local Government Candidates</td>
-                            <td class="px-4 py-3 text-right">
-                                <span class="text-blue-400 hover:text-blue-300 cursor-pointer font-medium text-xs">View Details</span>
+                        <tr class="hover:bg-white/[02] transition">
+                            <td class="px-6 py-4 font-medium text-white flex items-center gap-3">
+                                <div class="w-8 h-8 rounded-full bg-purple-500/20 flex items-center justify-center text-purple-400 font-bold text-xs">TM</div>
+                                Tigist Mamo Dinku
+                            </td>
+                            <td class="px-6 py-4 text-gray-400">CfA _PEP data _ South Africa...xlsx</td>
+                            <td class="px-6 py-4 text-gray-400">Local Government Candidates</td>
+                            <td class="px-6 py-4 text-right">
+                                <button class="px-3 py-1.5 rounded-lg bg-blue-600/20 hover:bg-blue-600/30 text-blue-400 text-xs font-semibold transition">Inspect Profile</button>
                             </td>
                         </tr>
                     </tbody>
@@ -142,52 +112,60 @@
         </div>
     </div>
 
-    <!-- Plot Titles Update Preview -->
-    <div class="panel p-6 space-y-4">
-        <h2 class="text-xl font-display font-semibold text-white">4. Updated Plot Titles (Charts 03 & 04)</h2>
+    <!-- Section 3: Professional Plot Titles & Analytics Layout -->
+    <div class="space-y-6">
+        <h2 class="text-2xl font-display font-bold text-white">Analytical Intelligence & Visualizations</h2>
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div class="bg-white/5 border border-white/10 p-5 rounded-xl">
-                <span class="text-xs font-semibold text-blue-400 uppercase tracking-wide">Plot 03 Updated Title</span>
-                <h4 class="text-lg font-bold text-white mt-1">Risk Level Distribution of Monitored Content</h4>
-                <div class="h-32 mt-4 bg-black/20 rounded-lg flex items-center justify-center border border-white/5 text-muted text-sm">
-                    [Chart 03 Visualization Container]
+            <div class="web-card p-6 space-y-4">
+                <span class="text-xs font-semibold text-blue-400 uppercase tracking-wider">Chart 03</span>
+                <h3 class="text-xl font-display font-bold text-white">Risk Level Distribution of Monitored Content</h3>
+                <p class="text-sm text-gray-400">Categorized risk scoring across analyzed social media posts and narrative vectors.</p>
+                <div class="h-48 rounded-xl bg-black/30 border border-white/5 flex items-center justify-center text-gray-500 text-sm">
+                    [Interactive Plotly / Risk Distribution View]
                 </div>
             </div>
-            <div class="bg-white/5 border border-white/10 p-5 rounded-xl">
-                <span class="text-xs font-semibold text-blue-400 uppercase tracking-wide">Plot 04 Updated Title</span>
-                <h4 class="text-lg font-bold text-white mt-1">Daily Engagement and Post Volume Trend</h4>
-                <div class="h-32 mt-4 bg-black/20 rounded-lg flex items-center justify-center border border-white/5 text-muted text-sm">
-                    [Chart 04 Visualization Container]
+
+            <div class="web-card p-6 space-y-4">
+                <span class="text-xs font-semibold text-indigo-400 uppercase tracking-wider">Chart 04</span>
+                <h3 class="text-xl font-display font-bold text-white">Daily Engagement and Post Volume Trend</h3>
+                <p class="text-sm text-gray-400">Longitudinal tracking of election-related discussions and user engagement spikes.</p>
+                <div class="h-48 rounded-xl bg-black/30 border border-white/5 flex items-center justify-center text-gray-500 text-sm">
+                    [Interactive Plotly / Volume Trend View]
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Lexicon Collections Preview -->
-    <div class="panel p-6 space-y-4">
-        <h2 class="text-xl font-display font-semibold text-white">5. Lexicon Collections Tab Preview</h2>
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div class="p-4 bg-white/5 border border-white/10 rounded-xl">
-                <h3 class="font-bold text-white mb-2">Hate Speech & Slurs</h3>
-                <div class="flex flex-wrap gap-1">
-                    <span class="px-2 py-0.5 bg-white/10 rounded text-xs text-muted">diere</span>
-                    <span class="px-2 py-0.5 bg-white/10 rounded text-xs text-muted">isilwanyana</span>
-                    <span class="px-2 py-0.5 bg-white/10 rounded text-xs text-muted">amakula</span>
-                    <span class="px-2 py-0.5 bg-white/10 rounded text-xs text-muted">ikula</span>
+    <!-- Section 4: Lexicon Collections Mapped -->
+    <div class="space-y-6">
+        <h2 class="text-2xl font-display font-bold text-white">Lexicon Collections & Slur Categories</h2>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div class="web-card p-6 space-y-3">
+                <h3 class="font-display font-bold text-white text-lg">Hate Speech & Slurs</h3>
+                <p class="text-xs text-gray-400">Mapped ethnic and group-targeted derogatory terms.</p>
+                <div class="flex flex-wrap gap-2 pt-2">
+                    <span class="px-2.5 py-1 bg-white/5 border border-white/10 rounded-lg text-xs text-gray-300">diere</span>
+                    <span class="px-2.5 py-1 bg-white/5 border border-white/10 rounded-lg text-xs text-gray-300">isilwanyana</span>
+                    <span class="px-2.5 py-1 bg-white/5 border border-white/10 rounded-lg text-xs text-gray-300">amakula</span>
+                    <span class="px-2.5 py-1 bg-white/5 border border-white/10 rounded-lg text-xs text-gray-300">ikula</span>
                 </div>
             </div>
-            <div class="p-4 bg-white/5 border border-white/10 rounded-xl">
-                <h3 class="font-bold text-white mb-2">Dehumanization</h3>
-                <div class="flex flex-wrap gap-1">
-                    <span class="px-2 py-0.5 bg-white/10 rounded text-xs text-muted">phologolo</span>
-                    <span class="px-2 py-0.5 bg-white/10 rounded text-xs text-muted">liphoofolo</span>
+
+            <div class="web-card p-6 space-y-3">
+                <h3 class="font-display font-bold text-white text-lg">Dehumanization</h3>
+                <p class="text-xs text-gray-400">Animalistic and dehumanizing tropes.</p>
+                <div class="flex flex-wrap gap-2 pt-2">
+                    <span class="px-2.5 py-1 bg-white/5 border border-white/10 rounded-lg text-xs text-gray-300">phologolo</span>
+                    <span class="px-2.5 py-1 bg-white/5 border border-white/10 rounded-lg text-xs text-gray-300">liphoofolo</span>
                 </div>
             </div>
-            <div class="p-4 bg-white/5 border border-white/10 rounded-xl">
-                <h3 class="font-bold text-white mb-2">Xenophobia & Slurs</h3>
-                <div class="flex flex-wrap gap-1">
-                    <span class="px-2 py-0.5 bg-white/10 rounded text-xs text-muted">lekula</span>
-                    <span class="px-2 py-0.5 bg-white/10 rounded text-xs text-muted">makwerekwere</span>
+
+            <div class="web-card p-6 space-y-3">
+                <h3 class="font-display font-bold text-white text-lg">Xenophobia & Slurs</h3>
+                <p class="text-xs text-gray-400">National origin and anti-immigrant narratives.</p>
+                <div class="flex flex-wrap gap-2 pt-2">
+                    <span class="px-2.5 py-1 bg-white/5 border border-white/10 rounded-lg text-xs text-gray-300">lekula</span>
+                    <span class="px-2.5 py-1 bg-white/5 border border-white/10 rounded-lg text-xs text-gray-300">makwerekwere</span>
                 </div>
             </div>
         </div>
