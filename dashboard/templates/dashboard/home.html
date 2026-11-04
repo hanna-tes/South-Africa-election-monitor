@@ -1,258 +1,121 @@
-{% extends "dashboard/base.html" %}
+{% extends 'dashboard/base.html' %}
+{% block title %}Executive Dashboard - ADDO SA Elections{% endblock %}
 
-{% block title %}Home - ADDO SA Elections Monitor{% endblock %}
+{% block page_title %}Executive Dashboard{% endblock %}
+{% block page_subtitle %}Real-time monitoring of information integrity, coordinated networks, and weaponized narratives surrounding the 2026 South African Municipal Elections.{% endblock %}
 
 {% block content %}
-
-<!-- HERO SECTION -->
-<section class="hero">
-    <h1>2026 Municipal Elections Monitor</h1>
-    <p class="hero-subtitle">Tracking social media narratives, weaponized language, and coordinated networks ahead of the 4 November 2026 local government elections.</p>
-    <div class="hero-meta">
-        <span>IEC Figures as at 16 Sept 2026</span>
-        <span>&bull;</span>
-        <span>Last Updated: {{ metrics.last_update|default:"Pending" }}</span>
-    </div>
-</section>
-
-<!-- DATE FILTER FORM -->
-<form method="get" class="card" style="padding: 1.5rem; margin-bottom: 2rem; display: flex; flex-wrap: wrap; gap: 1rem; align-items: end;">
-    <div style="flex: 1; min-width: 150px;">
-        <label style="display: block; font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.5rem; font-weight: 600;">From</label>
-        <input type="date" name="start_date" value="{{ start_date|default:'' }}" class="sa-input">
-    </div>
-    <div style="flex: 1; min-width: 150px;">
-        <label style="display: block; font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.5rem; font-weight: 600;">To</label>
-        <input type="date" name="end_date" value="{{ end_date|default:'' }}" class="sa-input">
-    </div>
-    <div style="display: flex; gap: 0.5rem;">
-        <button type="submit" class="sa-btn sa-btn--primary">Apply Filter</button>
-        <a href="?view_all=true" class="sa-btn sa-btn--secondary">View All Data</a>
-        <a href="{{ request.path }}" class="sa-btn sa-btn--secondary">Clear</a>
-    </div>
-    {% if request.GET.view_all == 'true' %}
-        <span class="sa-badge sa-badge--calm" style="margin-left: auto;">Showing all {{ metrics.total_posts|default:0 }} posts</span>
-    {% elif request.GET.start_date or request.GET.end_date %}
-        <span class="sa-badge sa-badge--watch" style="margin-left: auto;">{{ request.GET.start_date|default:"..." }} → {{ request.GET.end_date|default:"..." }}</span>
-    {% endif %}
-</form>
-
-<!-- METRICS STRIP (Pulls real data, no hardcoded numbers) -->
-<section class="metrics-strip">
-    <div class="metric">
-        <span class="metric-value">{{ metrics.total_posts|default:0|floatformat:0 }}</span>
-        <span class="metric-label">Posts Analyzed</span>
-    </div>
-    <div class="metric-divider"></div>
-    <div class="metric">
-        <span class="metric-value">{{ metrics.unique_accounts|default:0|floatformat:0 }}</span>
-        <span class="metric-label">Unique Accounts</span>
-    </div>
-    <div class="metric-divider"></div>
-    <div class="metric">
-        <span class="metric-value">{{ metrics.top_platform|default:"—" }}</span>
-        <span class="metric-label">Top Platform</span>
-    </div>
-    <div class="metric-divider"></div>
-    <div class="metric">
-        <span class="metric-value" style="color: {% if 'High' in metrics.alert_level %}var(--risk-critical){% elif 'Medium' in metrics.alert_level %}var(--risk-watch){% else %}var(--risk-calm){% endif %}; font-weight: 700;">
-            {{ metrics.alert_level|default:"Low" }}
-        </span>
-        <span class="metric-label">Alert Level</span>
-    </div>
-</section>
-
-{% if not charts %}
-<div class="card" style="text-align: center; padding: 4rem 2rem;">
-    <h3 style="margin-bottom: 1rem;">No data yet</h3>
-    <p style="color: var(--text-muted); margin-bottom: 1.5rem;">Upload CSV files to generate insights and populate the dashboard.</p>
-    <a href="{% url 'upload_data' %}" class="sa-btn sa-btn--primary">Upload Data</a>
+<!-- Hero Meta -->
+<div class="hero-meta" style="margin-top: -1rem; margin-bottom: 2rem;">
+    <span>Last Updated: {{ metrics.last_update|default:"Just now" }}</span>
+    <span>&bull;</span>
+    <span>Data Scope: National & Municipal</span>
 </div>
-{% else %}
 
-<!-- CHARTS GRID -->
-<div class="editorial-grid">
-    <div class="main-column">
-        <span class="section-number">01 — Platform Distribution</span>
-        <h2 class="section-title">Where the Conversation is Happening</h2>
-        <div class="card">
-            <div id="chart-platform" style="width: 100%; height: 350px;"></div>
-        </div>
-
-        <br><br>
-
-        <span class="section-number">02 — Daily Volume</span>
-        <h2 class="section-title">Post Activity Over Time</h2>
-        <div class="card">
-            <div id="chart-daily" style="width: 100%; height: 350px;"></div>
-        </div>
+<!-- Metrics Grid -->
+<div class="metrics-grid">
+    <div class="metric-card">
+        <div class="metric-label">Total Posts Analyzed</div>
+        <div class="metric-value">{{ metrics.total_posts|default:"0" }}</div>
+        <div class="metric-subtext">Across all monitored platforms</div>
     </div>
-
-    <div class="sidebar-column">
-        <span class="section-number">03 — Risk Assessment</span>
-        <h2 class="section-title">Narrative Tone</h2>
-        <div class="card" style="padding: 1rem;">
-            <div id="chart-risk" style="width: 100%; height: 250px;"></div>
-        </div>
-
-        <br>
-
-        <span class="section-number">04 — Top Accounts</span>
-        <h2 class="section-title">Most Active Accounts</h2>
-        <div class="card">
-            <div id="chart-accounts" style="width: 100%; height: 350px;"></div>
-        </div>
+    
+    <div class="metric-card">
+        <div class="metric-label">Unique Accounts</div>
+        <div class="metric-value">{{ metrics.unique_accounts|default:"0" }}</div>
+        <div class="metric-subtext">Distinct authors and entities</div>
+    </div>
+    
+    <div class="metric-card">
+        <div class="metric-label">Top Platform</div>
+        <div class="metric-value">{{ metrics.top_platform|default:"N/A" }}</div>
+        <div class="metric-subtext">Highest volume data source</div>
+    </div>
+    
+    <div class="metric-card" style="border-left: 4px solid {% if metrics.alert_level == 'Critical' %}var(--risk-critical){% elif metrics.alert_level == 'High' %}var(--risk-high){% elif metrics.alert_level == 'Medium' %}var(--risk-watch){% else %}var(--risk-calm){% endif %};">
+        <div class="metric-label">Current Alert Level</div>
+        <div class="metric-value">{{ metrics.alert_level|default:"Low" }}</div>
+        <div class="metric-subtext">Based on high-risk narrative velocity</div>
     </div>
 </div>
 
-{% endif %}
-
-<!-- RISK ACTORS (Pulls real behavioral data) -->
-{% if risk_actors %}
-<section class="section" style="margin-top: 3rem;">
-    <span class="section-number">05 — High-Risk Actors</span>
-    <h2 class="section-title">Accounts Requiring Monitoring</h2>
-    <ul class="clean-list">
-        {% for actor in risk_actors %}
-        <li class="clean-list__item" style="flex-direction: column; align-items: flex-start; gap: 0.75rem; padding: 1.5rem; background: var(--bg-card); border: 1px solid var(--border-hairline); border-radius: var(--radius-md); margin-bottom: 1rem;">
-            <div style="display: flex; justify-content: space-between; width: 100%; align-items: flex-start;">
-                <div>
-                    <div class="clean-list__title" style="font-size: 1rem; font-weight: 600;">{{ actor.account_id }}</div>
-                    <div class="clean-list__meta" style="margin-top: 0.5rem;">
-                        {{ actor.post_count }} posts &bull; {{ actor.platforms }} &bull; Last seen: {{ actor.latest_post|date:"Y-m-d"|default:"Unknown" }}
-                    </div>
-                </div>
-                <span class="sa-badge sa-badge--{% if actor.risk_level == 'high' or actor.risk_category == 'disinformation_actor' %}critical{% elif actor.risk_level == 'medium' or actor.risk_category == 'coordinated_actor' %}elevated{% else %}watch{% endif %}">
-                    {{ actor.risk_level|default:actor.risk_category|title }} Risk
-                </span>
+<!-- Main Dashboard Content -->
+<div style="display: grid; grid-template-columns: 2fr 1fr; gap: 1.5rem;">
+    
+    <!-- Left Column: Charts / Trends -->
+    <div>
+        <div class="card" style="margin-bottom: 1.5rem;">
+            <div class="section-label">Platform Distribution</div>
+            <h2 class="section-title">Data Source Breakdown</h2>
+            <div id="platform-chart" style="height: 300px; display: flex; align-items: center; justify-content: center; background: var(--bg-page); border-radius: var(--radius-sm); color: var(--text-muted);">
+                <!-- Plotly chart will render here via extra_js block -->
+                <p>Platform distribution chart loads here</p>
             </div>
+        </div>
+
+        <div class="card">
+            <div class="section-label">Risk Analysis</div>
+            <h2 class="section-title">Daily Risk Volume</h2>
+            <div id="risk-chart" style="height: 300px; display: flex; align-items: center; justify-content: center; background: var(--bg-page); border-radius: var(--radius-sm); color: var(--text-muted);">
+                <!-- Plotly chart will render here via extra_js block -->
+                <p>Daily risk volume chart loads here</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Right Column: Risk Actors & Quick Actions -->
+    <div>
+        <div class="card" style="margin-bottom: 1.5rem;">
+            <div class="section-label">Threat Intelligence</div>
+            <h2 class="section-title">High-Risk Actors</h2>
             
-            {% if actor.risk_reason or actor.behavioral_flags %}
-            <div style="width: 100%; padding: 1rem; background: var(--bg-page); border-radius: var(--radius-sm); border-left: 3px solid var(--accent-teal);">
-                <div style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted); margin-bottom: 0.5rem; font-weight: 600;">Risk Assessment</div>
-                <p style="font-size: 0.9rem; color: var(--text-ink); margin: 0;">{{ actor.risk_reason|default:actor.sample_content|truncatechars:150 }}</p>
-                {% if actor.behavioral_flags %}
-                <div style="display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 0.75rem;">
-                    {% for flag in actor.behavioral_flags %}
-                    <span style="font-size: 0.75rem; padding: 0.25rem 0.5rem; background: rgba(107, 114, 128, 0.1); color: var(--text-muted); border-radius: 4px;">{{ flag }}</span>
+            {% if risk_actors %}
+                <div style="display: flex; flex-direction: column; gap: 1rem;">
+                    {% for actor in risk_actors %}
+                    <div style="padding: 1rem; background: var(--bg-page); border-radius: var(--radius-sm); border: 1px solid var(--border-hairline);">
+                        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.5rem;">
+                            <span style="font-weight: 600; font-size: 0.9rem; font-family: var(--font-sans);">@{{ actor.account_id }}</span>
+                            <span class="sa-badge sa-badge--{% if actor.risk_level == 'high' %}critical{% else %}watch{% endif %}">
+                                Score: {{ actor.risk_score }}
+                            </span>
+                        </div>
+                        <div style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.5rem;">
+                            {{ actor.post_count }} posts &bull; {{ actor.repetition_rate }}% repetition
+                        </div>
+                        <div style="font-size: 0.85rem; font-style: italic; color: var(--text-primary); line-height: 1.4; border-left: 2px solid var(--border-hairline); padding-left: 0.75rem;">
+                            "{{ actor.recent_content }}"
+                        </div>
+                    </div>
                     {% endfor %}
                 </div>
-                {% endif %}
-            </div>
-            {% endif %}
-        </li>
-        {% endfor %}
-    </ul>
-</section>
-{% endif %}
-
-<!-- TRENDING HASHTAGS -->
-{% if top_hashtags %}
-<section class="section">
-    <span class="section-number">06 — Trending Hashtags</span>
-    <h2 class="section-title">Most Used Election Hashtags</h2>
-    <div class="card">
-        <div style="display: flex; flex-wrap: wrap; gap: 0.75rem;">
-            {% for tag in top_hashtags %}
-            <span style="padding: 0.5rem 1rem; background: var(--bg-page); border: 1px solid var(--border-hairline); border-radius: 20px; font-size: 0.9rem; color: var(--accent-teal); font-weight: 500;">
-                #{{ tag.tag }} <span style="color: var(--text-muted); font-size: 0.8rem; margin-left: 0.25rem;">({{ tag.count }})</span>
-            </span>
-            {% endfor %}
-        </div>
-    </div>
-</section>
-{% endif %}
-
-<!-- TREND ANALYSIS -->
-{% if trend_analysis and trend_analysis.chart_json %}
-<section class="section">
-    <span class="section-number">07 — Weaponized Language Trends</span>
-    <h2 class="section-title">Trend Analysis</h2>
-    <div class="card">
-        <p style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 1.5rem;">
-            Tracking <strong style="color: var(--text-ink);">{{ trend_analysis.total_categories_tracked }}</strong> categories across 
-            <strong style="color: var(--text-ink);">{{ trend_analysis.total_posts_scanned|default:0 }}</strong> posts 
-            <span style="color: var(--text-muted);">({{ trend_analysis.date_range }})</span>
-        </p>
-        <div id="trendChart" style="width: 100%; height: 400px;"></div>
-        
-        {% if trend_analysis.trending_categories %}
-        <div style="margin-top: 2rem; padding-top: 1.5rem; border-top: 1px solid var(--border-hairline);">
-            <h3 style="font-size: 1rem; font-weight: 600; margin-bottom: 1rem; font-family: var(--font-sans);">Trending Up (Last 7 Days)</h3>
-            <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 1rem;">
-                {% for trend in trend_analysis.trending_categories %}
-                <div style="padding: 1rem; background: var(--bg-page); border: 1px solid var(--border-hairline); border-radius: var(--radius-md);">
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
-                        <span style="font-weight: 600; font-size: 0.95rem;">{{ trend.category }}</span>
-                        <span class="sa-badge sa-badge--{% if trend.severity == 'critical' %}critical{% elif trend.severity == 'high' %}elevated{% elif trend.severity == 'medium' %}watch{% else %}calm{% endif %}">
-                            {{ trend.severity|upper }}
-                        </span>
-                    </div>
-                    <div style="display: flex; align-items: baseline; gap: 0.5rem;">
-                        <span style="font-size: 1.25rem; font-weight: 700; color: var(--risk-critical);">↑{{ trend.pct_change }}%</span>
-                        <span style="font-size: 0.8rem; color: var(--text-muted);">{{ trend.recent_count }} mentions (7d)</span>
-                    </div>
+            {% else %}
+                <div class="sa-empty-state" style="padding: 2rem 1rem;">
+                    <p style="color: var(--text-muted); font-size: 0.9rem;">
+                        No high-risk actors detected in the current timeframe.
+                    </p>
                 </div>
-                {% endfor %}
+            {% endif %}
+        </div>
+
+        <div class="card">
+            <div class="section-label">System Actions</div>
+            <h2 class="section-title">Quick Links</h2>
+            <div style="display: flex; flex-direction: column; gap: 0.75rem;">
+                <a href="{% url 'upload_data' %}" class="sa-btn sa-btn--primary" style="width: 100%; text-align: center;">Upload New Dataset</a>
+                <a href="{% url 'lexicon_management' %}" class="sa-btn sa-btn--secondary" style="width: 100%; text-align: center;">Manage Lexicon Terms</a>
+                <a href="{% url 'narratives' %}" class="sa-btn sa-btn--secondary" style="width: 100%; text-align: center;">View Narrative Clusters</a>
+                <a href="{% url 'peps' %}" class="sa-btn sa-btn--secondary" style="width: 100%; text-align: center;">View Candidates Tracker</a>
             </div>
         </div>
-        {% endif %}
     </div>
-</section>
-{% endif %}
+</div>
+{% endblock %}
 
-<!-- PLOTLY INITIALIZATION -->
-{% if charts or trend_analysis.chart_json %}
+{% block extra_js %}
 <script>
-    const saPlotlyTheme = {
-        font: { family: 'Inter, sans-serif', color: '#1A1A1A' },
-        paper_bgcolor: 'rgba(0,0,0,0)',
-        plot_bgcolor: 'rgba(0,0,0,0)',
-        margin: { t: 30, r: 20, b: 50, l: 60 },
-        xaxis: { gridcolor: '#E5E7EB', zerolinecolor: '#E5E7EB', tickfont: { color: '#6B7280' } },
-        yaxis: { gridcolor: '#E5E7EB', zerolinecolor: '#E5E7EB', tickfont: { color: '#6B7280' } },
-        showlegend: true,
-        legend: { orientation: 'h', y: -0.2, x: 0.5, xanchor: 'center', font: { family: 'Inter, sans-serif', size: 11 } }
-    };
-
-    const mergeLayout = (l) => {
-        const merged = JSON.parse(JSON.stringify(saPlotlyTheme));
-        if (l) {
-            delete l.title;
-            Object.assign(merged, l);
-            if (l.xaxis) Object.assign(merged.xaxis, l.xaxis);
-            if (l.yaxis) Object.assign(merged.yaxis, l.yaxis);
-        }
-        merged.plot_bgcolor = 'rgba(0,0,0,0)';
-        merged.paper_bgcolor = 'rgba(0,0,0,0)';
-        return merged;
-    };
-
-    {% if charts.platform %}
-    var platformData = {{ charts.platform|safe }};
-    Plotly.newPlot('chart-platform', platformData.data, mergeLayout(platformData.layout), {responsive: true, displayModeBar: false});
-    {% endif %}
-
-    {% if charts.risk %}
-    var riskData = {{ charts.risk|safe }};
-    Plotly.newPlot('chart-risk', riskData.data, mergeLayout(riskData.layout), {responsive: true, displayModeBar: false});
-    {% endif %}
-
-    {% if charts.daily %}
-    var dailyData = {{ charts.daily|safe }};
-    Plotly.newPlot('chart-daily', dailyData.data, mergeLayout(dailyData.layout), {responsive: true, displayModeBar: false});
-    {% endif %}
-
-    {% if charts.accounts %}
-    var accountsData = {{ charts.accounts|safe }};
-    Plotly.newPlot('chart-accounts', accountsData.data, mergeLayout(accountsData.layout), {responsive: true, displayModeBar: false});
-    {% endif %}
-
-    {% if trend_analysis and trend_analysis.chart_json %}
-    var trendData = {{ trend_analysis.chart_json|safe }};
-    Plotly.newPlot('trendChart', trendData.data, mergeLayout(trendData.layout), {responsive: true, displayModeBar: false});
-    {% endif %}
+    // Example: How you would render the Plotly charts if you pass JSON from the view
+    // if (typeof Plotly !== 'undefined' && typeof platformChartData !== 'undefined') {
+    //     Plotly.newPlot('platform-chart', platformChartData.data, platformChartData.layout, {responsive: true});
+    // }
 </script>
-{% endif %}
-
 {% endblock %}
