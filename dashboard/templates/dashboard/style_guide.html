@@ -1,175 +1,168 @@
-{% extends 'dashboard/base.html' %}
 {% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ADDO - 2026 Municipal Elections Monitor</title>
+    <link rel="stylesheet" href="{% static 'css/sa-election-theme.css' %}">
+</head>
+<body>
 
-{% block title %}ADD O - Modern Web Platform Design System{% endblock %}
-
-{% block content %}
-<div class="space-y-12 pb-16">
-
-    <!-- Hero Section (Editorial Web Style) -->
-    <div class="web-card p-10 relative overflow-hidden">
-        <div class="absolute -right-20 -top-20 w-80 h-80 bg-blue-500/10 rounded-full blur-3xl pointer-events-none"></div>
-        <div class="max-w-3xl space-y-4">
-            <div class="inline-flex items-center space-x-2 px-3.5 py-1.5 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-400 text-xs font-semibold uppercase tracking-wider">
-                <span>🏛️ African Digital Democracy Observatory</span>
-            </div>
-            <h1 class="text-4xl sm:text-5xl font-display font-bold text-white tracking-tight leading-tight">
-                Modern Web Platform Style Guide
-            </h1>
-            <p class="text-gray-400 text-base sm:text-lg leading-relaxed">
-                Transitioning from a dense dashboard layout to a professional, top-navigated web portal for election monitoring, civic intelligence, and municipal candidate analysis.
-            </p>
+    <!-- MASTHEAD WITH LOGO -->
+    <header class="masthead">
+        <div class="masthead-logo">
+            <!-- ADDO LOGO -->
+            <img src="{% static 'images/addo-logo.png' %}" alt="ADDO African Digital Democracy Observatory">
         </div>
-    </div>
+        <nav class="masthead-nav">
+            <a href="#" class="active">Home</a>
+            <a href="#">Candidates</a>
+            <a href="#">Narratives</a>
+            <a href="#">Lexicons</a>
+            <a href="#">Networks</a>
+        </nav>
+    </header>
 
-    <!-- Section 1: Modern Metric Highlights (Ethiopia Views Style Refined) -->
-    <div class="space-y-6">
-        <div class="flex items-center justify-between">
-            <h2 class="text-2xl font-display font-bold text-white">Platform Activity Metrics</h2>
-            <span class="text-xs text-gray-400">Live aggregated telemetry</span>
-        </div>
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div class="web-card p-6 relative group hover:border-blue-500/40 transition">
-                <span class="text-xs uppercase font-semibold text-blue-400 tracking-wider">Top Monitored Platform</span>
-                <div class="flex items-baseline justify-between mt-3">
-                    <span class="text-3xl font-display font-bold text-white">Telegram</span>
-                    <span class="text-xs text-emerald-400 font-semibold bg-emerald-500/10 px-2.5 py-1 rounded-full">+14.2% this week</span>
+    <main class="container">
+        
+        <!-- EDITORIAL HERO -->
+        <section class="hero">
+            <h1>2026 Municipal<br>Elections Monitor</h1>
+            <p class="hero-subtitle">Tracking social media narratives, weaponized language, and coordinated networks ahead of the 4 November 2026 local government elections.</p>
+            <div class="hero-meta">
+                <span>IEC Figures as at 16 Sept 2026</span>
+                <span>•</span>
+                <span>Last Updated: Today</span>
+            </div>
+        </section>
+
+        <!-- METRICS STRIP (No boxes, just clean numbers) -->
+        <section class="metrics-strip">
+            <div class="metric">
+                <span class="metric-value">75,311</span>
+                <span class="metric-label">Candidates in File</span>
+            </div>
+            <div class="metric-divider"></div>
+            <div class="metric">
+                <span class="metric-value">257</span>
+                <span class="metric-label">Municipalities</span>
+            </div>
+            <div class="metric-divider"></div>
+            <div class="metric">
+                <span class="metric-value">579</span>
+                <span class="metric-label">Parties Registered</span>
+            </div>
+            <div class="metric-divider"></div>
+            <div class="metric">
+                <span class="metric-value">136,790</span>
+                <span class="metric-label">IEC Certified</span>
+            </div>
+        </section>
+
+        <!-- ASYMMETRIC GRID (2/3 Left, 1/3 Right) -->
+        <div class="editorial-grid">
+            
+            <!-- LEFT COLUMN (Wide) -->
+            <div class="main-column">
+                <span class="section-number">01 — Risk Assessment</span>
+                <h2 class="section-title">Narrative Tone & Weaponized Language</h2>
+                
+                <ul class="risk-list">
+                    <li class="risk-item">
+                        <div>
+                            <div class="risk-name">Calm</div>
+                            <div class="risk-desc">Low tension, constructive dialogue</div>
+                        </div>
+                        <div class="risk-stat calm">62%</div>
+                    </li>
+                    <li class="risk-item">
+                        <div>
+                            <div class="risk-name">Watch</div>
+                            <div class="risk-desc">Moderate tension, monitoring required</div>
+                        </div>
+                        <div class="risk-stat watch">24%</div>
+                    </li>
+                    <li class="risk-item">
+                        <div>
+                            <div class="risk-name">Elevated</div>
+                            <div class="risk-desc">High tension, intervention needed</div>
+                        </div>
+                        <div class="risk-stat elevated">11%</div>
+                    </li>
+                    <li class="risk-item">
+                        <div>
+                            <div class="risk-name">Critical</div>
+                            <div class="risk-desc">Severe tension, immediate action</div>
+                        </div>
+                        <div class="risk-stat critical">3%</div>
+                    </li>
+                </ul>
+
+                <br><br>
+
+                <span class="section-number">02 — Platform Volume</span>
+                <h2 class="section-title">Where the Conversation is Happening</h2>
+                
+                <div class="bar-row">
+                    <div class="bar-label">X</div>
+                    <div class="bar-track"><div class="bar-fill" style="width: 85%;"></div></div>
+                    <div class="bar-value">14.5k</div>
                 </div>
-                <p class="text-xs text-gray-400 mt-4 pt-3 border-t border-white/5">Primary channel for rapid political discourse distribution.</p>
-            </div>
-
-            <div class="web-card p-6 relative group hover:border-indigo-500/40 transition">
-                <span class="text-xs uppercase font-semibold text-indigo-400 tracking-wider">Total Lexicons Mapped</span>
-                <div class="flex items-baseline justify-between mt-3">
-                    <span class="text-3xl font-display font-bold text-white">1,248</span>
-                    <span class="text-xs text-indigo-400 font-semibold bg-indigo-500/10 px-2.5 py-1 rounded-full">18 Categories</span>
+                <div class="bar-row">
+                    <div class="bar-label">Facebook</div>
+                    <div class="bar-track"><div class="bar-fill" style="width: 60%;"></div></div>
+                    <div class="bar-value">8.2k</div>
                 </div>
-                <p class="text-xs text-gray-400 mt-4 pt-3 border-t border-white/5">Multilingual slur and hate speech detection patterns.</p>
-            </div>
-
-            <div class="web-card p-6 relative group hover:border-purple-500/40 transition">
-                <span class="text-xs uppercase font-semibold text-purple-400 tracking-wider">Municipal Candidates</span>
-                <div class="flex items-baseline justify-between mt-3">
-                    <span class="text-3xl font-display font-bold text-white">3,450</span>
-                    <span class="text-xs text-purple-400 font-semibold bg-purple-500/10 px-2.5 py-1 rounded-full">Verified Dataset</span>
-                </div>
-                <p class="text-xs text-gray-400 mt-4 pt-3 border-t border-white/5">Local government election candidate registry records.</p>
-            </div>
-        </div>
-    </div>
-
-    <!-- Section 2: PEPs Tab Reorganization & Municipal Candidates Table -->
-    <div class="space-y-6">
-        <div class="flex items-center justify-between">
-            <div>
-                <h2 class="text-2xl font-display font-bold text-white">PEPs & Municipal Candidates Directory</h2>
-                <p class="text-sm text-gray-400 mt-1">Structured candidate records and officeholder analytics.</p>
-            </div>
-            <a href="{% url 'peps' %}" class="text-xs text-blue-400 hover:text-blue-300 font-semibold">View Full Directory →</a>
-        </div>
-
-        <div class="web-card overflow-hidden">
-            <div class="p-6 border-b border-white/10 flex items-center justify-between">
-                <h3 class="font-display font-semibold text-white">Recent Municipal Candidates</h3>
-                <span class="text-xs bg-white/5 border border-white/10 text-gray-300 px-3 py-1 rounded-lg">Showing 10 of 3,450 records</span>
-            </div>
-            <div class="overflow-x-auto">
-                <table class="min-w-full divide-y divide-white/10 text-left">
-                    <thead>
-                        <tr class="text-xs uppercase text-gray-400 tracking-wider bg-white/[02]">
-                            <th class="px-6 py-4 font-semibold">Candidate Full Name</th>
-                            <th class="px-6 py-4 font-semibold">Source Spreadsheets</th>
-                            <th class="px-6 py-4 font-semibold">Data Sheet</th>
-                            <th class="px-6 py-4 font-semibold text-right">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody class="divide-y divide-white/5 text-sm">
-                        <tr class="hover:bg-white/[02] transition">
-                            <td class="px-6 py-4 font-medium text-white flex items-center gap-3">
-                                <div class="w-8 h-8 rounded-full bg-blue-500/20 flex items-center justify-center text-blue-400 font-bold text-xs">AB</div>
-                                Abebe Bekele Tadesse
-                            </td>
-                            <td class="px-6 py-4 text-gray-400">CfA _PEP data _ South Africa...xlsx</td>
-                            <td class="px-6 py-4 text-gray-400">Local Government Candidates</td>
-                            <td class="px-6 py-4 text-right">
-                                <button class="px-3 py-1.5 rounded-lg bg-blue-600/20 hover:bg-blue-600/30 text-blue-400 text-xs font-semibold transition">Inspect Profile</button>
-                            </td>
-                        </tr>
-                        <tr class="hover:bg-white/[02] transition">
-                            <td class="px-6 py-4 font-medium text-white flex items-center gap-3">
-                                <div class="w-8 h-8 rounded-full bg-purple-500/20 flex items-center justify-center text-purple-400 font-bold text-xs">TM</div>
-                                Tigist Mamo Dinku
-                            </td>
-                            <td class="px-6 py-4 text-gray-400">CfA _PEP data _ South Africa...xlsx</td>
-                            <td class="px-6 py-4 text-gray-400">Local Government Candidates</td>
-                            <td class="px-6 py-4 text-right">
-                                <button class="px-3 py-1.5 rounded-lg bg-blue-600/20 hover:bg-blue-600/30 text-blue-400 text-xs font-semibold transition">Inspect Profile</button>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-        </div>
-    </div>
-
-    <!-- Section 3: Professional Plot Titles & Analytics Layout -->
-    <div class="space-y-6">
-        <h2 class="text-2xl font-display font-bold text-white">Analytical Intelligence & Visualizations</h2>
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div class="web-card p-6 space-y-4">
-                <span class="text-xs font-semibold text-blue-400 uppercase tracking-wider">Chart 03</span>
-                <h3 class="text-xl font-display font-bold text-white">Risk Level Distribution of Monitored Content</h3>
-                <p class="text-sm text-gray-400">Categorized risk scoring across analyzed social media posts and narrative vectors.</p>
-                <div class="h-48 rounded-xl bg-black/30 border border-white/5 flex items-center justify-center text-gray-500 text-sm">
-                    [Interactive Plotly / Risk Distribution View]
-                </div>
-            </div>
-
-            <div class="web-card p-6 space-y-4">
-                <span class="text-xs font-semibold text-indigo-400 uppercase tracking-wider">Chart 04</span>
-                <h3 class="text-xl font-display font-bold text-white">Daily Engagement and Post Volume Trend</h3>
-                <p class="text-sm text-gray-400">Longitudinal tracking of election-related discussions and user engagement spikes.</p>
-                <div class="h-48 rounded-xl bg-black/30 border border-white/5 flex items-center justify-center text-gray-500 text-sm">
-                    [Interactive Plotly / Volume Trend View]
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Section 4: Lexicon Collections Mapped -->
-    <div class="space-y-6">
-        <h2 class="text-2xl font-display font-bold text-white">Lexicon Collections & Slur Categories</h2>
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div class="web-card p-6 space-y-3">
-                <h3 class="font-display font-bold text-white text-lg">Hate Speech & Slurs</h3>
-                <p class="text-xs text-gray-400">Mapped ethnic and group-targeted derogatory terms.</p>
-                <div class="flex flex-wrap gap-2 pt-2">
-                    <span class="px-2.5 py-1 bg-white/5 border border-white/10 rounded-lg text-xs text-gray-300">diere</span>
-                    <span class="px-2.5 py-1 bg-white/5 border border-white/10 rounded-lg text-xs text-gray-300">isilwanyana</span>
-                    <span class="px-2.5 py-1 bg-white/5 border border-white/10 rounded-lg text-xs text-gray-300">amakula</span>
-                    <span class="px-2.5 py-1 bg-white/5 border border-white/10 rounded-lg text-xs text-gray-300">ikula</span>
+                <div class="bar-row">
+                    <div class="bar-label">Telegram</div>
+                    <div class="bar-track"><div class="bar-fill" style="width: 30%;"></div></div>
+                    <div class="bar-value">3.1k</div>
                 </div>
             </div>
 
-            <div class="web-card p-6 space-y-3">
-                <h3 class="font-display font-bold text-white text-lg">Dehumanization</h3>
-                <p class="text-xs text-gray-400">Animalistic and dehumanizing tropes.</p>
-                <div class="flex flex-wrap gap-2 pt-2">
-                    <span class="px-2.5 py-1 bg-white/5 border border-white/10 rounded-lg text-xs text-gray-300">phologolo</span>
-                    <span class="px-2.5 py-1 bg-white/5 border border-white/10 rounded-lg text-xs text-gray-300">liphoofolo</span>
-                </div>
-            </div>
+            <!-- RIGHT COLUMN (Narrow Sidebar) -->
+            <div class="sidebar-column">
+                
+                <!-- NEW FEATURE: Collapsible Explainer -->
+                <details class="explainer" open>
+                    <summary>How the 2026 Election Works</summary>
+                    <div class="explainer-content">
+                        <p><strong>Election Day:</strong> Wednesday, 4 November 2026. Voting stations open 07:00–21:00.</p>
+                        <ul>
+                            <li><strong>The System:</strong> Mixed system. Half ward councillors (voted as individuals), half proportional representation (party lists).</li>
+                            <li><strong>The Scale:</strong> 257 municipalities, 4,485 wards, and 10,526 council seats.</li>
+                            <li><strong>Independents:</strong> Can contest ward seats only. 621 independent candidates certified.</li>
+                        </ul>
+                    </div>
+                </details>
 
-            <div class="web-card p-6 space-y-3">
-                <h3 class="font-display font-bold text-white text-lg">Xenophobia & Slurs</h3>
-                <p class="text-xs text-gray-400">National origin and anti-immigrant narratives.</p>
-                <div class="flex flex-wrap gap-2 pt-2">
-                    <span class="px-2.5 py-1 bg-white/5 border border-white/10 rounded-lg text-xs text-gray-300">lekula</span>
-                    <span class="px-2.5 py-1 bg-white/5 border border-white/10 rounded-lg text-xs text-gray-300">makwerekwere</span>
+                <!-- Data Coverage Meter -->
+                <span class="section-number">Data Coverage</span>
+                <h3 style="font-family: var(--font-serif); font-size: 1.25rem; margin-bottom: 1rem;">File vs. IEC Total</h3>
+                <div class="coverage-meter">
+                    <div class="meter-bar">
+                        <div class="meter-fill"></div>
+                    </div>
+                    <div class="meter-label">This file covers 54% of the 136,790 IEC certified candidates.</div>
                 </div>
+
+                <br><br>
+
+                <span class="section-number">Ward vs PR Split</span>
+                <h3 style="font-family: var(--font-serif); font-size: 1.25rem; margin-bottom: 1rem;">Unverified File Labelling</h3>
+                <p style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 1rem;">
+                    <strong style="color: var(--accent-teal);">IEC Verified:</strong> ~72% Ward / 28% PR<br>
+                    <strong style="color: var(--risk-watch);">File Data:</strong> ~38% Ward / 62% PR
+                </p>
+                <p style="font-size: 0.8rem; color: var(--text-muted);">
+                    The file repeats PR candidates across wards, skewing the ratio. Always refer to the IEC verified numbers for national totals.
+                </p>
+
             </div>
         </div>
-    </div>
 
-</div>
-{% endblock %}
+    </main>
+
+</body>
+</html>
