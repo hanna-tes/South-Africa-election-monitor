@@ -10,84 +10,87 @@
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=DM+Serif+Display&display=swap" rel="stylesheet">
 
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
 
     <style>
         :root{
-            --bg:#0a1628;
-            --panel:#0d1f3c;
-            --panel-2:#11264a;
-            --line:rgba(255,255,255,.10);
-            --line-strong:rgba(255,255,255,.18);
-            --text:#ffffff;
-            --muted:#a8b8d1;
-            --accent:#3b82f6;
-            --accent-2:#60a5fa;
+            --bg:#faf9f7;
+            --panel:#ffffff;
+            --panel-2:#f5f3f0;
+            --line:#e8e4de;
+            --line-strong:#d4cfc7;
+            --text:#1a1a1a;
+            --muted:#6b6b6b;
+            --accent:#c75b00;
+            --accent-2:#e07b1e;
+            --success:#2d6a4f;
+            --warning:#d4a373;
+            --danger:#bc4749;
         }
         html,body{background:var(--bg);}
         body{
-            font-family:'Inter',system-ui,-apple-system,sans-serif;
+            font-family:'Plus Jakarta Sans',system-ui,-apple-system,sans-serif;
             color:var(--text);
-            background:
-                radial-gradient(1200px 600px at -10% -20%, rgba(59,130,246,.18), transparent 60%),
-                radial-gradient(1000px 500px at 110% 0%, rgba(96,165,250,.12), transparent 55%),
-                linear-gradient(180deg,#081223 0%, #0a1628 100%);
+            background:linear-gradient(180deg,#faf9f7 0%, #f5f3f0 100%);
             min-height:100vh;
-            letter-spacing:-0.005em;
+            letter-spacing:-0.01em;
         }
-        .font-display{font-family:'Space Grotesk', Inter, sans-serif; letter-spacing:-0.02em;}
+        .font-display{font-family:'DM Serif Display',Georgia,serif; letter-spacing:-0.01em;}
         .panel{
-            background:linear-gradient(180deg, rgba(255,255,255,.04), rgba(255,255,255,.015));
+            background:var(--panel);
             border:1px solid var(--line);
-            border-radius:16px;
-            backdrop-filter: blur(8px);
+            border-radius:20px;
+            box-shadow:0 2px 12px rgba(0,0,0,0.04);
         }
         .panel-strong{
-            background:linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.02));
-            border:1px solid var(--line-strong);
-            border-radius:16px;
+            background:var(--panel);
+            border:2px solid var(--line-strong);
+            border-radius:20px;
+            box-shadow:0 4px 16px rgba(0,0,0,0.06);
         }
         .hairline{border-color:var(--line);}
         .muted{color:var(--muted);}
         .chip{
             display:inline-flex;align-items:center;gap:6px;
-            padding:4px 10px;border-radius:999px;
-            font-size:11px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;
-            background:rgba(255,255,255,.06); color:#dbe6f5; border:1px solid var(--line);
+            padding:5px 12px;border-radius:999px;
+            font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;
+            background:var(--panel-2); color:var(--text); border:1px solid var(--line);
         }
         .nav-item{
-            display:flex;align-items:center;gap:10px;
-            padding:10px 12px;border-radius:10px;
-            font-size:13.5px;color:#cbd9ee;
+            display:flex;align-items:center;gap:12px;
+            padding:12px 16px;border-radius:12px;
+            font-size:14px;font-weight:500;color:var(--muted);
             border:1px solid transparent;
-            transition:all .15s ease;
+            transition:all .2s ease;
         }
-        .nav-item:hover{background:rgba(255,255,255,.06);color:#fff;border-color:var(--line);}
-        .nav-item.active{background:rgba(59,130,246,.15);color:#fff;border-color:rgba(59,130,246,.4);}
-        .nav-item .dot{width:5px;height:5px;border-radius:999px;background:#475569;}
-        .nav-item:hover .dot,.nav-item.active .dot{background:var(--accent-2);}
+        .nav-item:hover{background:var(--panel-2);color:var(--text);border-color:var(--line);}
+        .nav-item.active{background:var(--accent);color:#fff;border-color:var(--accent);font-weight:600;}
+        .nav-item .dot{width:6px;height:6px;border-radius:999px;background:var(--line-strong);}
+        .nav-item:hover .dot{background:var(--accent);}
+        .nav-item.active .dot{background:#fff;}
         .nav-section-label{
-            font-size:10.5px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;
-            color:#7a8aa8; padding:0 12px; margin:18px 0 6px;
+            font-size:10px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;
+            color:#9a9a9a; padding:0 16px; margin:20px 0 8px;
         }
         .sidebar-shell{
-            background:linear-gradient(180deg,#0a1628 0%, #081120 100%);
+            background:var(--panel);
             border-right:1px solid var(--line);
+            box-shadow:2px 0 8px rgba(0,0,0,0.03);
         }
         .topbar{
-            background:linear-gradient(180deg, rgba(10,22,40,.9), rgba(10,22,40,.6));
+            background:var(--panel);
             border-bottom:1px solid var(--line);
-            backdrop-filter: blur(12px);
         }
         .ribbon{
-            background:linear-gradient(90deg, rgba(30,64,175,.25), rgba(59,130,246,.15) 50%, rgba(30,64,175,.25));
-            border:1px solid var(--line-strong);
-            border-radius:14px;
+            background:linear-gradient(135deg, var(--accent) 0%, var(--accent-2) 100%);
+            border-radius:16px;
+            box-shadow:0 4px 12px rgba(199,91,0,0.15);
         }
         ::-webkit-scrollbar{width:8px;height:8px;}
-        ::-webkit-scrollbar-thumb{background:rgba(255,255,255,.14);border-radius:8px;}
+        ::-webkit-scrollbar-thumb{background:var(--line-strong);border-radius:8px;}
+        ::-webkit-scrollbar-track{background:var(--panel-2);}
     </style>
 
     {% block extra_head %}{% endblock %}
@@ -95,35 +98,34 @@
 <body class="antialiased">
 
 <div class="flex min-h-screen">
-    <!-- Sidebar -->
-    <aside class="sidebar-shell hidden lg:flex flex-col w-[270px] shrink-0">
+    <aside class="sidebar-shell hidden lg:flex flex-col w-[280px] shrink-0">
         
-        <div class="px-4 pt-5 pb-4 border-b hairline flex flex-col items-center">
-            <div class="w-full bg-white rounded-xl p-3 shadow-md flex items-center justify-center overflow-hidden">
+        <div class="px-5 pt-6 pb-5 border-b hairline flex flex-col items-center">
+            <div class="w-full bg-gradient-to-br from-orange-50 to-amber-50 rounded-2xl p-4 shadow-sm flex items-center justify-center overflow-hidden border border-orange-100">
                 <img src="{% static 'images/ADDO_design.png' %}" 
                      alt="ADDO Logo Asset" 
-                     class="w-full h-auto object-contain max-h-[110px]">
+                     class="w-full h-auto object-contain max-h-[100px]">
             </div>
-            <div class="text-[9px] uppercase tracking-[0.15em] font-bold text-slate-400 text-center mt-3 font-display">
-                AFRICAN DIGITAL DEMOCRACY OBSERVATORY
+            <div class="text-[10px] uppercase tracking-[0.18em] font-bold text-gray-400 text-center mt-4 font-display">
+                African Digital Democracy Observatory
             </div>
         </div>
 
-        <nav class="flex-1 overflow-y-auto px-3 py-4">
-            <a href="{% url 'home' %}" class="nav-item {% if active_tab == 'home' %}active{% endif %}"><span class="dot"></span> Home</a>
-            <a href="{% url 'peps' %}" class="nav-item {% if active_tab == 'peps' %}active{% endif %}"><span class="dot"></span> Candidates Tracker</a>
-            <a href="{% url 'lexicons' %}" class="nav-item {% if active_tab == 'lexicons' %}active{% endif %}"><span class="dot"></span> Mapped Lexicons</a>
-            <a href="{% url 'narratives' %}" class="nav-item {% if active_tab == 'narratives' %}active{% endif %}"><span class="dot"></span> Trending Narratives</a>
-            <a href="{% url 'networks' %}" class="nav-item {% if active_tab == 'networks' %}active{% endif %}"><span class="dot"></span> Networks &amp; TTPs</a>
-            <a href="{% url 'lexicon_management' %}" class="nav-item {% if active_tab == 'lexicon_management' %}active{% endif %}"><span class="dot"></span> Lexicon Management</a>
-            <a href="{% url 'reports_landing' %}" class="nav-item {% if active_tab == 'reports' %}active{% endif %}"><span class="dot"></span> Reports</a>
+        <nav class="flex-1 overflow-y-auto px-4 py-5">
+            <a href="{% url 'home' %}?{{ request.GET.urlencode }}" class="nav-item {% if request.resolver_match.url_name == 'home' %}active{% endif %}"><span class="dot"></span> Home</a>
+            <a href="{% url 'peps' %}?{{ request.GET.urlencode }}" class="nav-item {% if request.resolver_match.url_name == 'peps' %}active{% endif %}"><span class="dot"></span> PEPs/PIPs Tracker</a>
+            <a href="{% url 'lexicons' %}?{{ request.GET.urlencode }}" class="nav-item {% if request.resolver_match.url_name == 'lexicons' %}active{% endif %}"><span class="dot"></span> Mapped Lexicons</a>
+            <a href="{% url 'narratives' %}?{{ request.GET.urlencode }}" class="nav-item {% if request.resolver_match.url_name == 'narratives' %}active{% endif %}"><span class="dot"></span> Trending Narratives</a>
+            <a href="{% url 'networks' %}?{{ request.GET.urlencode }}" class="nav-item {% if request.resolver_match.url_name == 'networks' %}active{% endif %}"><span class="dot"></span> Networks &amp; TTPs</a>
+            <a href="{% url 'lexicon_management' %}?{{ request.GET.urlencode }}" class="nav-item {% if request.resolver_match.url_name == 'lexicon_management' %}active{% endif %}"><span class="dot"></span> Lexicon Management</a>
+            <a href="{% url 'reports_landing' %}?{{ request.GET.urlencode }}" class="nav-item {% if request.resolver_match.url_name == 'reports_landing' %}active{% endif %}"><span class="dot"></span> Reports</a>
         
             <div class="nav-section-label">Data Management</div>
-            <a href="{% url 'upload_data' %}" class="nav-item {% if active_tab == 'upload' %}active{% endif %}"><span class="dot"></span> Upload Data</a>
+            <a href="{% url 'upload_data' %}?{{ request.GET.urlencode }}" class="nav-item {% if request.resolver_match.url_name == 'upload_data' %}active{% endif %}"><span class="dot"></span> Upload Data</a>
         </nav>
 
-        <div class="px-5 py-4 border-t hairline bg-slate-950/20">
-            <div class="text-[10.5px] muted tracking-wide text-center font-medium">
+        <div class="px-6 py-5 border-t hairline bg-gradient-to-t from-gray-50 to-transparent">
+            <div class="text-[11px] text-gray-500 tracking-wide text-center font-medium">
                 South Africa 2026 Municipal Elections
             </div>
         </div>
@@ -131,12 +133,11 @@
 
     <main class="flex-1 min-w-0">
 
-        <!-- Topbar -->
         <header class="topbar sticky top-0 z-30">
-            <div class="max-w-[1400px] mx-auto px-6 lg:px-10 py-4 flex items-center gap-4">
+            <div class="max-w-[1400px] mx-auto px-6 lg:px-10 py-5 flex items-center gap-4">
                 
                 <div class="flex lg:hidden items-center mr-2">
-                    <div class="bg-white px-2 py-1 rounded-lg max-w-[100px] flex items-center shadow-sm">
+                    <div class="bg-gradient-to-br from-orange-50 to-amber-50 px-3 py-2 rounded-xl max-w-[110px] flex items-center shadow-sm border border-orange-100">
                         <img src="{% static 'images/ADDO_design.png' %}" 
                              alt="ADDO" 
                              class="w-full h-auto object-contain">
@@ -152,35 +153,36 @@
                 </div>
             </div>
 
-            <div class="max-w-[1400px] mx-auto px-6 lg:px-10 pb-4">
-                <div class="ribbon px-5 py-4 flex flex-wrap items-center justify-between gap-x-6 gap-y-2">
-                    <div class="flex items-center gap-3">
-                        <span class="text-xl leading-none">🇿🇦</span>
-                        <span class="font-display text-[15px] font-semibold text-white">South Africa 2026 Municipal Elections Monitor</span>
+            <div class="max-w-[1400px] mx-auto px-6 lg:px-10 pb-5">
+                <div class="ribbon px-6 py-5 flex flex-wrap items-center justify-between gap-x-6 gap-y-3">
+                    <div class="flex items-center gap-4">
+                        <span class="text-2xl leading-none">🗳️</span>
+                        <div>
+                            <span class="font-display text-[18px] font-semibold text-white block leading-tight">South Africa 2026 Municipal Elections Monitor</span>
+                            <span class="text-white/90 text-[13px] font-medium">Tracking narratives • Weaponized language • Coordinated networks</span>
+                        </div>
                     </div>
-                    <div class="text-[12.5px] muted">
-                        Tracking narratives • Weaponized language • Coordinated networks
+                    <div class="text-[13px] text-white/95 font-medium">
+                        IEC Data Integration • Multi-platform Analysis
                     </div>
                 </div>
             </div>
         </header>
 
-        <!-- Page Title Section -->
-        <section class="max-w-[1400px] mx-auto px-6 lg:px-10 pt-6">
+        <section class="max-w-[1400px] mx-auto px-6 lg:px-10 pt-8">
             <div class="flex flex-wrap items-end justify-between gap-4 pb-6 border-b hairline">
                 <div>
-                    <h1 class="font-display text-[28px] md:text-[32px] font-bold leading-tight text-white">
-                        {% block page_title %}📊 Executive Dashboard{% endblock %}
+                    <h1 class="font-display text-[32px] md:text-[38px] font-bold leading-tight text-gray-900">
+                        {% block page_title %} Executive Dashboard{% endblock %}
                     </h1>
-                    <p class="muted text-[14px] mt-1">
+                    <p class="muted text-[15px] mt-2 font-medium">
                         {% block page_subtitle %}Real-time election integrity monitoring analytics{% endblock %}
                     </p>
                 </div>
             </div>
         </section>
 
-        <!-- Main Content -->
-        <section class="max-w-[1400px] mx-auto px-6 lg:px-10 py-8">
+        <section class="max-w-[1400px] mx-auto px-6 lg:px-10 py-10">
             {% block content %}{% endblock %}
         </section>
 
