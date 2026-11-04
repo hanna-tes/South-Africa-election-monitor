@@ -32,7 +32,7 @@ urlpatterns = [
      
     
     # === PEPs DATA VIEWS (FIXED CONFLICT) ===
-    path('peps/registry/', views.PEPsHubView.as_view(), name='peps_hub'),   # File cards (HoPR, RC, Executive)
+   # path('peps/registry/', views.PEPsHubView.as_view(), name='peps_hub'),   # File cards (HoPR, RC, Executive)
     path('peps/data/', views.PEPsDataView.as_view(), name='peps_data'),     # Spreadsheet view
     
     # === UPLOAD & DATA MANAGEMENT ===
