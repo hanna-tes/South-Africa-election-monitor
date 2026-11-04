@@ -1,5 +1,5 @@
 {% extends 'dashboard/base.html' %}
-{% block title %}Candidates & Officials Tracker - ADDO SA Elections{% endblock %}
+{% block title %}Candidates Tracker - ADDO SA Elections{% endblock %}
 
 {% block content %}
 <section class="hero">
@@ -8,7 +8,7 @@
     <div class="hero-meta">
         <span>Total Candidates: {{ total_candidates|default:0 }}</span>
         <span>&bull;</span>
-        <span>Parties/Officials: {{ total_peps|default:0 }}</span>
+        <span>Key Officials: {{ total_peps|default:0 }}</span>
     </div>
 </section>
 
@@ -17,7 +17,6 @@
     <a href="#ward-councillors" class="sa-btn sa-btn--secondary">Ward Councillors</a>
     <a href="#pr-councillors" class="sa-btn sa-btn--secondary">PR Councillors</a>
     <a href="#mayoral" class="sa-btn sa-btn--secondary">Mayoral Candidates</a>
-    <a href="#party-lists" class="sa-btn sa-btn--secondary">Party Lists</a>
     <a href="{% url 'peps_analysis' %}" class="sa-btn sa-btn--primary" style="margin-left: auto;">View Narrative Analysis</a>
 </div>
 
@@ -26,10 +25,6 @@
     <h3 style="margin-bottom: 0.5rem; font-family: var(--font-sans); font-size: 1.1rem;">Local Data Status</h3>
     <p style="color: var(--text-muted); margin: 0;">
         {{ total_candidates|default:0 }} election candidate records loaded from the 2026 Municipal Candidates dataset.
-        <br>
-        <span style="font-size: 0.85rem; margin-top: 0.5rem; display: block;">
-            Note: The analysis engine automatically matches social media mentions against this candidate registry to capture sub-national narrative trends.
-        </span>
     </p>
 </div>
 
@@ -75,30 +70,60 @@
     </div>
     {% else %}
     <div class="sa-empty-state">
-        <h3>No candidates loaded yet.</h3>
+        <h3>No key officials loaded yet.</h3>
         <p>The system will attempt to sync from the configured data source on the next visit.</p>
     </div>
     {% endif %}
 </div>
 
-<!-- RC Members / Party Lists Section -->
-<div id="party-lists" class="card" style="padding: 1.5rem;">
-    <h2 class="section-title" style="margin-bottom: 1rem;">Party Lists & Additional Candidates</h2>
+<!-- Excel Data Preview -->
+<div id="pr-councillors" class="card" style="padding: 1.5rem;">
+    <h2 class="section-title" style="margin-bottom: 1rem;">Municipal Candidates Registry (Preview)</h2>
     <p style="color: var(--text-muted); margin-bottom: 1rem;">
-        Showing first 20 entries from the uploaded candidate registry file.
+        Showing first 50 entries from the uploaded candidate registry file.
     </p>
     
-    {% if rc_members_list %}
-    <ul class="clean-list">
-        {% for member in rc_members_list %}
-        <li class="clean-list__item">
-            <span class="clean-list__title">{{ member }}</span>
-            <span class="clean-list__meta">Candidate / Party Member</span>
-        </li>
-        {% endfor %}
-    </ul>
+    {% if excel_candidates %}
+    <div class="table-container">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Full Name</th>
+                    <th>Party</th>
+                    <th>Office</th>
+                    <th>Municipality</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for candidate in excel_candidates %}
+                <tr>
+                    <td>{{ candidate.full_name|default:"—" }}</td>
+                    <td>{{ candidate.party_name|default:"—" }}</td>
+                    <td>{{ candidate.office|default:"—" }}</td>
+                    <td>{{ candidate.municipality|default:"—" }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    
+    <!-- Pagination -->
+    {% if page_obj.paginator.num_pages > 1 %}
+    <div style="display: flex; justify-content: center; gap: 1rem; margin-top: 2rem; align-items: center;">
+        <span style="font-size: 0.9rem; color: var(--text-muted);">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+        <div style="display: flex; gap: 0.5rem;">
+            {% if page_obj.has_previous %}
+            <a href="?page={{ page_obj.previous_page_number }}" class="sa-btn sa-btn--secondary">Prev</a>
+            {% endif %}
+            {% if page_obj.has_next %}
+            <a href="?page={{ page_obj.next_page_number }}" class="sa-btn sa-btn--secondary">Next</a>
+            {% endif %}
+        </div>
+    </div>
+    {% endif %}
+    
     {% else %}
-    <p style="color: var(--text-muted); font-style: italic;">No additional candidate data available in the registry file.</p>
+    <p style="color: var(--text-muted); font-style: italic;">No candidate data available in the registry file.</p>
     {% endif %}
 </div>
 
