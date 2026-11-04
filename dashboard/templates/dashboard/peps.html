@@ -1,103 +1,48 @@
 {% extends 'dashboard/base.html' %}
-{% block title %}Candidates Tracker - ADDO SA Elections{% endblock %}
+{% block title %}Candidates Tracker - SA Elections{% endblock %}
 
 {% block content %}
-<section class="hero">
-    <h1>Municipal Candidates & Officials Tracker</h1>
-    <p class="hero-subtitle">Monitoring candidates and key figures for the 2026 Local Government Elections.</p>
-    <div class="hero-meta">
-        <span>Total Candidates: {{ total_candidates|default:0 }}</span>
-        <span>&bull;</span>
-        <span>Key Officials: {{ total_peps|default:0 }}</span>
+<!-- Metrics Grid -->
+<div class="metrics-grid">
+    <div class="metric-card">
+        <div class="metric-label">Total Candidates</div>
+        <div class="metric-value">{{ total_candidates|default:"0" }}</div>
+        <div class="metric-subtext">From 2026 Municipal Registry</div>
     </div>
-</section>
-
-<!-- Navigation Tabs -->
-<div class="card" style="padding: 1rem; margin-bottom: 2rem; display: flex; gap: 1rem; flex-wrap: wrap;">
-    <a href="#ward-councillors" class="sa-btn sa-btn--secondary">Ward Councillors</a>
-    <a href="#pr-councillors" class="sa-btn sa-btn--secondary">PR Councillors</a>
-    <a href="#mayoral" class="sa-btn sa-btn--secondary">Mayoral Candidates</a>
-    <a href="{% url 'peps_analysis' %}" class="sa-btn sa-btn--primary" style="margin-left: auto;">View Narrative Analysis</a>
+    <div class="metric-card">
+        <div class="metric-label">Municipalities</div>
+        <div class="metric-value">{{ municipalities_count|default:"257" }}</div>
+        <div class="metric-subtext">Across South Africa</div>
+    </div>
+    <div class="metric-card">
+        <div class="metric-label">Key Officials</div>
+        <div class="metric-value">{{ total_peps|default:"0" }}</div>
+        <div class="metric-subtext">Tracked in Database</div>
+    </div>
 </div>
 
-<!-- Data Status -->
-<div class="card" style="padding: 1.5rem; margin-bottom: 2rem; background: var(--bg-page);">
-    <h3 style="margin-bottom: 0.5rem; font-family: var(--font-sans); font-size: 1.1rem;">Local Data Status</h3>
-    <p style="color: var(--text-muted); margin: 0;">
-        {{ total_candidates|default:0 }} election candidate records loaded from the 2026 Municipal Candidates dataset.
-    </p>
-</div>
-
-<!-- Main Table: Key Officials / Candidates -->
-<div id="ward-councillors" class="card" style="padding: 1.5rem; margin-bottom: 2rem;">
-    <h2 class="section-title" style="margin-bottom: 1rem;">Registered Candidates & Officials</h2>
-    
-    {% if peps %}
-    <div class="table-container">
-        <table class="data-table">
-            <thead>
-                <tr>
-                    <th>Name</th>
-                    <th>Party / Affiliation</th>
-                    <th>Position / Role</th>
-                    <th>Region / Municipality</th>
-                    <th>Social Links</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for pep in peps %}
-                <tr>
-                    <td style="font-weight: 600;">{{ pep.name }}</td>
-                    <td>{{ pep.affiliation|default:"—" }}</td>
-                    <td>{{ pep.title|default:"—" }}</td>
-                    <td>{{ pep.ethnic_group|default:"—" }}</td>
-                    <td>
-                        {% if pep.x_link %}
-                            <a href="{{ pep.x_link }}" target="_blank" class="sa-link">X/Twitter</a>
-                        {% endif %}
-                        {% if pep.facebook_link %}
-                            {% if pep.x_link %} &bull; {% endif %}
-                            <a href="{{ pep.facebook_link }}" target="_blank" class="sa-link">Facebook</a>
-                        {% endif %}
-                        {% if not pep.x_link and not pep.facebook_link %}
-                            —
-                        {% endif %}
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+<!-- Candidates Registry Table -->
+<div class="card">
+    <div class="card-header">
+        <div class="section-label">01 — Candidate Database</div>
+        <h2 class="section-title">Municipal Candidates Registry</h2>
     </div>
-    {% else %}
-    <div class="sa-empty-state">
-        <h3>No key officials loaded yet.</h3>
-        <p>The system will attempt to sync from the configured data source on the next visit.</p>
-    </div>
-    {% endif %}
-</div>
 
-<!-- Excel Data Preview -->
-<div id="pr-councillors" class="card" style="padding: 1.5rem;">
-    <h2 class="section-title" style="margin-bottom: 1rem;">Municipal Candidates Registry (Preview)</h2>
-    <p style="color: var(--text-muted); margin-bottom: 1rem;">
-        Showing first 50 entries from the uploaded candidate registry file.
-    </p>
-    
     {% if excel_candidates %}
     <div class="table-container">
         <table class="data-table">
             <thead>
                 <tr>
                     <th>Full Name</th>
-                    <th>Party</th>
-                    <th>Office</th>
+                    <th>Party / Affiliation</th>
+                    <th>Office / Position</th>
                     <th>Municipality</th>
                 </tr>
             </thead>
             <tbody>
                 {% for candidate in excel_candidates %}
                 <tr>
-                    <td>{{ candidate.full_name|default:"—" }}</td>
+                    <td style="font-weight: 600;">{{ candidate.full_name|default:"—" }}</td>
                     <td>{{ candidate.party_name|default:"—" }}</td>
                     <td>{{ candidate.office|default:"—" }}</td>
                     <td>{{ candidate.municipality|default:"—" }}</td>
@@ -106,14 +51,14 @@
             </tbody>
         </table>
     </div>
-    
+
     <!-- Pagination -->
     {% if page_obj.paginator.num_pages > 1 %}
-    <div style="display: flex; justify-content: center; gap: 1rem; margin-top: 2rem; align-items: center;">
-        <span style="font-size: 0.9rem; color: var(--text-muted);">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+    <div style="display: flex; justify-content: center; gap: 1rem; margin-top: 1.5rem; align-items: center;">
+        <span style="font-size: 0.875rem; color: var(--text-secondary);">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
         <div style="display: flex; gap: 0.5rem;">
             {% if page_obj.has_previous %}
-            <a href="?page={{ page_obj.previous_page_number }}" class="sa-btn sa-btn--secondary">Prev</a>
+            <a href="?page={{ page_obj.previous_page_number }}" class="sa-btn sa-btn--secondary">Previous</a>
             {% endif %}
             {% if page_obj.has_next %}
             <a href="?page={{ page_obj.next_page_number }}" class="sa-btn sa-btn--secondary">Next</a>
@@ -121,10 +66,47 @@
         </div>
     </div>
     {% endif %}
-    
+
     {% else %}
-    <p style="color: var(--text-muted); font-style: italic;">No candidate data available in the registry file.</p>
+    <div class="sa-empty-state">
+        <h3>No candidate data loaded</h3>
+        <p>Please ensure the Excel file is present in the dashboard/data directory.</p>
+    </div>
     {% endif %}
 </div>
 
+<!-- Key Officials Table -->
+{% if peps %}
+<div class="card" style="margin-top: 1.5rem;">
+    <div class="card-header">
+        <div class="section-label">02 — Key Officials & PEPs</div>
+        <h2 class="section-title">Tracked Officials</h2>
+    </div>
+    <div class="table-container">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Position</th>
+                    <th>Affiliation</th>
+                    <th>Social Links</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for pep in peps %}
+                <tr>
+                    <td style="font-weight: 600;">{{ pep.name }}</td>
+                    <td>{{ pep.title|default:"—" }}</td>
+                    <td>{{ pep.affiliation|default:"—" }}</td>
+                    <td>
+                        {% if pep.x_link %}<a href="{{ pep.x_link }}" target="_blank" class="sa-link">X</a>{% endif %}
+                        {% if pep.facebook_link %} &bull; <a href="{{ pep.facebook_link }}" target="_blank" class="sa-link">Facebook</a>{% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endif %}
 {% endblock %}
