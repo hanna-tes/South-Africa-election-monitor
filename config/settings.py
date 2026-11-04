@@ -70,13 +70,16 @@ WSGI_APPLICATION = 'election_monitor.wsgi.application'
 # ==========================================
 # DATABASE
 # ==========================================
+# ==========================================
+# DATABASE
+# ==========================================
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': os.environ.get('DB_NAME', 'election_monitor'),
         'USER': os.environ.get('DB_USER', 'postgres'),
         'PASSWORD': os.environ.get('DB_PASSWORD', 'postgres'),
-        'HOST': 'localhost',  # Connecting to localhost over Unix domain sockets bypasses TCP SSL checks
+        'HOST': '/tmp',  # macOS Homebrew Unix domain socket (completely bypasses TCP/SSL)
         'PORT': '5432',
         'OPTIONS': {
             'sslmode': 'disable',
