@@ -6496,7 +6496,7 @@ class NetworksView(TemplateView):
 class PEPsView(TemplateView):
     """
     SA Municipal Candidates View.
-    Replaces the Ethiopia HoPR/RC structure.
+    Reads directly from the local Excel file and provides paginated data.
     """
     template_name = 'dashboard/peps.html'
 
@@ -6504,15 +6504,52 @@ class PEPsView(TemplateView):
         context = super().get_context_data(**kwargs)
         context['active_tab'] = 'peps'
         
-        # TODO: Implement the Excel file reading logic here
-        # as discussed in the "Candidates Registry" requirements.
-        # For now, we pass empty context to prevent crashes.
+        # 1. Fetch standard PEPs from DB (for the top officials table)
+        peps_qs = PEP.objects.filter(is_active=True).order_by('name')
+        context['peps'] = peps_qs
+        context['total_peps'] = peps_qs.count()
+        context['last_pep_sync'] = peps_qs.aggregate(last=Max('last_updated'))['last']
+        context['rc_members_count'] = 0  # Default, update if you add an RC Excel file later
         
-        context['candidates_count'] = 0
-        context['municipalities_count'] = 257
+        # 2. Fetch Excel data for the main candidate list
+        excel_path = os.path.join(
+            settings.BASE_DIR, 
+            'dashboard', 
+            'data', 
+            'CfA PEP data, South Africa, 2026 Local Government Election Candidates.xlsx'
+        )
         
+        if os.path.exists(excel_path):
+            try:
+                # Read the 'persons' sheet
+                df = pd.read_excel(excel_path, sheet_name='persons')
+                
+                total_candidates = len(df)
+                # Count unique municipalities if the column exists, otherwise default to 257
+                municipalities_count = df['municipality'].nunique() if 'municipality' in df.columns else 257
+                
+                # Pagination (50 rows per page to prevent browser crashes)
+                page_number = self.request.GET.get('page', 1)
+                paginator = Paginator(df.to_dict('records'), 50)
+                page_obj = paginator.get_page(page_number)
+                
+                context.update({
+                    'excel_candidates': page_obj.object_list,
+                    'page_obj': page_obj,
+                    'total_candidates': total_candidates,
+                    'municipalities_count': municipalities_count,
+                    'file_loaded': True,
+                })
+            except Exception as e:
+                context['error'] = f"Failed to load Excel file: {str(e)}"
+                context['file_loaded'] = False
+        else:
+            context['error'] = "Candidates Excel file not found in dashboard/data/"
+            context['file_loaded'] = False
+            context['total_candidates'] = 0
+            context['municipalities_count'] = 257
+            
         return context
-
 
 class LexiconManagementView(TemplateView):
     template_name = 'dashboard/lexicon_management.html'
