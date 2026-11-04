@@ -4,225 +4,696 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ADDO Style Guide - SA Municipal Elections</title>
-    <link rel="stylesheet" href="{% static 'css/sa-election-theme.css' %}">
-    <!-- Pinned Plotly.js -->
-    <script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
+    <title>ADDO - SA Elections Monitor (Full Layout)</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        /* --- CSS VARIABLES --- */
+        :root {
+            --bg-page: #F9F8F4;
+            --bg-card: #FFFFFF;
+            --text-ink: #1A1A1A;
+            --text-muted: #6B7280;
+            --border-hairline: #E5E7EB;
+            --accent-teal: #0F5C5A;
+            --accent-gold: #B8923A;
+            --risk-calm: #2E7D5B;
+            --risk-watch: #C79A1E;
+            --risk-elevated: #D4691F;
+            --risk-critical: #B3261E;
+            --font-serif: 'Playfair Display', Georgia, serif;
+            --font-sans: 'Inter', sans-serif;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { background-color: var(--bg-page); color: var(--text-ink); font-family: var(--font-sans); font-size: 16px; line-height: 1.6; -webkit-font-smoothing: antialiased; }
+        h1, h2, h3, h4 { font-family: var(--font-serif); font-weight: 700; color: var(--text-ink); margin-top: 0; }
+        h1 { font-size: 3rem; letter-spacing: -0.02em; line-height: 1.1; }
+        h2 { font-size: 1.75rem; }
+        h3 { font-size: 1.25rem; }
+        a { text-decoration: none; color: inherit; }
+
+        /* --- MASTHEAD --- */
+        .masthead { background: var(--bg-card); border-bottom: 1px solid var(--border-hairline); padding: 1.25rem 2rem; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 100; }
+        .masthead-logo { display: flex; align-items: center; gap: 1rem; }
+        .masthead-logo svg { height: 40px; width: auto; }
+        .masthead-nav { display: flex; gap: 2rem; }
+        .masthead-nav a { text-decoration: none; color: var(--text-muted); font-size: 0.9rem; font-weight: 500; transition: color 0.2s; cursor: pointer; }
+        .masthead-nav a:hover, .masthead-nav a.active { color: var(--accent-teal); }
+        .masthead-nav a.active { border-bottom: 2px solid var(--accent-teal); padding-bottom: 0.5rem; }
+
+        /* --- LAYOUT --- */
+        .container { max-width: 1200px; margin: 0 auto; padding: 4rem 2rem; }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+
+        /* --- HERO --- */
+        .hero { margin-bottom: 4rem; padding-bottom: 2rem; border-bottom: 1px solid var(--border-hairline); }
+        .hero-subtitle { font-size: 1.125rem; color: var(--text-muted); max-width: 700px; margin: 0.75rem 0 2rem 0; font-weight: 400; }
+        .hero-meta { display: flex; align-items: center; gap: 1rem; font-size: 0.85rem; color: var(--accent-teal); font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; }
+        
+        /* --- METRICS STRIP --- */
+        .metrics-strip { display: flex; justify-content: space-between; margin-bottom: 4rem; padding: 2rem 0; flex-wrap: wrap; gap: 2rem; }
+        .metric { display: flex; flex-direction: column; min-width: 120px; }
+        .metric-value { font-family: var(--font-serif); font-size: 2.5rem; font-weight: 700; color: var(--text-ink); line-height: 1; margin-bottom: 0.5rem; }
+        .metric-label { font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.1em; }
+        .metric-divider { width: 1px; background: var(--border-hairline); }
+
+        /* --- ASYMMETRIC GRID --- */
+        .editorial-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 4rem; }
+        @media (max-width: 900px) { .editorial-grid { grid-template-columns: 1fr; } }
+        .section-number { font-family: var(--font-sans); font-size: 0.75rem; color: var(--accent-gold); font-weight: 600; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 1rem; display: block; }
+        .section-title { font-family: var(--font-serif); font-size: 2rem; margin-bottom: 2rem; font-weight: 700; }
+        .section-desc { font-size: 0.95rem; color: var(--text-muted); margin-top: -1.5rem; margin-bottom: 2rem; max-width: 700px; }
+
+        /* --- COMPONENTS --- */
+        .clean-list { list-style: none; }
+        .clean-list__item { display: flex; justify-content: space-between; align-items: center; padding: 1.25rem 0; border-bottom: 1px solid var(--border-hairline); }
+        .clean-list__item:last-child { border-bottom: none; }
+        .clean-list__title { font-weight: 500; color: var(--text-ink); }
+        .clean-list__meta { font-size: 0.85rem; color: var(--text-muted); }
+
+        .badge { display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.35rem 0.85rem; border-radius: 4px; font-size: 0.8rem; font-weight: 600; }
+        .badge--calm { background: rgba(46, 125, 91, 0.1); color: var(--risk-calm); }
+        .badge--watch { background: rgba(199, 154, 30, 0.1); color: var(--risk-watch); }
+        .badge--elevated { background: rgba(212, 105, 31, 0.1); color: var(--risk-elevated); }
+        .badge--critical { background: rgba(179, 38, 30, 0.1); color: var(--risk-critical); }
+        .badge--neutral { background: rgba(107, 114, 128, 0.1); color: var(--text-muted); }
+
+        .bar-row { display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem; }
+        .bar-label { width: 100px; font-size: 0.9rem; font-weight: 500; }
+        .bar-track { flex: 1; height: 6px; background: var(--border-hairline); border-radius: 3px; overflow: hidden; }
+        .bar-fill { height: 100%; background: var(--accent-teal); }
+        .bar-value { width: 50px; text-align: right; font-size: 0.9rem; font-weight: 600; }
+
+        .data-table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
+        .data-table th { text-align: left; padding: 1rem; background: var(--bg-page); border-bottom: 1px solid var(--border-hairline); font-weight: 600; color: var(--text-muted); position: sticky; top: 0; }
+        .data-table td { padding: 1rem; border-bottom: 1px solid var(--border-hairline); }
+        .table-container { overflow-x: auto; border: 1px solid var(--border-hairline); border-radius: 4px; background: var(--bg-card); max-height: 500px; }
+
+        .explainer { background: var(--bg-card); border: 1px solid var(--border-hairline); border-radius: 4px; margin-bottom: 2rem; }
+        .explainer summary { padding: 1.25rem; font-family: var(--font-serif); font-size: 1.1rem; font-weight: 700; cursor: pointer; list-style: none; display: flex; justify-content: space-between; align-items: center; }
+        .explainer summary::after { content: '+'; font-size: 1.5rem; color: var(--accent-teal); }
+        .explainer[open] summary::after { content: '−'; }
+        .explainer-content { padding: 0 1.25rem 1.25rem; font-size: 0.95rem; color: var(--text-muted); line-height: 1.8; }
+
+        .coverage-meter { margin-top: 1rem; }
+        .meter-bar { height: 8px; background: var(--border-hairline); border-radius: 4px; overflow: hidden; margin: 0.5rem 0; }
+        .meter-fill { height: 100%; background: var(--accent-gold); width: 54%; }
+        .meter-label { font-size: 0.8rem; color: var(--text-muted); }
+
+        .footer { margin-top: 6rem; padding-top: 2rem; border-top: 1px solid var(--border-hairline); font-size: 0.85rem; color: var(--text-muted); display: flex; justify-content: space-between; }
+    </style>
 </head>
 <body>
 
     <!-- MASTHEAD -->
-    <header class="sa-masthead">
-        <a href="/" class="sa-masthead__logo">
-            <!-- Elegant SVG Logo Placeholder (Replace with <img> when ready) -->
+    <header class="masthead">
+        <div class="masthead-logo">
             <svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <rect width="32" height="32" rx="6" fill="currentColor"/>
-                <path d="M8 22L16 10L24 22H8Z" fill="#F6F3EC"/>
+                <rect width="32" height="32" rx="6" fill="var(--accent-teal)"/>
+                <path d="M8 22L16 10L24 22H8Z" fill="#F9F8F4"/>
                 <circle cx="16" cy="19" r="2.5" fill="#0F5C5A"/>
             </svg>
-            ADDO
-        </a>
-        <nav class="sa-masthead__nav">
-            <a href="#" class="sa-masthead__link sa-masthead__link--active">Home</a>
-            <a href="#" class="sa-masthead__link">Candidates</a>
-            <a href="#" class="sa-masthead__link">Narratives</a>
-            <a href="#" class="sa-masthead__link">Lexicons</a>
-            <a href="#" class="sa-masthead__link">Networks</a>
+            <div>
+                <div style="font-family: var(--font-serif); font-weight: 700; font-size: 1.25rem; color: var(--accent-teal);">ADDO</div>
+                <div style="font-size: 0.7rem; color: var(--text-muted);">African Digital Democracy Observatory</div>
+            </div>
+        </div>
+        <nav class="masthead-nav">
+            <a onclick="switchTab('home')" id="nav-home" class="active">Home</a>
+            <a onclick="switchTab('candidates')" id="nav-candidates">Candidates</a>
+            <a onclick="switchTab('narratives')" id="nav-narratives">Narratives</a>
+            <a onclick="switchTab('lexicons')" id="nav-lexicons">Lexicons</a>
+            <a onclick="switchTab('networks')" id="nav-networks">Networks</a>
+            <a onclick="switchTab('management')" id="nav-management">Management</a>
         </nav>
     </header>
 
-    <main class="sa-container">
-        
-        <!-- HERO SECTION -->
-        <section class="sa-hero">
-            <h1>2026 Municipal Elections Monitor</h1>
-            <p class="sa-hero__subtitle">Tracking social media narratives, weaponized language, and coordinated networks ahead of the 4 November 2026 local government elections.</p>
-            
-            <div class="sa-hero__figures">
-                <div class="sa-figure">
-                    <span class="sa-figure__value">75,311</span>
-                    <span class="sa-figure__label">Candidates in File</span>
-                </div>
-                <div class="sa-figure">
-                    <span class="sa-figure__value">257</span>
-                    <span class="sa-figure__label">Municipalities</span>
-                </div>
-                <div class="sa-figure">
-                    <span class="sa-figure__value">579</span>
-                    <span class="sa-figure__label">Parties Registered</span>
-                </div>
-                <div class="sa-figure">
-                    <span class="sa-figure__value">136,790</span>
-                    <span class="sa-figure__label">IEC Certified (16 Sept 2026)</span>
-                </div>
-            </div>
-        </section>
+    <main class="container">
 
-        <!-- SECTION 01: RISK ASSESSMENT -->
-        <section class="sa-section">
-            <div class="sa-section__header">
-                <span class="sa-section__number">01</span>
-                <h2>Risk Assessment & Narrative Tone</h2>
-            </div>
-            <p class="sa-section__desc">Current aggregate risk level based on weaponized language and coordinated activity detected in the last 30 days.</p>
-            
-            <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
-                <span class="sa-badge sa-badge--calm">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
-                    Calm (62%)
-                </span>
-                <span class="sa-badge sa-badge--watch">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
-                    Watch (24%)
-                </span>
-                <span class="sa-badge sa-badge--elevated">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
-                    Elevated (11%)
-                </span>
-                <span class="sa-badge sa-badge--critical">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="15" y1="9" x2="9" y2="15"></line><line x1="9" y1="9" x2="15" y2="15"></line></svg>
-                    Critical (3%)
-                </span>
-            </div>
-        </section>
-
-        <!-- SECTION 02: FILTERS & CONTROLS -->
-        <section class="sa-section">
-            <div class="sa-section__header">
-                <span class="sa-section__number">02</span>
-                <h2>Filters & Controls</h2>
-            </div>
-            <div style="display: grid; grid-template-columns: 2fr 1fr 1fr auto; gap: 1rem; align-items: end;">
-                <div>
-                    <label style="display: block; margin-bottom: 0.5rem; font-size: 0.85rem; color: var(--color-text-muted); font-weight: 500;">Search Candidates</label>
-                    <input type="text" class="sa-input" placeholder="e.g., Johannesburg, ANC, Ward 42">
+        <!-- ================= TAB 1: HOME ================= -->
+        <div id="tab-home" class="tab-content active">
+            <section class="hero">
+                <h1>2026 Municipal Elections Monitor</h1>
+                <p class="hero-subtitle">Tracking social media narratives, weaponized language, and coordinated networks ahead of the 4 November 2026 local government elections.</p>
+                <div class="hero-meta">
+                    <span>IEC Figures as at 16 Sept 2026</span>
+                    <span>•</span>
+                    <span>Last Updated: Today, 09:00 UTC</span>
                 </div>
-                <div>
-                    <label style="display: block; margin-bottom: 0.5rem; font-size: 0.85rem; color: var(--color-text-muted); font-weight: 500;">Province</label>
-                    <select class="sa-select">
-                        <option>All Provinces</option>
-                        <option>Gauteng</option>
-                        <option>KwaZulu-Natal</option>
-                        <option>Western Cape</option>
-                    </select>
-                </div>
-                <div>
-                    <label style="display: block; margin-bottom: 0.5rem; font-size: 0.85rem; color: var(--color-text-muted); font-weight: 500;">Risk Level</label>
-                    <select class="sa-select">
-                        <option>All Levels</option>
-                        <option>Calm</option>
-                        <option>Watch</option>
-                        <option>Elevated</option>
-                        <option>Critical</option>
-                    </select>
-                </div>
-                <div style="display: flex; gap: 0.5rem;">
-                    <button class="sa-btn sa-btn--primary">Apply</button>
-                    <button class="sa-btn sa-btn--secondary">Clear</button>
-                </div>
-            </div>
-        </section>
+            </section>
 
-        <!-- SECTION 03: DATA TABLE -->
-        <section class="sa-section">
-            <div class="sa-section__header">
-                <span class="sa-section__number">03</span>
-                <h2>Candidates Data Table</h2>
-            </div>
-            <p class="sa-section__desc">Spreadsheet-style view of candidate data. Sticky headers, horizontal scroll on small screens.</p>
-            
-            <div class="sa-table-container">
-                <table class="sa-table">
-                    <thead>
-                        <tr>
-                            <th>Full Name</th>
-                            <th>Party</th>
-                            <th>Office</th>
-                            <th>Municipality</th>
-                            <th>Ward / PR Order</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td>Thandiwe Modise</td>
-                            <td>African National Congress</td>
-                            <td>Local Ward Candidate</td>
-                            <td>JHB - City of Johannesburg</td>
-                            <td>Ward 112</td>
-                        </tr>
-                        <tr>
-                            <td>Sipho Nkosi</td>
-                            <td>Democratic Alliance</td>
-                            <td>Metro PR Candidate</td>
-                            <td>CPT - City of Cape Town</td>
-                            <td>List Position 14</td>
-                        </tr>
-                        <tr>
-                            <td>Pieter van der Merwe</td>
-                            <td>Independent</td>
-                            <td>Local Ward Candidate</td>
-                            <td>TSH - City of Tshwane</td>
-                            <td>Ward 88</td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-        </section>
+            <section class="metrics-strip">
+                <div class="metric">
+                    <span class="metric-value">75,311</span>
+                    <span class="metric-label">Candidates in File</span>
+                </div>
+                <div class="metric-divider"></div>
+                <div class="metric">
+                    <span class="metric-value">257</span>
+                    <span class="metric-label">Municipalities</span>
+                </div>
+                <div class="metric-divider"></div>
+                <div class="metric">
+                    <span class="metric-value">579</span>
+                    <span class="metric-label">Parties Registered</span>
+                </div>
+                <div class="metric-divider"></div>
+                <div class="metric">
+                    <span class="metric-value">136,790</span>
+                    <span class="metric-label">IEC Certified</span>
+                </div>
+            </section>
 
-        <!-- SECTION 04: EMPTY STATE -->
-        <section class="sa-section">
-            <div class="sa-section__header">
-                <span class="sa-section__number">04</span>
-                <h2>Empty State</h2>
-            </div>
-            <p class="sa-section__desc">Calm, designed state for when analytics are pending or no data matches the filter.</p>
-            
-            <div class="sa-empty-state">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                    <polyline points="17 8 12 3 7 8"></polyline>
-                    <line x1="12" y1="3" x2="12" y2="15"></line>
-                </svg>
-                <h3>No data yet</h3>
-                <p style="margin-top: 0.5rem;">Analytics are being prepared for this selection. Please check back shortly.</p>
-            </div>
-        </section>
+            <div class="editorial-grid">
+                <div class="main-column">
+                    <span class="section-number">01 — Risk Assessment</span>
+                    <h2 class="section-title">Narrative Tone & Weaponized Language</h2>
+                    <p class="section-desc">Current aggregate risk level based on weaponized language and coordinated activity detected in the last 30 days.</p>
+                    
+                    <ul class="clean-list">
+                        <li class="clean-list__item">
+                            <div>
+                                <div class="clean-list__title">Calm</div>
+                                <div class="clean-list__meta">Low tension, constructive dialogue</div>
+                            </div>
+                            <div class="badge badge--calm">62%</div>
+                        </li>
+                        <li class="clean-list__item">
+                            <div>
+                                <div class="clean-list__title">Watch</div>
+                                <div class="clean-list__meta">Moderate tension, monitoring required</div>
+                            </div>
+                            <div class="badge badge--watch">24%</div>
+                        </li>
+                        <li class="clean-list__item">
+                            <div>
+                                <div class="clean-list__title">Elevated</div>
+                                <div class="clean-list__meta">High tension, intervention needed</div>
+                            </div>
+                            <div class="badge badge--elevated">11%</div>
+                        </li>
+                        <li class="clean-list__item">
+                            <div>
+                                <div class="clean-list__title">Critical</div>
+                                <div class="clean-list__meta">Severe tension, immediate action</div>
+                            </div>
+                            <div class="badge badge--critical">3%</div>
+                        </li>
+                    </ul>
 
-        <!-- SECTION 05: PLOTLY THEME -->
-        <section class="sa-section">
-            <div class="sa-section__header">
-                <span class="sa-section__number">05</span>
-                <h2>Plotly Theme Integration</h2>
+                    <br><br>
+                    <span class="section-number">02 — Platform Volume</span>
+                    <h2 class="section-title">Where the Conversation is Happening</h2>
+                    
+                    <div class="bar-row">
+                        <div class="bar-label">X</div>
+                        <div class="bar-track"><div class="bar-fill" style="width: 85%;"></div></div>
+                        <div class="bar-value">14.5k</div>
+                    </div>
+                    <div class="bar-row">
+                        <div class="bar-label">Facebook</div>
+                        <div class="bar-track"><div class="bar-fill" style="width: 60%;"></div></div>
+                        <div class="bar-value">8.2k</div>
+                    </div>
+                    <div class="bar-row">
+                        <div class="bar-label">Telegram</div>
+                        <div class="bar-track"><div class="bar-fill" style="width: 30%;"></div></div>
+                        <div class="bar-value">3.1k</div>
+                    </div>
+                </div>
+
+                <div class="sidebar-column">
+                    <details class="explainer" open>
+                        <summary>How the 2026 Election Works</summary>
+                        <div class="explainer-content">
+                            <p><strong>Election Day:</strong> Wednesday, 4 November 2026. Voting stations open 07:00–21:00.</p>
+                            <ul style="padding-left: 1.5rem; margin-top: 1rem;">
+                                <li><strong>The System:</strong> Mixed system. Half ward councillors (voted as individuals), half proportional representation (party lists).</li>
+                                <li><strong>The Scale:</strong> 257 municipalities, 4,485 wards, and 10,526 council seats.</li>
+                                <li><strong>Independents:</strong> Can contest ward seats only. 621 independent candidates certified.</li>
+                            </ul>
+                        </div>
+                    </details>
+
+                    <span class="section-number">Data Coverage</span>
+                    <h3 style="font-family: var(--font-serif); font-size: 1.25rem; margin-bottom: 1rem;">File vs. IEC Total</h3>
+                    <div class="coverage-meter">
+                        <div class="meter-bar"><div class="meter-fill"></div></div>
+                        <div class="meter-label">This file covers 54% of the 136,790 IEC certified candidates.</div>
+                    </div>
+                </div>
             </div>
-            <p class="sa-section__desc">Charts use a shared client-side theme: transparent background, hairline grids, and our specific color palette.</p>
-            
-            <div class="sa-chart-box">
-                <div id="plotly-demo" style="width: 100%; height: 350px;"></div>
+        </div>
+
+        <!-- ================= TAB 2: CANDIDATES ================= -->
+        <div id="tab-candidates" class="tab-content">
+            <section class="hero">
+                <h1>Municipal Candidates Registry</h1>
+                <p class="hero-subtitle">A comprehensive database of 75,311 candidates contesting the 2026 local government elections across 257 municipalities.</p>
+                <div class="hero-meta">
+                    <span>Source: CfA PEP Data Workbook</span>
+                    <span>•</span>
+                    <span>IEC Certified: 136,790 (16 Sept 2026)</span>
+                </div>
+            </section>
+
+            <section class="metrics-strip">
+                <div class="metric">
+                    <span class="metric-value">75,311</span>
+                    <span class="metric-label">Candidates in File</span>
+                </div>
+                <div class="metric-divider"></div>
+                <div class="metric">
+                    <span class="metric-value">257</span>
+                    <span class="metric-label">Municipalities</span>
+                </div>
+                <div class="metric-divider"></div>
+                <div class="metric">
+                    <span class="metric-value">579</span>
+                    <span class="metric-label">Parties</span>
+                </div>
+                <div class="metric-divider"></div>
+                <div class="metric">
+                    <span class="metric-value">621</span>
+                    <span class="metric-label">Independents</span>
+                </div>
+            </section>
+
+            <div class="editorial-grid">
+                <div class="main-column">
+                    <span class="section-number">01 — Municipality Explorer</span>
+                    <h2 class="section-title">Candidates by Region</h2>
+                    <p class="section-desc">Grouped by province and municipality code. Select a region to filter the candidate table below.</p>
+                    
+                    <ul class="clean-list">
+                        <li class="clean-list__item">
+                            <div>
+                                <div class="clean-list__title">Gauteng (JHB, TSH, EKU)</div>
+                                <div class="clean-list__meta">3 Metros • 14,200 Candidates</div>
+                            </div>
+                            <div class="clean-list__meta">18.8% of total</div>
+                        </li>
+                        <li class="clean-list__item">
+                            <div>
+                                <div class="clean-list__title">KwaZulu-Natal (ETH)</div>
+                                <div class="clean-list__meta">1 Metro • 8,500 Candidates</div>
+                            </div>
+                            <div class="clean-list__meta">11.2% of total</div>
+                        </li>
+                        <li class="clean-list__item">
+                            <div>
+                                <div class="clean-list__title">Western Cape (CPT)</div>
+                                <div class="clean-list__meta">1 Metro • 6,100 Candidates</div>
+                            </div>
+                            <div class="clean-list__meta">8.1% of total</div>
+                        </li>
+                    </ul>
+
+                    <br><br>
+                    <span class="section-number">02 — Candidate Database</span>
+                    <h2 class="section-title">Full Registry</h2>
+                    <div class="table-container">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Full Name</th>
+                                    <th>Party</th>
+                                    <th>Office</th>
+                                    <th>Municipality</th>
+                                    <th>Ward / PR</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>Thandiwe Modise</td>
+                                    <td>African National Congress</td>
+                                    <td>Local Ward Candidate</td>
+                                    <td>JHB - City of Johannesburg</td>
+                                    <td>Ward 112</td>
+                                </tr>
+                                <tr>
+                                    <td>Sipho Nkosi</td>
+                                    <td>Democratic Alliance</td>
+                                    <td>Metro PR Candidate</td>
+                                    <td>CPT - City of Cape Town</td>
+                                    <td>List Position 14</td>
+                                </tr>
+                                <tr>
+                                    <td>Pieter van der Merwe</td>
+                                    <td>Independent</td>
+                                    <td>Local Ward Candidate</td>
+                                    <td>TSH - City of Tshwane</td>
+                                    <td>Ward 88</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="sidebar-column">
+                    <span class="section-number">Data Caveats</span>
+                    <h3 style="font-family: var(--font-serif); font-size: 1.25rem; margin-bottom: 1rem;">Ward vs PR Split</h3>
+                    <div style="margin-bottom: 2rem;">
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                            <span style="font-size: 0.85rem; color: var(--accent-teal); font-weight: 600;">IEC Verified</span>
+                            <span style="font-size: 0.85rem; font-weight: 600;">72% / 28%</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between;">
+                            <span style="font-size: 0.85rem; color: var(--risk-watch); font-weight: 600;">File Data (Unverified)</span>
+                            <span style="font-size: 0.85rem; font-weight: 600;">38% / 62%</span>
+                        </div>
+                        <p style="font-size: 0.8rem; color: var(--text-muted); margin-top: 0.5rem;">The file repeats PR candidates across wards, skewing the ratio.</p>
+                    </div>
+
+                    <h3 style="font-family: var(--font-serif); font-size: 1.25rem; margin-bottom: 1rem;">Social Media Coverage</h3>
+                    <div class="coverage-meter">
+                        <div class="meter-bar"><div class="meter-fill" style="width: 0%; background: var(--text-muted);"></div></div>
+                        <div class="meter-label">0 of 75,311 candidates have mapped social accounts.</div>
+                    </div>
+                </div>
             </div>
-        </section>
+        </div>
+
+        <!-- ================= TAB 3: NARRATIVES ================= -->
+        <div id="tab-narratives" class="tab-content">
+            <section class="hero">
+                <h1>Trending Narratives</h1>
+                <p class="hero-subtitle">Intelligence reports on emerging social media narratives, weaponized claims, and coordinated messaging campaigns.</p>
+                <div class="hero-meta">
+                    <span>Period: 05 Aug 2026 – 03 Nov 2026</span>
+                    <span>•</span>
+                    <span>Total Posts Scanned: 76,046</span>
+                </div>
+            </section>
+
+            <div class="editorial-grid">
+                <div class="main-column">
+                    <span class="section-number">01 — Narrative Clusters</span>
+                    <h2 class="section-title">Top Emerging Narratives</h2>
+                    
+                    <ul class="clean-list">
+                        <li class="clean-list__item" style="flex-direction: column; align-items: flex-start; gap: 1rem;">
+                            <div style="display: flex; justify-content: space-between; width: 100%;">
+                                <div class="clean-list__title">Service Delivery Improvements in Metro Councils</div>
+                                <div class="badge badge--calm">Calm</div>
+                            </div>
+                            <div class="clean-list__meta" style="max-width: 100%;">
+                                <strong>Core Claim:</strong> Recent infrastructure projects in Johannesburg and Tshwane are showing measurable progress.<br>
+                                <strong>Amplification:</strong> 2,847 posts across 412 unique accounts.<br>
+                                <strong>Sample:</strong> "The new water pipeline in Ward 42 is finally complete. Good to see the council delivering."
+                            </div>
+                        </li>
+                        <li class="clean-list__item" style="flex-direction: column; align-items: flex-start; gap: 1rem;">
+                            <div style="display: flex; justify-content: space-between; width: 100%;">
+                                <div class="clean-list__title">Corruption Allegations in District Municipalities</div>
+                                <div class="badge badge--watch">Watch</div>
+                            </div>
+                            <div class="clean-list__meta" style="max-width: 100%;">
+                                <strong>Core Claim:</strong> Tender processes in rural districts are being manipulated by local party officials.<br>
+                                <strong>Amplification:</strong> 1,923 posts across 280 unique accounts.<br>
+                                <strong>Sample:</strong> "Why did Company X get the road contract when they don't even have machinery? Follow the money."
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+
+                <div class="sidebar-column">
+                    <span class="section-number">Spike Alerts</span>
+                    <h3 style="font-family: var(--font-serif); font-size: 1.25rem; margin-bottom: 1rem;">Recent Anomalies</h3>
+                    <ul class="clean-list">
+                        <li class="clean-list__item">
+                            <div>
+                                <div class="clean-list__title">Election Fraud</div>
+                                <div class="clean-list__meta">Oct 28 • 3.2x avg</div>
+                            </div>
+                            <div class="badge badge--elevated">High</div>
+                        </li>
+                        <li class="clean-list__item">
+                            <div>
+                                <div class="clean-list__title">Voter Intimidation</div>
+                                <div class="clean-list__meta">Oct 30 • 2.1x avg</div>
+                            </div>
+                            <div class="badge badge--watch">Mod</div>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- ================= TAB 4: LEXICONS ================= -->
+        <div id="tab-lexicons" class="tab-content">
+            <section class="hero">
+                <h1>Mapped Lexicons</h1>
+                <p class="hero-subtitle">Analysis of weaponized language, hate speech, and discriminatory terms detected across the monitored social media ecosystem.</p>
+                <div class="hero-meta">
+                    <span>Total Terms: 1,240</span>
+                    <span>•</span>
+                    <span>Categories: 10</span>
+                </div>
+            </section>
+
+            <div class="editorial-grid">
+                <div class="main-column">
+                    <span class="section-number">01 — Category Breakdown</span>
+                    <h2 class="section-title">Weaponized Language by Type</h2>
+                    
+                    <ul class="clean-list">
+                        <li class="clean-list__item">
+                            <div class="clean-list__title">Ethnic Identity Slurs</div>
+                            <div class="clean-list__meta">412 matches</div>
+                        </li>
+                        <li class="clean-list__item">
+                            <div class="clean-list__title">Violence & Incitement</div>
+                            <div class="clean-list__meta">285 matches</div>
+                        </li>
+                        <li class="clean-list__item">
+                            <div class="clean-list__title">Dehumanizing Language</div>
+                            <div class="clean-list__meta">198 matches</div>
+                        </li>
+                        <li class="clean-list__item">
+                            <div class="clean-list__title">Gender-Based Attacks</div>
+                            <div class="clean-list__meta">142 matches</div>
+                        </li>
+                    </ul>
+
+                    <br><br>
+                    <span class="section-number">02 — Top Detected Terms</span>
+                    <h2 class="section-title">Most Frequent Triggers</h2>
+                    <div class="table-container">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Term</th>
+                                    <th>Category</th>
+                                    <th>Severity</th>
+                                    <th>Count</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>Term A</td>
+                                    <td>Ethnic Identity</td>
+                                    <td><span class="badge badge--critical">Critical</span></td>
+                                    <td>1,204</td>
+                                </tr>
+                                <tr>
+                                    <td>Term B</td>
+                                    <td>Violence</td>
+                                    <td><span class="badge badge--elevated">High</span></td>
+                                    <td>892</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="sidebar-column">
+                    <span class="section-number">Targeted Entities</span>
+                    <h3 style="font-family: var(--font-serif); font-size: 1.25rem; margin-bottom: 1rem;">Most Attacked Groups</h3>
+                    <ul class="clean-list">
+                        <li class="clean-list__item">
+                            <div class="clean-list__title">Political Parties</div>
+                            <div class="clean-list__meta">45% of matches</div>
+                        </li>
+                        <li class="clean-list__item">
+                            <div class="clean-list__title">Ethnic Groups</div>
+                            <div class="clean-list__meta">32% of matches</div>
+                        </li>
+                        <li class="clean-list__item">
+                            <div class="clean-list__title">Women Candidates</div>
+                            <div class="clean-list__meta">15% of matches</div>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- ================= TAB 5: NETWORKS ================= -->
+        <div id="tab-networks" class="tab-content">
+            <section class="hero">
+                <h1>Coordination Networks</h1>
+                <p class="hero-subtitle">Mapping inauthentic behavior, bot networks, and coordinated amplification of election-related narratives.</p>
+                <div class="hero-meta">
+                    <span>Total Nodes: 1,420</span>
+                    <span>•</span>
+                    <span>Coordination Groups: 42</span>
+                </div>
+            </section>
+
+            <div class="editorial-grid">
+                <div class="main-column">
+                    <span class="section-number">01 — Network Graph</span>
+                    <h2 class="section-title">Visualizing Coordination</h2>
+                    <div style="background: var(--bg-card); border: 1px solid var(--border-hairline); border-radius: 4px; height: 400px; display: flex; align-items: center; justify-content: center; color: var(--text-muted);">
+                        [ Plotly Network Graph Container ]
+                    </div>
+
+                    <br><br>
+                    <span class="section-number">02 — Top Coordination Groups</span>
+                    <h2 class="section-title">Identified Clusters</h2>
+                    <ul class="clean-list">
+                        <li class="clean-list__item">
+                            <div>
+                                <div class="clean-list__title">Group #1: Pro-Party A Amplifiers</div>
+                                <div class="clean-list__meta">142 accounts • 85% Bot-like</div>
+                            </div>
+                            <div class="badge badge--critical">Critical</div>
+                        </li>
+                        <li class="clean-list__item">
+                            <div>
+                                <div class="clean-list__title">Group #2: Anti-Government Narratives</div>
+                                <div class="clean-list__meta">89 accounts • 40% Bot-like</div>
+                            </div>
+                            <div class="badge badge--elevated">High</div>
+                        </li>
+                    </ul>
+                </div>
+
+                <div class="sidebar-column">
+                    <span class="section-number">Network Stats</span>
+                    <h3 style="font-family: var(--font-serif); font-size: 1.25rem; margin-bottom: 1rem;">Source vs Amplifier</h3>
+                    <div class="bar-row">
+                        <div class="bar-label">Sources</div>
+                        <div class="bar-track"><div class="bar-fill" style="width: 20%; background: #1DA1F2;"></div></div>
+                        <div class="bar-value">284</div>
+                    </div>
+                    <div class="bar-row">
+                        <div class="bar-label">Amplifiers</div>
+                        <div class="bar-track"><div class="bar-fill" style="width: 80%; background: #F59E0B;"></div></div>
+                        <div class="bar-value">1,136</div>
+                    </div>
+
+                    <br><br>
+                    <span class="section-number">TTPs Detected</span>
+                    <h3 style="font-family: var(--font-serif); font-size: 1.25rem; margin-bottom: 1rem;">Tactics & Techniques</h3>
+                    <ul class="clean-list">
+                        <li class="clean-list__item">
+                            <div class="clean-list__title">Hashtag Hijacking</div>
+                            <div class="clean-list__meta">12 groups</div>
+                        </li>
+                        <li class="clean-list__item">
+                            <div class="clean-list__title">Temporal Coordination</div>
+                            <div class="clean-list__meta">8 groups</div>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- ================= TAB 6: MANAGEMENT ================= -->
+        <div id="tab-management" class="tab-content">
+            <section class="hero">
+                <h1>Lexicon Management</h1>
+                <p class="hero-subtitle">Real-time scanning interface and database management for weaponized language terms.</p>
+            </section>
+
+            <div class="editorial-grid">
+                <div class="main-column">
+                    <span class="section-number">01 — Real-Time Scanner</span>
+                    <h2 class="section-title">Analyze Post Content</h2>
+                    <div style="margin-bottom: 2rem;">
+                        <textarea class="sa-input" style="width: 100%; height: 100px; padding: 1rem; border: 1px solid var(--border-hairline); border-radius: 4px; font-family: var(--font-sans);" placeholder="Paste social media text here to scan..."></textarea>
+                        <button style="margin-top: 1rem; padding: 0.75rem 1.5rem; background: var(--accent-teal); color: white; border: none; border-radius: 4px; font-weight: 600; cursor: pointer;">Scan Text</button>
+                    </div>
+
+                    <span class="section-number">02 — Term Database</span>
+                    <h2 class="section-title">Active Lexicon Terms</h2>
+                    <div class="table-container">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Term</th>
+                                    <th>Category</th>
+                                    <th>Severity</th>
+                                    <th>Language</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>Term 1</td>
+                                    <td>Ethnic Identity</td>
+                                    <td>High</td>
+                                    <td>English</td>
+                                    <td><a href="#" style="color: var(--accent-teal);">Edit</a> • <a href="#" style="color: var(--risk-critical);">Delete</a></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="sidebar-column">
+                    <span class="section-number">Scanner Stats</span>
+                    <h3 style="font-family: var(--font-serif); font-size: 1.25rem; margin-bottom: 1rem;">Today's Activity</h3>
+                    <ul class="clean-list">
+                        <li class="clean-list__item">
+                            <div class="clean-list__title">Posts Scanned</div>
+                            <div class="clean-list__meta">14,200</div>
+                        </li>
+                        <li class="clean-list__item">
+                            <div class="clean-list__title">Matches Found</div>
+                            <div class="clean-list__meta">842</div>
+                        </li>
+                        <li class="clean-list__item">
+                            <div class="clean-list__title">New Terms Added</div>
+                            <div class="clean-list__meta">12</div>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
 
     </main>
 
-    <script>
-        // Shared Plotly Theme Configuration
-        const saPlotlyTheme = {
-            font: { family: 'Inter, sans-serif', color: '#14181F' },
-            paper_bgcolor: 'rgba(0,0,0,0)',
-            plot_bgcolor: 'rgba(0,0,0,0)',
-            margin: { t: 30, r: 20, b: 50, l: 60 },
-            xaxis: { gridcolor: '#E5E7EB', zerolinecolor: '#E5E7EB', title: 'Platform' },
-            yaxis: { gridcolor: '#E5E7EB', zerolinecolor: '#E5E7EB', title: 'Post Volume' },
-            showlegend: false,
-            modebar: { remove: ['toImage', 'sendDataToCloud', 'autoScale2d', 'resetScale2d', 'hoverClosestCartesian', 'hoverCompareCartesian'] }
-        };
+    <!-- FOOTER -->
+    <footer class="container footer">
+        <div>
+            <strong>Monitoring Period:</strong> 05 Aug 2026 – 03 Nov 2026<br>
+            <strong>Data Provenance:</strong> Meltwater, TikTok, OpenMeasure, Brandwatch, Civicsignals
+        </div>
+        <div style="text-align: right;">
+            <strong>Last Analytics Refresh:</strong> Today, 09:00 UTC<br>
+            <strong>System Status:</strong> <span style="color: var(--risk-calm);">Operational</span>
+        </div>
+    </footer>
 
-        // Demo Chart
-        Plotly.newPlot('plotly-demo', [{
-            x: ['X', 'Facebook', 'Telegram', 'TikTok', 'Media'],
-            y: [14500, 8200, 3100, 1800, 950],
-            type: 'bar',
-            marker: { color: '#0F5C5A' }
-        }], saPlotlyTheme, {displayModeBar: false});
+    <script>
+        function switchTab(tabId) {
+            // Hide all tabs
+            document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
+            // Remove active class from nav
+            document.querySelectorAll('.masthead-nav a').forEach(link => link.classList.remove('active'));
+            
+            // Show selected tab
+            document.getElementById('tab-' + tabId).classList.add('active');
+            document.getElementById('nav-' + tabId).classList.add('active');
+            
+            // Scroll to top
+            window.scrollTo(0, 0);
+        }
     </script>
 </body>
 </html>
