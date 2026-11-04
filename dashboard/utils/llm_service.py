@@ -2,33 +2,47 @@ import json
 import logging
 import re
 import time
-from groq import Groq
+from openai import OpenAI
 from django.conf import settings
 
 logger = logging.getLogger(__name__)
 
 
-def get_groq_client():
-    if not settings.GROQ_API_KEY:
+def get_openrouter_client():
+    """Initialize OpenRouter client."""
+    api_key = getattr(settings, 'OPENROUTER_API_KEY', None)
+    if not api_key:
         return None
     try:
-        return Groq(api_key=settings.GROQ_API_KEY)
+        return OpenAI(
+            base_url="https://openrouter.ai/api/v1",
+            api_key=api_key,
+        )
     except Exception as e:
-        logger.error(f"❌ Failed to initialize Groq client: {str(e)}")
+        logger.error(f"❌ Failed to initialize OpenRouter client: {str(e)}")
         return None
 
 
 def extract_json(text):
+    """Extract JSON from text, handling markdown code blocks and reasoning tags."""
     if not text:
         return None
+    
+    # Strip reasoning tags
     cleaned = re.sub(r'<think>.*?</think>', '', text, flags=re.DOTALL | re.IGNORECASE)
     if '</think>' in cleaned.lower():
         cleaned = re.sub(r'^.*?</think>', '', cleaned, flags=re.DOTALL | re.IGNORECASE)
+    
+    # Strip markdown code blocks
     cleaned = re.sub(r'^\s*```(?:json)?\s*|\s*```\s*$', '', cleaned, flags=re.MULTILINE).strip()
+    
+    # Try direct parse
     try:
         return json.loads(cleaned)
     except Exception:
         pass
+    
+    # Try to find JSON object or array
     for opener, closer in (('{', '}'), ('[', ']')):
         start = cleaned.find(opener)
         while start != -1:
@@ -56,10 +70,12 @@ def extract_json(text):
                         except Exception:
                             break
             start = cleaned.find(opener, start + 1)
+    
     return None
 
 
 def _strip_reasoning(text):
+    """Strip reasoning tags from response."""
     if not text:
         return text
     cleaned = re.sub(r'<think>.*?</think>', '', text, flags=re.DOTALL | re.IGNORECASE)
@@ -69,8 +85,11 @@ def _strip_reasoning(text):
 
 
 def _create_with_retry(client, params):
+    """Make API call with retry logic for transient errors."""
     last = None
-    for attempt in range(getattr(settings, 'GROQ_MAX_RETRIES', 4)):
+    max_retries = getattr(settings, 'OPENROUTER_MAX_RETRIES', 4)
+    
+    for attempt in range(max_retries):
         try:
             return client.chat.completions.create(**params)
         except Exception as e:
@@ -79,30 +98,34 @@ def _create_with_retry(client, params):
             transient = ('429' in msg or 'RateLimit' in type(e).__name__
                          or 'rate_limit' in msg or '500' in msg or '502' in msg
                          or '503' in msg or 'Timeout' in type(e).__name__)
-            if not transient or attempt == getattr(settings, 'GROQ_MAX_RETRIES', 4) - 1:
+            
+            if not transient or attempt == max_retries - 1:
                 raise
+            
             wait = 1.8 ** attempt
             found = re.search(r'try again in ([\d.]+)s', msg, re.IGNORECASE)
             if found:
                 wait = max(wait, float(found.group(1)))
-            logger.warning(f"Groq {type(e).__name__}, retrying in {wait:.1f}s")
+            
+            logger.warning(f"OpenRouter {type(e).__name__}, retrying in {wait:.1f}s")
             time.sleep(wait)
+    
     raise last
 
 
 def _log_llm_error_to_db(event_type, message, error_type=None, traceback_str=None, metadata=None):
     """Helper to log LLM errors to the existing ApplicationLog model."""
     try:
-        from dashboard.models import ApplicationLog 
+        from dashboard.models import ApplicationLog
         
         ApplicationLog.objects.create(
             level='ERROR',
             logger_name='dashboard.utils.llm_service',
-            event_type=event_type,       # e.g., 'llm_auth_error', 'llm_rate_limit'
+            event_type=event_type,
             status='failed',
             message=message,
             actor='system',
-            source='groq_api',
+            source='openrouter_api',
             object_type='LLM',
             metadata=metadata or {},
             traceback=traceback_str or ''
@@ -110,22 +133,24 @@ def _log_llm_error_to_db(event_type, message, error_type=None, traceback_str=Non
     except Exception as db_err:
         logger.error(f"Failed to save LLM error to DB: {db_err}")
 
-def safe_llm_call(prompt, max_tokens=2048, model=None, return_error=False, want_json=False):
-    """Call Groq, optionally returning the current error alongside the response.
 
+def safe_llm_call(prompt, max_tokens=2048, model=None, return_error=False, want_json=False):
+    """
+    Call OpenRouter LLM, optionally returning the current error alongside the response.
+    
     Existing callers receive the original response/None contract. Callers that
     need to show the current failure can opt into ``(response, error)``.
     """
-    model_name = model or getattr(settings, 'GROQ_MODEL', 'qwen/qwen3.6-27b')
+    model_name = model or getattr(settings, 'OPENROUTER_MODEL_ID', 'meta-llama/llama-3.3-70b-instruct')
 
     def result(response, error=None):
         return (response, error) if return_error else response
 
-    client = get_groq_client()
+    client = get_openrouter_client()
     if not client:
         error = {
             'type': 'ClientUnavailable',
-            'message': 'Groq client could not be initialized. Check GROQ_API_KEY.'
+            'message': 'OpenRouter client could not be initialized. Check OPENROUTER_API_KEY.'
         }
         _log_llm_error_to_db(
             'llm_client_missing',
@@ -137,14 +162,17 @@ def safe_llm_call(prompt, max_tokens=2048, model=None, return_error=False, want_
     try:
         params = {
             'model': model_name,
-            'messages': [{"role": "user", "content": prompt}],
+            'messages': [
+                {
+                    "role": "system",
+                    "content": "You are an expert AI assistant specialized in South African political discourse, multilingual sociolinguistics, and information operations analysis. Be precise, objective, and strictly follow the requested output format."
+                },
+                {"role": "user", "content": prompt}
+            ],
             'temperature': 0.2,
-            'max_completion_tokens': max(max_tokens, getattr(settings, 'GROQ_MIN_COMPLETION_TOKENS', 900)),
+            'max_tokens': max_tokens,
         }
-        if model_name.startswith('qwen/'):
-            params['reasoning_effort'] = 'none'
-        elif model_name.startswith('openai/gpt-oss'):
-            params['reasoning_format'] = 'hidden'
+        
         if want_json:
             params['response_format'] = {'type': 'json_object'}
 
@@ -155,7 +183,7 @@ def safe_llm_call(prompt, max_tokens=2048, model=None, return_error=False, want_
 
         error = {
             'type': 'EmptyResponse',
-            'message': 'Groq API returned an empty response.'
+            'message': 'OpenRouter API returned an empty response.'
         }
         _log_llm_error_to_db(
             'llm_empty_response',
@@ -180,108 +208,150 @@ def safe_llm_call(prompt, max_tokens=2048, model=None, return_error=False, want_
 
         _log_llm_error_to_db(
             event_cat, 
-            f"Groq API call failed: {error_msg}",
+            f"OpenRouter API call failed: {error_msg}",
             error_type=error_type,
             traceback_str=error_msg,
             metadata={
                 'model': model_name,
                 'prompt_length': len(prompt),
-                'groq_error_type': error_type
+                'api_error_type': error_type
             }
         )
         
         logger.error(f"❌ LLM call failed ({error_type}): {error_msg}")
         return result(None, {
             'type': error_type,
-            'message': f'Groq API call failed: {error_msg}'
+            'message': f'OpenRouter API call failed: {error_msg}'
         })
 
+
 def safe_llm_json(prompt, max_tokens=1400, model=None, default=None, return_error=False, as_array=False):
+    """Call LLM and parse JSON response."""
     response, error = safe_llm_call(prompt, max_tokens=max_tokens, model=model,
                                     return_error=True, want_json=not as_array)
     if not response:
         return (default, error) if return_error else default
+    
     parsed = extract_json(response)
     if parsed is None:
         _log_llm_error_to_db(
             'llm_json_parse_error',
             'LLM response could not be parsed as JSON',
-            metadata={'model': model or getattr(settings, 'GROQ_MODEL', 'unknown'),
+            metadata={'model': model or getattr(settings, 'OPENROUTER_MODEL_ID', 'unknown'),
                       'preview': response[:500]}
         )
         error = {'type': 'JSONParseError', 'message': 'LLM response was not valid JSON'}
         return (default, error) if return_error else default
+    
     return (parsed, None) if return_error else parsed
 
 
-def load_ttp_detection_model():
-    """Load the fine-tuned Gemma model for TTP detection"""
-    model, tokenizer = FastLanguageModel.from_pretrained(
-        model_name="unsloth/gemma-4-E4B-it", 
-        max_seq_length=4096,
-        dtype=None,
-        load_in_4bit=True,  # Use 4-bit quantization to save memory
-    )
-    
-    # Load your fine-tuned adapter
-    model = FastLanguageModel.get_peft_model(
-        model,
-        r=16,
-        target_modules=["q_proj", "k_proj", "v_proj", "o_proj",
-                       "gate_proj", "up_proj", "down_proj"],
-        lora_alpha=16,
-        lora_dropout=0,
-        bias="none",
-        use_gradient_checkpointing="unsloth",
-        random_state=3407,
-        use_rslora=False,
-        loftq_config=None,
-    )
-    
-    # Load adapter weights
-    model.load_adapter("/Users/hannateshager/Ethiopia_2026election_monitoring_tool/model_cache/gemma-disarm-phase3-ttp")
-    
-    return model, tokenizer
-
-def summarize_cluster_ethiopia(posts, cluster_id=None):
+def summarize_cluster_sa(texts, urls, cluster_data, min_ts, max_ts):
     """
-    Generate LLM summary for an Ethiopia election narrative cluster.
-    STUB: Returns a placeholder summary for now.
-    
-    Args:
-        posts: QuerySet or list of ProcessedPost objects
-        cluster_id: Optional cluster identifier
-    
-    Returns:
-        str: Summary text
+    Generate structured IMI-style intelligence report for SA election narratives.
+    Uses ONLY explicit claims from provided posts.
     """
-    if not posts:
-        return "No posts available for this narrative cluster."
+    if not texts:
+        return "No content available for summarization."
     
-    # Extract sample texts for context
-    sample_texts = [p.original_text[:200] for p in posts[:5] if p.original_text]
+    # Join first 50 texts for context (avoids token limits)
+    joined = "\n".join([f"[{i+1}] {t}" for i, t in enumerate(texts[:50]) if t and len(t.strip()) > 10])
     
-    # STUB: Return a placeholder summary
-    # TODO: Implement actual Groq/LLM call here
-    return f"""🇪🇹 Ethiopia Election Narrative Summary (Cluster {cluster_id or 'N/A'})
+    # Add real URLs for reference
+    url_context = "\nRelevant post links:\n" + "\n".join(urls[:5]) if urls else ""
+    
+    # SA-specific prompt
+    prompt = f"""
+Generate a structured IMI intelligence report on online narratives related to the South Africa 2026 Municipal Elections.
+Focus on pre and post-election tensions and emerging narratives, including:
+- Service delivery failures (water, electricity, roads)
+- Corruption allegations and tender fraud
+- Load shedding / electricity crisis narratives
+- Xenophobia and anti-immigrant sentiment (Operation Dudula, kwerekwere)
+- Ethnic tensions (Zulu, Xhosa, Sotho, Afrikaans communities)
+- Political party conflicts (ANC, DA, EFF, MK Party, Action SA)
+- Gender-based violence and femicide
+- Farm attacks and rural security
+- IEC integrity and electoral fraud claims
+- Foreign interference narratives
+- Economic inequality and unemployment
+- Land reform and expropriation debates
+- Municipal governance failures
 
-📊 Analysis of {len(posts)} election-related posts:
+Strict Instructions:
+Only report claims explicitly present in the provided posts below.
+Identify originators: accounts that first posted the core claim.
+Note amplification: how widely it spread.
+Do NOT invent, cut out, assume, extrapolate, or fact-check claims.
+Summarize clearly and concisely using simple language.
 
-🔍 Key Themes Detected:
-• Election integrity and process discussions
-• Political party positioning and messaging
-• Regional dynamics and ethnic considerations
+Output Format (Use plain text, NO markdown headers or bold):
+Narrative Title: [Short, descriptive title]
+Core Claim(s):
+[Claim 1, directly quoted or closely paraphrased from posts]
+[Claim 2]
+[Claim 3]
+Originator(s): [Account IDs or "Unknown" if not determinable]
+Amplification: [Total posts] posts across [X] unique accounts
+First Detected: {min_ts}
+Last Updated: {max_ts}
+Language/Tone Observed: [e.g., accusatory, urgent, informational, mixed]
+Sample Quotes (exact phrases from posts, max 3):
+'[exact quote 1]'
+'[exact quote 2]'
+'[exact quote 3]'
 
-⚠️ Risk Assessment:
-• Sentiment: Mixed (requires deeper analysis)
-• Coordination signals: Not detected in sample
-• Foreign interference indicators: None identified
-
-💡 Recommended Actions:
-• Monitor for escalation in rhetoric
-• Track narrative spread across platforms
-• Cross-reference with verified news sources
-
----
-*This is a placeholder summary. Full LLM analysis requires Groq API configuration.*
+Documents for analysis:
+{joined}{url_context}
 """
+    
+    try:
+        response = safe_llm_call(prompt, max_tokens=2048)
+        raw_summary = response.strip() if response else ""
+    except Exception as e:
+        logger.warning(f"LLM summary failed: {e}")
+        # Fallback: extract key phrases directly from texts
+        return _fallback_summary_sa(texts, urls, min_ts, max_ts)
+    
+    # Clean LLM output: remove markdown, code blocks, instruction echoes
+    cleaned = re.sub(r'\*\*.*?(Instructions|strict|Output Format).*?\*\*', '', raw_summary, flags=re.IGNORECASE | re.DOTALL)
+    cleaned = re.sub(r'`.*?`', '', cleaned, flags=re.DOTALL)
+    cleaned = re.sub(r'###|##|#|\*\*|\*', '', cleaned)
+    cleaned = re.sub(r'\n{3,}', '\n\n', cleaned)
+    
+    return cleaned.strip()
+
+
+def _fallback_summary_sa(texts, urls, min_ts, max_ts):
+    """Fallback when LLM fails: extract key phrases directly from posts."""
+    if not texts:
+        return "No content available for summarization."
+    
+    # Extract top keywords (simple frequency)
+    from collections import Counter
+    words = []
+    for t in texts[:20]:
+        words.extend(re.findall(r'\b[a-zA-Z]{4,}\b', t.lower()))
+    top_words = [w for w, _ in Counter(words).most_common(10) if w not in {'the', 'and', 'for', 'that', 'with', 'this', 'from', 'have', 'were', 'will'}]
+    
+    # Get first 3 substantive sentences
+    sentences = []
+    for t in texts:
+        sents = [s.strip() for s in t.split('.') if len(s.strip()) > 30]
+        sentences.extend(sents[:2])
+        if len(sentences) >= 3:
+            break
+    
+    return f"""Narrative Title: Cluster discussing {', '.join(top_words[:3]) if top_words else 'SA election-related topics'}
+Core Claim(s):
+Posts reference electoral processes and political developments in South Africa
+Content includes mentions of specific incidents, actors, or regional dynamics
+Originator(s): Unknown (automated extraction)
+Amplification: {len(texts)} posts
+First Detected: {min_ts}
+Last Updated: {max_ts}
+Language/Tone Observed: Mixed tones with informational and analytical content
+Sample Quotes:
+'{sentences[0][:150]}...'
+'{sentences[1][:150]}...'
+'{sentences[2][:150]}...'"""
