@@ -70,22 +70,24 @@ WSGI_APPLICATION = 'election_monitor.wsgi.application'
 # ==========================================
 # DATABASE
 # ==========================================
-# ==========================================
-# DATABASE
-# ==========================================
+
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': os.environ.get('DB_NAME', 'election_monitor'),
         'USER': os.environ.get('DB_USER', 'postgres'),
         'PASSWORD': os.environ.get('DB_PASSWORD', 'postgres'),
-        'HOST': '/tmp',  # macOS Homebrew Unix domain socket (completely bypasses TCP/SSL)
-        'PORT': '5432',
+        'HOST': os.environ.get('DB_HOST', '127.0.0.1'),
+        'PORT': os.environ.get('DB_PORT', '5432'),
         'OPTIONS': {
             'sslmode': 'disable',
         },
     }
 }
+
+# If dj_database_url or django_heroku is used, force remove sslmode requirement:
+if 'sslmode' in DATABASES['default'].get('OPTIONS', {}):
+    DATABASES['default']['OPTIONS']['sslmode'] = 'disable'
 # ==========================================
 # PASSWORD VALIDATION
 # ==========================================
