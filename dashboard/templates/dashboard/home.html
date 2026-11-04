@@ -1,443 +1,258 @@
-{% extends 'dashboard/base.html' %}
+{% extends "dashboard/base.html" %}
 
-{% block title %}Home - Ethiopia Election Monitor{% endblock %}
-{% block page_title %}📊 Executive Dashboard{% endblock %}
+{% block title %}Home - ADDO SA Elections Monitor{% endblock %}
 
 {% block content %}
 
-<div class="panel p-6 md:p-7 mb-6">
-    <div class="flex items-start gap-4">
-        <div class="hidden md:flex shrink-0 w-11 h-11 rounded-xl items-center justify-center"
-             style="background:linear-gradient(135deg, rgba(34,211,238,.18), rgba(124,92,255,.18)); border:1px solid var(--line-strong);">
-            <span class="text-xl">🛰️</span>
-        </div>
-        <div class="flex-1">
-            <div class="text-[11px] uppercase tracking-[0.14em] muted mb-1">Mission Brief</div>
-            <p class="text-[14.5px] leading-relaxed text-slate-200">
-                This dashboard supports the early detection of information manipulation and disinformation campaigns during election periods that seek to distort public opinion by:
-            </p>
-            <div class="grid sm:grid-cols-3 gap-3 mt-4">
-                <div class="rounded-xl border hairline p-4" style="background:rgba(34,211,238,.05);">
-                    <div class="text-[11px] muted">01</div>
-                    <div class="font-semibold mt-1 text-slate-100">Detecting Emerging Narratives</div>
-                </div>
-                <div class="rounded-xl border hairline p-4" style="background:rgba(124,92,255,.06);">
-                    <div class="text-[11px] muted">02</div>
-                    <div class="font-semibold mt-1 text-slate-100">Tracking Virality &amp; Risk Patterns</div>
-                </div>
-                <div class="rounded-xl border hairline p-4" style="background:rgba(245,196,81,.06);">
-                    <div class="text-[11px] muted">03</div>
-                    <div class="font-semibold mt-1 text-slate-100">Providing Evidence for Decision Makers</div>
-                </div>
-            </div>
-        </div>
+<!-- HERO SECTION -->
+<section class="hero">
+    <h1>2026 Municipal Elections Monitor</h1>
+    <p class="hero-subtitle">Tracking social media narratives, weaponized language, and coordinated networks ahead of the 4 November 2026 local government elections.</p>
+    <div class="hero-meta">
+        <span>IEC Figures as at 16 Sept 2026</span>
+        <span>&bull;</span>
+        <span>Last Updated: {{ metrics.last_update|default:"Pending" }}</span>
     </div>
-</div>
+</section>
 
-<form method="get" class="panel p-5 mb-8 flex flex-wrap gap-4 items-end">
-    <div>
-        <label class="block text-[11px] uppercase tracking-[0.12em] muted mb-1.5">From</label>
-        <input type="date" name="start_date" value="{{ start_date|default:'' }}"
-               class="bg-slate-900/60 border hairline rounded-lg text-sm px-3 py-2 text-slate-100 focus:outline-none focus:border-cyan-400/60">
+<!-- DATE FILTER FORM -->
+<form method="get" class="card" style="padding: 1.5rem; margin-bottom: 2rem; display: flex; flex-wrap: wrap; gap: 1rem; align-items: end;">
+    <div style="flex: 1; min-width: 150px;">
+        <label style="display: block; font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.5rem; font-weight: 600;">From</label>
+        <input type="date" name="start_date" value="{{ start_date|default:'' }}" class="sa-input">
     </div>
-    <div>
-        <label class="block text-[11px] uppercase tracking-[0.12em] muted mb-1.5">To</label>
-        <input type="date" name="end_date" value="{{ end_date|default:'' }}"
-               class="bg-slate-900/60 border hairline rounded-lg text-sm px-3 py-2 text-slate-100 focus:outline-none focus:border-cyan-400/60">
+    <div style="flex: 1; min-width: 150px;">
+        <label style="display: block; font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.5rem; font-weight: 600;">To</label>
+        <input type="date" name="end_date" value="{{ end_date|default:'' }}" class="sa-input">
     </div>
-
-    <button type="submit"
-            class="px-4 py-2 rounded-lg text-sm font-semibold text-slate-900 transition hover:brightness-110"
-            style="background:linear-gradient(135deg,#22d3ee,#7c5cff); box-shadow:0 8px 20px -8px rgba(124,92,255,.6);">
-        🔍 Apply Filter
-    </button>
-
-    <a href="?view_all=true"
-       class="px-4 py-2 rounded-lg text-sm font-semibold border transition"
-       style="background:rgba(52,211,153,.08); border-color:rgba(52,211,153,.35); color:#6ee7b7;">
-        📊 View All Data
-    </a>
-
-    <a href="{{ request.path }}" class="text-[13px] muted hover:text-slate-200 px-2 py-2">Clear</a>
-
+    <div style="display: flex; gap: 0.5rem;">
+        <button type="submit" class="sa-btn sa-btn--primary">Apply Filter</button>
+        <a href="?view_all=true" class="sa-btn sa-btn--secondary">View All Data</a>
+        <a href="{{ request.path }}" class="sa-btn sa-btn--secondary">Clear</a>
+    </div>
     {% if request.GET.view_all == 'true' %}
-    <span class="ml-auto chip" style="background:rgba(52,211,153,.1); color:#6ee7b7; border-color:rgba(52,211,153,.3);">
-        ✅ Showing all {{ metrics.total_posts }} posts
-    </span>
+        <span class="sa-badge sa-badge--calm" style="margin-left: auto;">Showing all {{ metrics.total_posts|default:0 }} posts</span>
     {% elif request.GET.start_date or request.GET.end_date %}
-    <span class="ml-auto chip" style="background:rgba(34,211,238,.1); color:#67e8f9; border-color:rgba(34,211,238,.3);">
-        📅 {{ request.GET.start_date|default:"..." }} → {{ request.GET.end_date|default:"..." }}
-    </span>
+        <span class="sa-badge sa-badge--watch" style="margin-left: auto;">{{ request.GET.start_date|default:"..." }} → {{ request.GET.end_date|default:"..." }}</span>
     {% endif %}
 </form>
 
-<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5 mb-10">
-    <div class="panel p-5 relative overflow-hidden group">
-        <div class="absolute inset-x-0 top-0 h-px" style="background:linear-gradient(90deg, transparent, #22d3ee, transparent);"></div>
-        <div class="text-[11px] uppercase tracking-[0.14em] muted">Posts Analyzed</div>
-        <div class="font-display text-[34px] font-bold mt-2 leading-none" style="color:#67e8f9;">
-            {{ metrics.total_posts|default:0 }}
-        </div>
-        <div class="text-[12px] muted mt-2">Total ingested across feeds</div>
+<!-- METRICS STRIP (Pulls real data, no hardcoded numbers) -->
+<section class="metrics-strip">
+    <div class="metric">
+        <span class="metric-value">{{ metrics.total_posts|default:0|floatformat:0 }}</span>
+        <span class="metric-label">Posts Analyzed</span>
     </div>
-
-    <div class="panel p-5 relative overflow-hidden">
-        <div class="absolute inset-x-0 top-0 h-px" style="background:linear-gradient(90deg, transparent, #a78bfa, transparent);"></div>
-        <div class="text-[11px] uppercase tracking-[0.14em] muted">Unique Accounts</div>
-        <div class="font-display text-[34px] font-bold mt-2 leading-none" style="color:#c4b5fd;">
-            {{ metrics.unique_accounts|default:0 }}
-        </div>
-        <div class="text-[12px] muted mt-2">Distinct authors observed</div>
+    <div class="metric-divider"></div>
+    <div class="metric">
+        <span class="metric-value">{{ metrics.unique_accounts|default:0|floatformat:0 }}</span>
+        <span class="metric-label">Unique Accounts</span>
     </div>
-
-    <div class="panel p-5 relative overflow-hidden">
-        <div class="absolute inset-x-0 top-0 h-px" style="background:linear-gradient(90deg, transparent, #34d399, transparent);"></div>
-        <div class="text-[11px] uppercase tracking-[0.14em] muted">Top Platform</div>
-        <div class="font-display text-[26px] font-bold mt-2 leading-tight" style="color:#6ee7b7;">
-            {{ metrics.top_platform }}
-        </div>
-        <div class="text-[12px] muted mt-2">Highest activity surface</div>
+    <div class="metric-divider"></div>
+    <div class="metric">
+        <span class="metric-value">{{ metrics.top_platform|default:"—" }}</span>
+        <span class="metric-label">Top Platform</span>
     </div>
-
-    <div class="panel p-5 relative overflow-hidden">
-        <div class="absolute inset-x-0 top-0 h-px"
-             style="background:linear-gradient(90deg, transparent, {% if 'High' in metrics.alert_level %}#f87171{% elif 'Medium' in metrics.alert_level %}#fbbf24{% else %}#34d399{% endif %}, transparent);"></div>
-        <div class="text-[11px] uppercase tracking-[0.14em] muted">Alert Level</div>
-        <div class="font-display text-[26px] font-bold mt-2 leading-tight
-            {% if 'High' in metrics.alert_level %}text-red-400
-            {% elif 'Medium' in metrics.alert_level %}text-yellow-300
-            {% else %}text-emerald-300{% endif %}">
-            {{ metrics.alert_level }}
-        </div>
-        <div class="text-[12px] muted mt-2">Composite signal score</div>
+    <div class="metric-divider"></div>
+    <div class="metric">
+        <span class="metric-value" style="color: {% if 'High' in metrics.alert_level %}var(--risk-critical){% elif 'Medium' in metrics.alert_level %}var(--risk-watch){% else %}var(--risk-calm){% endif %}; font-weight: 700;">
+            {{ metrics.alert_level|default:"Low" }}
+        </span>
+        <span class="metric-label">Alert Level</span>
     </div>
-</div>
+</section>
 
 {% if not charts %}
-<div class="panel p-14 text-center mb-10">
-    <div class="text-5xl mb-3">📊</div>
-    <p class="text-slate-300 text-[15px]">No data yet. Upload CSV files to generate insights.</p>
-    <a href="{% url 'upload_data' %}"
-       class="inline-block mt-5 px-5 py-2.5 rounded-lg text-sm font-semibold text-slate-900"
-       style="background:linear-gradient(135deg,#22d3ee,#7c5cff);">
-        Upload Data
-    </a>
+<div class="card" style="text-align: center; padding: 4rem 2rem;">
+    <h3 style="margin-bottom: 1rem;">No data yet</h3>
+    <p style="color: var(--text-muted); margin-bottom: 1.5rem;">Upload CSV files to generate insights and populate the dashboard.</p>
+    <a href="{% url 'upload_data' %}" class="sa-btn sa-btn--primary">Upload Data</a>
 </div>
 {% else %}
-<div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
 
-    <div class="panel p-6 flex flex-col justify-between min-h-[420px]">
-        <div class="flex items-center justify-between mb-4">
-            <h3 class="font-display text-[15px] font-semibold text-slate-100">📱 Post Distribution by Platform</h3>
-            <span class="chip">Live</span>
+<!-- CHARTS GRID -->
+<div class="editorial-grid">
+    <div class="main-column">
+        <span class="section-number">01 — Platform Distribution</span>
+        <h2 class="section-title">Where the Conversation is Happening</h2>
+        <div class="card">
+            <div id="chart-platform" style="width: 100%; height: 350px;"></div>
         </div>
-        <div class="relative w-full flex-1 min-h-[340px]">
-            <div id="chart-platform" class="w-full h-full"></div>
+
+        <br><br>
+
+        <span class="section-number">02 — Daily Volume</span>
+        <h2 class="section-title">Post Activity Over Time</h2>
+        <div class="card">
+            <div id="chart-daily" style="width: 100%; height: 350px;"></div>
         </div>
     </div>
 
-    <div class="panel p-6 flex flex-col justify-between min-h-[420px]">
-        <div class="flex items-center justify-between mb-4">
-            <h3 class="font-display text-[15px] font-semibold text-slate-100">⚠️ Risk Level Distribution</h3>
-            <span class="chip">Signal</span>
+    <div class="sidebar-column">
+        <span class="section-number">03 — Risk Assessment</span>
+        <h2 class="section-title">Narrative Tone</h2>
+        <div class="card" style="padding: 1rem;">
+            <div id="chart-risk" style="width: 100%; height: 250px;"></div>
         </div>
-        <div class="relative w-full flex-1 min-h-[340px]">
-            <div id="chart-risk" class="w-full h-full"></div>
+
+        <br>
+
+        <span class="section-number">04 — Top Accounts</span>
+        <h2 class="section-title">Most Active Accounts</h2>
+        <div class="card">
+            <div id="chart-accounts" style="width: 100%; height: 350px;"></div>
         </div>
     </div>
-
 </div>
 
-<div class="grid grid-cols-1 gap-6 mb-10">
-
-    <div class="panel p-6 w-full flex flex-col min-h-[420px]">
-        <div class="flex items-center justify-between mb-4">
-            <h3 class="font-display text-[15px] font-semibold text-slate-100">📈 Daily Post Volume</h3>
-            <span class="chip">Trend</span>
-        </div>
-        <div class="relative w-full flex-1 min-h-[340px]">
-            <div id="chart-daily" class="w-full h-full"></div>
-        </div>
-    </div>
-
-    <div class="panel p-6 w-full flex flex-col min-h-[420px]">
-        <div class="flex items-center justify-between mb-4">
-            <h3 class="font-display text-[15px] font-semibold text-slate-100">👤 Top 10 Accounts by Activity</h3>
-            <span class="chip">Ranking</span>
-        </div>
-        <div class="relative w-full flex-1 min-h-[340px]">
-            <div id="chart-accounts" class="w-full h-full"></div>
-        </div>
-    </div>
-
-</div>
 {% endif %}
 
+<!-- RISK ACTORS (Pulls real behavioral data) -->
 {% if risk_actors %}
-<div class="panel p-6 mb-10">
-    <div class="flex items-center justify-between mb-5">
-        <div class="flex items-center gap-3">
-            <h3 class="font-display text-[16px] font-bold text-slate-100 flex items-center gap-2">
-                ⚠️ High-Risk Actors
-            </h3>
-            <span class="chip" style="background:rgba(248,113,113,.1); color:#fca5a5; border-color:rgba(248,113,113,.3);">
-                {{ risk_actors|length }} detected
-            </span>
-        </div>
-        <span class="text-[12px] muted">Based on behavior analysis &amp; content patterns</span>
-    </div>
-
-    <div class="space-y-3">
+<section class="section" style="margin-top: 3rem;">
+    <span class="section-number">05 — High-Risk Actors</span>
+    <h2 class="section-title">Accounts Requiring Monitoring</h2>
+    <ul class="clean-list">
         {% for actor in risk_actors %}
-        <div class="rounded-xl p-4 border transition hover:translate-y-[-1px]"
-             style="
-             {% if actor.risk_category == 'disinformation_actor' %}background:rgba(248,113,113,.07); border-color:rgba(248,113,113,.35);
-             {% elif actor.risk_category == 'coordinated_actor' %}background:rgba(251,146,60,.06); border-color:rgba(251,146,60,.3);
-             {% elif actor.risk_category == 'high_risk_amplifier' %}background:rgba(251,191,36,.05); border-color:rgba(251,191,36,.3);
-             {% elif actor.risk_category == 'media_monitoring' %}background:rgba(96,165,250,.05); border-color:rgba(96,165,250,.3);
-             {% else %}background:rgba(148,163,184,.04); border-color:var(--line);{% endif %}">
-
-            <div class="flex justify-between items-start mb-2 gap-4">
-                <div class="min-w-0">
-                    <h4 class="font-display font-bold text-slate-100 text-[15px] truncate">{{ actor.account_id }}</h4>
-                    <div class="flex flex-wrap items-center gap-x-3 gap-y-1 text-[12px] muted mt-1.5">
-                        <span>📱 {{ actor.platforms|join:', ' }}</span>
-                        <span class="opacity-40">•</span>
-                        <span>📅 Last seen: {{ actor.latest_post|date:"Y-m-d" }}</span>
-                        <span class="opacity-40">•</span>
-                        <span>📊 {{ actor.post_count }} posts</span>
+        <li class="clean-list__item" style="flex-direction: column; align-items: flex-start; gap: 0.75rem; padding: 1.5rem; background: var(--bg-card); border: 1px solid var(--border-hairline); border-radius: var(--radius-md); margin-bottom: 1rem;">
+            <div style="display: flex; justify-content: space-between; width: 100%; align-items: flex-start;">
+                <div>
+                    <div class="clean-list__title" style="font-size: 1rem; font-weight: 600;">{{ actor.account_id }}</div>
+                    <div class="clean-list__meta" style="margin-top: 0.5rem;">
+                        {{ actor.post_count }} posts &bull; {{ actor.platforms }} &bull; Last seen: {{ actor.latest_post|date:"Y-m-d"|default:"Unknown" }}
                     </div>
                 </div>
-
-                <div class="text-right shrink-0">
-                    {% if actor.risk_category == 'disinformation_actor' %}
-                    <span class="px-3 py-1 text-[11px] font-bold rounded-full text-white" style="background:#dc2626;">🔴 Disinformation</span>
-                    {% elif actor.risk_category == 'coordinated_actor' %}
-                    <span class="px-3 py-1 text-[11px] font-bold rounded-full text-white" style="background:#ea580c;">🟠 Coordinated</span>
-                    {% elif actor.risk_category == 'high_risk_amplifier' %}
-                    <span class="px-3 py-1 text-[11px] font-bold rounded-full text-slate-900" style="background:#facc15;">🟡 Amplifier</span>
-                    {% elif actor.risk_category == 'media_monitoring' %}
-                    <span class="px-3 py-1 text-[11px] font-bold rounded-full text-white" style="background:#3b82f6;">🔵 Media</span>
-                    {% else %}
-                    <span class="px-3 py-1 text-[11px] font-bold rounded-full text-white" style="background:#64748b;">⚪ Monitor</span>
-                    {% endif %}
-                    <div class="text-[11px] muted mt-1.5">Risk: <span class="text-slate-200 font-semibold">{{ actor.risk_score }}/10</span></div>
-                </div>
+                <span class="sa-badge sa-badge--{% if actor.risk_level == 'high' or actor.risk_category == 'disinformation_actor' %}critical{% elif actor.risk_level == 'medium' or actor.risk_category == 'coordinated_actor' %}elevated{% else %}watch{% endif %}">
+                    {{ actor.risk_level|default:actor.risk_category|title }} Risk
+                </span>
             </div>
-
-            <div class="mt-3 p-3 rounded-lg border hairline" style="background:rgba(2,6,23,.45);">
-                <div class="text-[10.5px] uppercase tracking-[0.12em] text-slate-400 mb-1">⚠️ Risk Assessment</div>
-                <p class="text-[13.5px] text-slate-200 leading-relaxed">{{ actor.risk_reason }}</p>
-
+            
+            {% if actor.risk_reason or actor.behavioral_flags %}
+            <div style="width: 100%; padding: 1rem; background: var(--bg-page); border-radius: var(--radius-sm); border-left: 3px solid var(--accent-teal);">
+                <div style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted); margin-bottom: 0.5rem; font-weight: 600;">Risk Assessment</div>
+                <p style="font-size: 0.9rem; color: var(--text-ink); margin: 0;">{{ actor.risk_reason|default:actor.sample_content|truncatechars:150 }}</p>
                 {% if actor.behavioral_flags %}
-                <div class="mt-2.5 flex flex-wrap gap-1.5">
+                <div style="display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 0.75rem;">
                     {% for flag in actor.behavioral_flags %}
-                    <span class="px-2 py-0.5 text-[11px] rounded border hairline text-slate-300" style="background:rgba(148,163,184,.06);">{{ flag }}</span>
+                    <span style="font-size: 0.75rem; padding: 0.25rem 0.5rem; background: rgba(107, 114, 128, 0.1); color: var(--text-muted); border-radius: 4px;">{{ flag }}</span>
                     {% endfor %}
                 </div>
                 {% endif %}
             </div>
-
-            <div class="mt-2.5 text-[12.5px] text-slate-400 italic">
-                <span class="not-italic font-semibold text-slate-300">Recent:</span> "{{ actor.sample_content|truncatechars:120 }}"
-            </div>
-        </div>
+            {% endif %}
+        </li>
         {% endfor %}
-    </div>
-</div>
-{% else %}
-<div class="panel p-6 mb-10 text-center" style="background:rgba(52,211,153,.05); border-color:rgba(52,211,153,.25);">
-    <p class="font-semibold text-emerald-300">✅ No High-Risk Actors Detected</p>
-    <p class="text-[13px] text-emerald-200/70 mt-1">Current filters show legitimate activity patterns</p>
-</div>
+    </ul>
+</section>
 {% endif %}
 
-<div class="panel p-6 mb-10">
-    <div class="flex items-center gap-3 mb-4">
-        <span class="text-xl">#️⃣</span>
-        <h3 class="font-display text-[16px] font-bold text-slate-100">Trending Hashtags</h3>
-        <span class="chip" style="background:rgba(167,139,250,.1); color:#c4b5fd; border-color:rgba(167,139,250,.3);">
-            Top {{ top_hashtags|length }}
-        </span>
-    </div>
-
-    {% if top_hashtags %}
-    <div class="flex flex-wrap gap-2">
-        {% for tag in top_hashtags %}
-        <span class="px-3 py-1.5 rounded-full text-[13px] font-medium border transition cursor-default hover:brightness-125"
-              style="background:rgba(167,139,250,.08); color:#ddd6fe; border-color:rgba(167,139,250,.25);">
-            #{{ tag.tag }} <span class="text-[11px] opacity-70 ml-1">({{ tag.count }})</span>
-        </span>
-        {% endfor %}
-    </div>
-    {% else %}
-    <p class="text-[13px] muted italic">No hashtags found in current dataset.</p>
-    {% endif %}
-</div>
-
-<!-- TREND ANALYSIS SECTION -->
-{% if trend_analysis.chart_json %}
-<div class="panel p-6 mb-10">
-    <div class="flex items-center justify-between mb-4">
-        <div>
-            <h3 class="font-display text-[16px] font-bold text-slate-100 flex items-center gap-2">
-                <span class="text-xl">📈</span>
-                Weaponized Language Trend Analysis
-            </h3>
-            <p class="text-[12px] text-slate-400 mt-1">
-                Tracking <strong class="text-slate-200">{{ trend_analysis.total_categories_tracked }}</strong> categories across 
-                <strong class="text-slate-200">{{ trend_analysis.total_posts_scanned|default:0 }}</strong> posts 
-                <span class="text-slate-500">({{ trend_analysis.date_range }})</span>
-            </p>
-        </div>
-        <div class="text-right">
-            <div class="text-[10.5px] uppercase tracking-[0.14em] text-slate-500">Analysis Period</div>
-            <div class="text-sm font-semibold text-white mt-0.5">Last 90 Days</div>
-        </div>
-    </div>
-    
-    <!-- Plotly Chart -->
-    <div class="relative w-full min-h-[400px] mb-6">
-        <div id="trendChart" class="w-full h-full"></div>
-    </div>
-    
-    <!-- Trending Categories Badges -->
-    {% if trend_analysis.trending_categories %}
-    <div class="border-t border-slate-800/60 pt-4">
-        <h4 class="text-sm font-semibold text-white mb-3 flex items-center gap-2">
-            <span class="text-red-400">🔥</span>
-            Trending Up (Last 7 Days vs Previous Period)
-        </h4>
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-            {% for trend in trend_analysis.trending_categories %}
-            <div class="bg-slate-950/40 rounded-lg p-3 border border-slate-800/60 hover:border-slate-700/60 transition">
-                <div class="flex items-center justify-between mb-2">
-                    <span class="text-sm font-semibold text-white">{{ trend.category }}</span>
-                    <span class="px-2 py-0.5 rounded text-xs font-bold {% if trend.severity == 'critical' %}bg-red-950 text-red-400 border border-red-800{% elif trend.severity == 'high' %}bg-orange-950 text-orange-400 border border-orange-800{% elif trend.severity == 'medium' %}bg-yellow-950 text-yellow-400 border border-yellow-800{% else %}bg-green-950 text-green-400 border border-green-800{% endif %}">
-                        {{ trend.severity|upper }}
-                    </span>
-                </div>
-                <div class="flex items-center gap-2">
-                    <span class="text-red-400 font-bold text-lg">↑{{ trend.pct_change }}%</span>
-                    <span class="text-xs text-slate-500">{{ trend.recent_count }} mentions (7d)</span>
-                </div>
-            </div>
+<!-- TRENDING HASHTAGS -->
+{% if top_hashtags %}
+<section class="section">
+    <span class="section-number">06 — Trending Hashtags</span>
+    <h2 class="section-title">Most Used Election Hashtags</h2>
+    <div class="card">
+        <div style="display: flex; flex-wrap: wrap; gap: 0.75rem;">
+            {% for tag in top_hashtags %}
+            <span style="padding: 0.5rem 1rem; background: var(--bg-page); border: 1px solid var(--border-hairline); border-radius: 20px; font-size: 0.9rem; color: var(--accent-teal); font-weight: 500;">
+                #{{ tag.tag }} <span style="color: var(--text-muted); font-size: 0.8rem; margin-left: 0.25rem;">({{ tag.count }})</span>
+            </span>
             {% endfor %}
         </div>
     </div>
-    {% else %}
-    <div class="border-t border-slate-800/60 pt-4">
-        <p class="text-sm text-slate-500 italic">No significant category spikes detected in the last 7 days.</p>
-    </div>
-    {% endif %}
-</div>
+</section>
 {% endif %}
 
-<script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+<!-- TREND ANALYSIS -->
+{% if trend_analysis and trend_analysis.chart_json %}
+<section class="section">
+    <span class="section-number">07 — Weaponized Language Trends</span>
+    <h2 class="section-title">Trend Analysis</h2>
+    <div class="card">
+        <p style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 1.5rem;">
+            Tracking <strong style="color: var(--text-ink);">{{ trend_analysis.total_categories_tracked }}</strong> categories across 
+            <strong style="color: var(--text-ink);">{{ trend_analysis.total_posts_scanned|default:0 }}</strong> posts 
+            <span style="color: var(--text-muted);">({{ trend_analysis.date_range }})</span>
+        </p>
+        <div id="trendChart" style="width: 100%; height: 400px;"></div>
+        
+        {% if trend_analysis.trending_categories %}
+        <div style="margin-top: 2rem; padding-top: 1.5rem; border-top: 1px solid var(--border-hairline);">
+            <h3 style="font-size: 1rem; font-weight: 600; margin-bottom: 1rem; font-family: var(--font-sans);">Trending Up (Last 7 Days)</h3>
+            <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 1rem;">
+                {% for trend in trend_analysis.trending_categories %}
+                <div style="padding: 1rem; background: var(--bg-page); border: 1px solid var(--border-hairline); border-radius: var(--radius-md);">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                        <span style="font-weight: 600; font-size: 0.95rem;">{{ trend.category }}</span>
+                        <span class="sa-badge sa-badge--{% if trend.severity == 'critical' %}critical{% elif trend.severity == 'high' %}elevated{% elif trend.severity == 'medium' %}watch{% else %}calm{% endif %}">
+                            {{ trend.severity|upper }}
+                        </span>
+                    </div>
+                    <div style="display: flex; align-items: baseline; gap: 0.5rem;">
+                        <span style="font-size: 1.25rem; font-weight: 700; color: var(--risk-critical);">↑{{ trend.pct_change }}%</span>
+                        <span style="font-size: 0.8rem; color: var(--text-muted);">{{ trend.recent_count }} mentions (7d)</span>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</section>
+{% endif %}
+
+<!-- PLOTLY INITIALIZATION -->
+{% if charts or trend_analysis.chart_json %}
 <script>
-    // Enhanced Dark Theme Layout Overrides
-    const darkLayout = {
-        paper_bgcolor: 'transparent',
-        plot_bgcolor: 'rgba(15, 23, 42, 0.6)', // Lock plot area to dark slate tone
-        font: { family: 'Inter, sans-serif', color: '#f8fafc', size: 12 },
-        colorway: ['#22d3ee', '#a78bfa', '#34d399', '#fbbf24', '#f87171', '#60a5fa', '#f472b6'],
-        title: { text: '' }, // Hide internal Plotly title to prevent header collision
-        xaxis: { 
-            gridcolor: 'rgba(255, 255, 255, 0.08)', 
-            linecolor: 'rgba(255, 255, 255, 0.2)', 
-            zerolinecolor: 'rgba(255, 255, 255, 0.1)',
-            tickfont: { color: '#cbd5e1' }
-        },
-        yaxis: { 
-            gridcolor: 'rgba(255, 255, 255, 0.08)', 
-            linecolor: 'rgba(255, 255, 255, 0.2)', 
-            zerolinecolor: 'rgba(255, 255, 255, 0.1)',
-            tickfont: { color: '#cbd5e1' }
-        },
-        margin: { l: 50, r: 20, t: 60, b: 50 },
-        legend: { 
-            font: { color: '#f8fafc', size: 11 },
-            bgcolor: 'rgba(15, 23, 42, 0.85)',
-            bordercolor: 'rgba(255, 255, 255, 0.15)',
-            borderwidth: 1,
-            orientation: 'h',
-            yanchor: 'bottom',
-            y: 1.02,
-            xanchor: 'center',
-            x: 0.5
-        },
-        hoverlabel: {
-            bgcolor: '#0f172a',
-            bordercolor: '#334155',
-            font: { color: '#f8fafc', size: 12 }
-        }
+    const saPlotlyTheme = {
+        font: { family: 'Inter, sans-serif', color: '#1A1A1A' },
+        paper_bgcolor: 'rgba(0,0,0,0)',
+        plot_bgcolor: 'rgba(0,0,0,0)',
+        margin: { t: 30, r: 20, b: 50, l: 60 },
+        xaxis: { gridcolor: '#E5E7EB', zerolinecolor: '#E5E7EB', tickfont: { color: '#6B7280' } },
+        yaxis: { gridcolor: '#E5E7EB', zerolinecolor: '#E5E7EB', tickfont: { color: '#6B7280' } },
+        showlegend: true,
+        legend: { orientation: 'h', y: -0.2, x: 0.5, xanchor: 'center', font: { family: 'Inter, sans-serif', size: 11 } }
     };
 
     const mergeLayout = (l) => {
-        const merged = JSON.parse(JSON.stringify(darkLayout));
+        const merged = JSON.parse(JSON.stringify(saPlotlyTheme));
         if (l) {
-            delete l.title; // Strip backend title if provided in Django view
+            delete l.title;
             Object.assign(merged, l);
             if (l.xaxis) Object.assign(merged.xaxis, l.xaxis);
             if (l.yaxis) Object.assign(merged.yaxis, l.yaxis);
-            merged.legend = Object.assign({}, darkLayout.legend, l.legend || {});
         }
-        // Force critical settings so Python backend defaults don't break dark styling
-        merged.plot_bgcolor = 'rgba(15, 23, 42, 0.6)';
-        merged.paper_bgcolor = 'transparent';
-        merged.title = { text: '' };
+        merged.plot_bgcolor = 'rgba(0,0,0,0)';
+        merged.paper_bgcolor = 'rgba(0,0,0,0)';
         return merged;
     };
 
-    function ensureVibrantColors(data) {
-        const vibrantColors = ['#22d3ee', '#a78bfa', '#34d399', '#fbbf24', '#f87171', '#60a5fa', '#f472b6'];
-        return data.map((trace, index) => {
-            const color = vibrantColors[index % vibrantColors.length];
-            
-            if (trace.type === 'scatter' || trace.type === 'line') {
-                trace.line = trace.line || {};
-                trace.line.color = trace.line.color || color;
-                trace.line.width = trace.line.width || 2.5;
-                trace.marker = trace.marker || {};
-                trace.marker.color = trace.marker.color || color;
-            } else if (trace.type === 'bar') {
-                trace.marker = trace.marker || {};
-                trace.marker.color = trace.marker.color || color;
-                trace.marker.line = { color: 'rgba(255,255,255,0.2)', width: 1 };
-            }
-            return trace;
-        });
-    }
-
     {% if charts.platform %}
     var platformData = {{ charts.platform|safe }};
-    platformData.data = ensureVibrantColors(platformData.data);
     Plotly.newPlot('chart-platform', platformData.data, mergeLayout(platformData.layout), {responsive: true, displayModeBar: false});
     {% endif %}
 
     {% if charts.risk %}
     var riskData = {{ charts.risk|safe }};
-    riskData.data = ensureVibrantColors(riskData.data);
     Plotly.newPlot('chart-risk', riskData.data, mergeLayout(riskData.layout), {responsive: true, displayModeBar: false});
     {% endif %}
 
     {% if charts.daily %}
     var dailyData = {{ charts.daily|safe }};
-    dailyData.data = ensureVibrantColors(dailyData.data);
     Plotly.newPlot('chart-daily', dailyData.data, mergeLayout(dailyData.layout), {responsive: true, displayModeBar: false});
     {% endif %}
 
     {% if charts.accounts %}
     var accountsData = {{ charts.accounts|safe }};
-    accountsData.data = ensureVibrantColors(accountsData.data);
     Plotly.newPlot('chart-accounts', accountsData.data, mergeLayout(accountsData.layout), {responsive: true, displayModeBar: false});
     {% endif %}
 
-    {% if trend_analysis.chart_json %}
+    {% if trend_analysis and trend_analysis.chart_json %}
     var trendData = {{ trend_analysis.chart_json|safe }};
-    trendData.data = ensureVibrantColors(trendData.data);
     Plotly.newPlot('trendChart', trendData.data, mergeLayout(trendData.layout), {responsive: true, displayModeBar: false});
     {% endif %}
 </script>
+{% endif %}
 
 {% endblock %}
