@@ -1,278 +1,81 @@
 {% extends 'dashboard/base.html' %}
-{% block title %}Mapped Lexicons - Hateful Content Detection{% endblock %}
+{% block title %}Mapped Lexicons - SA Elections{% endblock %}
 
 {% block content %}
-<div class="bg-gray-900 rounded-xl shadow-lg p-6 border border-gray-700">
-
-    <!-- Header -->
-    <div class="flex justify-between items-center mb-6">
-        <div>
-            <h2 class="text-2xl font-bold text-white">🗣️ Mapped Lexicons</h2>
-            <p class="text-gray-400 mt-1">Detecting hateful terms with AI-powered analysis + AFRO-XLMR model</p>
-        </div>
-        <div class="flex gap-2">
-            <span class="px-3 py-1 bg-blue-900/50 text-blue-200 rounded-full text-sm font-medium border border-blue-700">
-                 {{ posts_scanned|default:0 }} posts scanned
-            </span>
-            <span class="px-3 py-1 bg-purple-900/50 text-purple-200 rounded-full text-sm font-medium border border-purple-700">
-                 {{ total_posts_analyzed|default:0 }} posts analyzed
-            </span>
-            <span class="px-3 py-1 bg-green-900/50 text-green-200 rounded-full text-sm font-medium border border-green-700">
-                📚 {{ lexicon_term_count|default:"1000+" }} terms
-            </span>
-        </div>
+<div class="metrics-grid">
+    <div class="metric-card">
+        <div class="metric-label">Total Matches</div>
+        <div class="metric-value">{{ total_matches|default:"0" }}</div>
+        <div class="metric-subtext">Across scanned posts</div>
     </div>
-
-    {% if analytics_pending %}
-    <div class="mb-6 p-4 bg-yellow-900/30 border border-yellow-700 rounded-lg flex items-start gap-3">
-        <div class="text-2xl">⏳</div>
-        <div>
-            <h3 class="font-bold text-yellow-300">Analytics are being prepared</h3>
-            <p class="text-sm text-yellow-200 mt-1">
-                The background worker is currently scanning posts and building the lexicon matches. 
-                Please check back in a few minutes, or trigger a manual refresh from the Lexicon Management tab.
-            </p>
-        </div>
+    <div class="metric-card">
+        <div class="metric-label">Active Categories</div>
+        <div class="metric-value">{{ categories|length|default:"0" }}</div>
+        <div class="metric-subtext">Tracked lexicon groups</div>
     </div>
-    {% endif %}
-
-    <!-- Dual Engine Explanation Banner -->
-    <div class="mb-6 grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div class="bg-gradient-to-r from-blue-900/40 to-blue-800/30 border-l-4 border-blue-500 p-4 rounded-lg">
-            <div class="flex items-start gap-3">
-                <div class="text-3xl">📋</div>
-                <div class="flex-1">
-                    <h3 class="font-bold text-blue-300 text-lg">Engine 1: Rule-Based Lexicon</h3>
-                    <p class="text-sm text-blue-200 mt-1">
-                        Matches <strong class="text-blue-100">{{ lexicon_term_count|default:"1000+" }} exact terms</strong> (Amharic, English, Oromo) using regex patterns.
-                    </p>
-                </div>
-            </div>
-        </div>
-
-        <div class="bg-gradient-to-r from-purple-900/40 to-purple-800/30 border-l-4 border-purple-500 p-4 rounded-lg">
-            <div class="flex items-start gap-3">
-                <div class="text-3xl">🤖</div>
-                <div class="flex-1">
-                    <h3 class="font-bold text-purple-300 text-lg">Engine 2: AFRO-XLMR Model</h3>
-                    <p class="text-sm text-purple-200 mt-1">
-                        Fine-tuned <strong class="text-purple-100">AFRO-XLMR</strong> model analyzes context & nuance in Amharic, Oromo, and Tigrinya.
-                    </p>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    {% if top_terms or category_counts or selected_category or posts_with_terms %}
-    <!-- SECTION 1: STATS -->
-    <div class="mb-8 border-t border-blue-500/50 pt-6">
-        <div class="flex items-center gap-3 mb-4">
-            <span class="text-3xl">📊</span>
-            <div>
-                <h3 class="text-xl font-bold text-blue-300">Detection Overview</h3>
-                <p class="text-sm text-blue-400">Combined results from lexicon engine and AI model</p>
-            </div>
-        </div>
-
-        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-            <div class="bg-blue-900/30 p-4 rounded-lg border border-blue-700">
-                <div class="text-3xl font-bold text-blue-400">{{ total_matches|default:0 }}</div>
-                <div class="text-sm text-blue-300">Lexicon Hits</div>
-            </div>
-            <div class="bg-purple-900/30 p-4 rounded-lg border border-purple-700">
-                <div class="text-3xl font-bold text-purple-400">{{ total_posts_analyzed|default:0 }}</div>
-                <div class="text-sm text-purple-300">Posts Analyzed</div>
-            </div>
-            <div class="bg-blue-900/30 p-4 rounded-lg border border-blue-700">
-                <div class="text-3xl font-bold text-blue-400">{{ category_counts|length|default:0 }}</div>
-                <div class="text-sm text-blue-300">Categories Triggered</div>
-            </div>
-            <div class="bg-blue-900/30 p-4 rounded-lg border border-blue-700">
-                <div class="text-3xl font-bold text-blue-400">{{ posts_scanned|default:0 }}</div>
-                <div class="text-sm text-blue-300">Posts Scanned</div>
-            </div>
-        </div>
-
-        {% if not selected_category and top_terms %}
-        <div class="mb-6">
-            <h4 class="text-lg font-bold text-blue-300 mb-4 flex items-center gap-2">
-                <span>🔥</span> Top Trigger Terms
-            </h4>
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {% for term in top_terms %}
-                <div class="bg-gray-800 border border-blue-800/50 rounded-lg p-4 hover:shadow-lg hover:shadow-blue-500/10 hover:border-blue-500 transition-all">
-                    <div class="flex justify-between items-start">
-                        <div>
-                            <div class="font-semibold text-blue-300 text-lg">{{ term.term }}</div>
-                            <div class="text-sm text-blue-400 mt-1">{{ term.count }} mentions</div>
-                        </div>
-                        {% if term.metadata.severity %}
-                        <span class="px-2 py-1 rounded text-xs font-medium
-                            {% if term.metadata.severity == 'critical' %}bg-red-900/50 text-red-300 border border-red-700
-                            {% elif term.metadata.severity == 'high' %}bg-orange-900/50 text-orange-300 border border-orange-700
-                            {% elif term.metadata.severity == 'medium' %}bg-yellow-900/50 text-yellow-300 border border-yellow-700
-                            {% else %}bg-green-900/50 text-green-300 border border-green-700{% endif %}">
-                            {{ term.metadata.severity }}
-                        </span>
-                        {% endif %}
-                    </div>
-                </div>
-                {% endfor %}
-            </div>
-        </div>
-        {% endif %}
-    </div>
-
-    <!-- SECTION 2: CATEGORY & SEVERITY BREAKDOWN -->
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-        <div>
-            <div class="flex justify-between items-center mb-4">
-                <h3 class="text-lg font-semibold text-gray-200">📊 By Category</h3>
-                {% if selected_category %}
-                <a href="{% url 'lexicons' %}" class="text-xs text-blue-400 hover:text-blue-300">Clear Filter ✕</a>
-                {% endif %}
-            </div>
-            <div class="grid grid-cols-2 gap-3">
-                {% for category, count in category_counts.items %}
-                <a href="?category={{ category|urlencode }}" class="block bg-gray-800 rounded-lg p-3 text-center border {% if selected_category == category %}border-blue-500 ring-2 ring-blue-500{% else %}border-gray-700 hover:border-blue-500{% endif %} transition-colors cursor-pointer">
-                    <div class="text-2xl font-bold text-blue-400">{{ count }}</div>
-                    <div class="text-xs text-gray-400">{{ category }}</div>
-                </a>
-                {% endfor %}
-            </div>
-        </div>
-        <div>
-            <h3 class="text-lg font-semibold text-gray-200 mb-4">⚠️ By Severity</h3>
-            <div class="flex flex-wrap gap-2">
-                {% for severity, count in severity_counts.items %}
-                <span class="px-3 py-1 rounded-full text-sm font-medium border
-                    {% if severity == 'critical' %}bg-red-900/50 text-red-300 border-red-700
-                    {% elif severity == 'high' %}bg-orange-900/50 text-orange-300 border-orange-700
-                    {% elif severity == 'medium' %}bg-yellow-900/50 text-yellow-300 border-yellow-700
-                    {% else %}bg-green-900/50 text-green-300 border-green-700{% endif %}">
-                    {{ severity|title }}: {{ count }}
-                </span>
-                {% endfor %}
-            </div>
-        </div>
-    </div>
-
-    <!-- SECTION 3: POSTS WITH COLOR-CODED DETECTION -->
-    {% if selected_category %}
-    <div class="mb-8 border-t border-blue-500/50 pt-6">
-        <div class="flex items-center gap-3 mb-4">
-            <span class="text-3xl">🔎</span>
-            <div>
-                <h3 class="text-xl font-bold text-blue-300">Category: "{{ selected_category }}"</h3>
-                <p class="text-sm text-blue-400">Posts detected in this category</p>
-            </div>
-        </div>
-
-        {% if category_terms %}
-        <div class="mb-6">
-            <h4 class="text-lg font-semibold text-gray-200 mb-3">Terms in this Category ({{ category_terms|length }})</h4>
-            <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
-                {% for term_data in category_terms %}
-                <div class="bg-gray-800 rounded-lg p-3 border border-gray-700 hover:border-blue-500 transition-colors">
-                    <div class="font-semibold text-blue-300 text-sm mb-1">{{ term_data.term }}</div>
-                    <div class="flex gap-2 text-xs">
-                        {% if term_data.severity %}
-                        <span class="px-2 py-0.5 rounded 
-                            {% if term_data.severity == 'critical' %}bg-red-900/50 text-red-300
-                            {% elif term_data.severity == 'high' %}bg-orange-900/50 text-orange-300
-                            {% elif term_data.severity == 'medium' %}bg-yellow-900/50 text-yellow-300
-                            {% else %}bg-green-900/50 text-green-300{% endif %}">
-                            {{ term_data.severity }}
-                        </span>
-                        {% endif %}
-                    </div>
-                </div>
-                {% endfor %}
-            </div>
-        </div>
-        {% endif %}
-
-        <!-- COLOR LEGEND -->
-        {% if posts_with_terms %}
-        <div class="mb-4 p-3 bg-gray-800 rounded-lg border border-gray-700 flex flex-wrap items-center gap-4 text-sm">
-            <span class="text-gray-400 font-semibold">🎨 Detection Legend:</span>
-            <div class="flex items-center gap-2">
-                <span class="w-3 h-3 rounded-full bg-blue-500"></span>
-                <span class="text-blue-400">Regex/Lexicon Match</span>
-            </div>
-            <div class="flex items-center gap-2">
-                <span class="w-3 h-3 rounded-full bg-purple-500"></span>
-                <span class="text-purple-400">AFRO-XLMR AI Detection</span>
-            </div>
-            {% if ai_processing %}
-            <div class="ml-auto text-yellow-400 flex items-center gap-2">
-                <svg class="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                </svg>
-                <span>AI Model processing in background...</span>
-            </div>
-            {% endif %}
-        </div>
-
-        <!-- POSTS LIST -->
-        <div class="space-y-3">
-            {% for post in posts_with_terms %}
-            <div class="bg-gray-800 rounded-lg p-4 border-l-4 
-                {% if post.detection_source == 'ai_only' %}border-purple-500
-                {% elif post.detection_source == 'both' %}border-purple-500
-                {% else %}border-blue-500{% endif %} mb-4 hover:shadow-lg transition-shadow">
-                
-                <div class="flex justify-between items-start mb-2">
-                    <div class="flex gap-2 text-xs text-gray-400">
-                        <span>{{ post.platform }}</span>
-                        <span>•</span>
-                        <span>{{ post.timestamp|date:"M d, Y H:i" }}</span>
-                    </div>
-                    {% if post.url %}
-                    <a href="{{ post.url }}" target="_blank" class="text-blue-400 hover:text-blue-300 text-xs">🔗 View Post</a>
-                    {% endif %}
-                </div>
-
-                <!-- Detection Badges -->
-                <div class="flex flex-wrap gap-2 mb-3">
-                    {% for term in post.matched_terms %}
-                    <span class="px-2 py-1 bg-blue-900/50 text-blue-300 rounded text-xs border border-blue-700 flex items-center gap-1">
-                        <span class="w-1.5 h-1.5 rounded-full bg-blue-500"></span>
-                        {{ term }}
-                    </span>
-                    {% endfor %}
-
-                    {% if post.detection_source == 'ai_only' or post.detection_source == 'both' %}
-                    <span class="px-2 py-1 bg-purple-900/50 text-purple-300 rounded text-xs border border-purple-700 flex items-center gap-1 font-semibold">
-                        <span class="w-1.5 h-1.5 rounded-full bg-purple-500"></span>
-                        🤖 AI: {{ post.ai_category|default:post.model_category }} ({{ post.ai_confidence|default:0 }}%)
-                    </span>
-                    {% endif %}
-                </div>
-                
-                <p class="text-gray-300 text-sm mb-2">{{ post.text }}{% if post.text|length > 300 %}...{% endif %}</p>
-            </div>
-            {% endfor %}
-        </div>
-        {% else %}
-        <div class="bg-gray-800/50 rounded-lg p-6 text-center border border-gray-700">
-            <p class="text-gray-400">No posts found for this category.</p>
-        </div>
-        {% endif %}
-    </div>
-    {% endif %}
-
-    {% else %}
-    <!-- Empty State -->
-    <div class="text-center py-16 bg-gray-800 rounded-xl border-2 border-dashed border-gray-600">
-        <div class="text-6xl mb-4">🔍</div>
-        <h3 class="text-lg font-semibold text-gray-200 mb-2">No lexicon matches yet</h3>
-        <p class="text-gray-400 mb-2">You have <strong class="text-white">{{ total_posts }}</strong> posts in the database.</p>
-        <a href="{% url 'upload_data' %}" class="inline-flex items-center px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium shadow-lg mt-4">
-            📤 Upload Data
-        </a>
-    </div>
-    {% endif %}
 </div>
+
+<!-- Category Breakdown -->
+{% if categories %}
+<div class="card" style="margin-bottom: 1.5rem;">
+    <div class="card-header">
+        <div class="section-label">01 — Category Distribution</div>
+        <h2 class="section-title">Lexicon Matches by Category</h2>
+    </div>
+    <div class="table-container">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Category</th>
+                    <th>Match Count</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for cat in categories %}
+                <tr>
+                    <td style="font-weight: 600; text-transform: capitalize;">{{ cat.category|replace:"_":" " }}</td>
+                    <td>{{ cat.count }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endif %}
+
+<!-- Top Terms -->
+{% if top_terms %}
+<div class="card">
+    <div class="card-header">
+        <div class="section-label">02 — High-Frequency Terms</div>
+        <h2 class="section-title">Top Detected Trigger Terms</h2>
+    </div>
+    <div class="table-container">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Term</th>
+                    <th>Category</th>
+                    <th>Severity</th>
+                    <th>Frequency</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for term in top_terms %}
+                <tr>
+                    <td style="font-weight: 600; font-family: monospace;">{{ term.term }}</td>
+                    <td style="text-transform: capitalize;">{{ term.category|replace:"_":" " }}</td>
+                    <td>
+                        <span class="sa-badge sa-badge--{% if term.severity == 'critical' %}critical{% elif term.severity == 'high' %}watch{% else %}calm{% endif %}">
+                            {{ term.severity|title }}
+                        </span>
+                    </td>
+                    <td>{{ term.count }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endif %}
 {% endblock %}
