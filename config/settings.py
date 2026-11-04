@@ -5,19 +5,68 @@ import os
 from pathlib import Path
 from dotenv import load_dotenv
 
-# 1. Load environment variables from the .env file
+# Load environment variables from .env file
 load_dotenv()
 
+# Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-# 2. Security Settings (Pulled from .env)
-SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY', 'django-insecure-fallback-key-for-local-dev-only')
+# SECURITY WARNING: keep the secret key used in production secret!
+SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY', 'django-insecure-change-this-in-production')
+
+# SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.environ.get('DJANGO_DEBUG', 'True').lower() in ['true', '1', 'yes']
+
 ALLOWED_HOSTS = os.environ.get('DJANGO_ALLOWED_HOSTS', '*').split(',')
 
-# ... [Keep your INSTALLED_APPS, MIDDLEWARE, ROOT_URLCONF, etc. exactly as they were] ...
+# ==========================================
+# APPLICATION DEFINITION
+# ==========================================
+INSTALLED_APPS = [
+    'django.contrib.admin',
+    'django.contrib.auth',
+    'django.contrib.contenttypes',
+    'django.contrib.sessions',
+    'django.contrib.messages',
+    'django.contrib.staticfiles',
+    'django.contrib.postgres',  # Required for ArrayAgg and other Postgres features
+    'django_q',                 # Required for background task processing
+    'dashboard',                # Your main app
+]
 
-# 3. Database Settings (Pulled from .env)
+MIDDLEWARE = [
+    'django.middleware.security.SecurityMiddleware',
+    'django.contrib.sessions.middleware.SessionMiddleware',
+    'django.middleware.common.CommonMiddleware',
+    'django.middleware.csrf.CsrfViewMiddleware',
+    'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'django.contrib.messages.middleware.MessageMiddleware',
+    'django.middleware.clickjacking.XFrameOptionsMiddleware',
+]
+
+ROOT_URLCONF = 'election_monitor.urls'
+
+TEMPLATES = [
+    {
+        'BACKEND': 'django.template.backends.django.DjangoTemplates',
+        'DIRS': [BASE_DIR / 'templates'],  # Global templates folder (optional)
+        'APP_DIRS': True,                  # Automatically finds templates inside app folders
+        'OPTIONS': {
+            'context_processors': [
+                'django.template.context_processors.debug',
+                'django.template.context_processors.request',
+                'django.contrib.auth.context_processors.auth',
+                'django.contrib.messages.context_processors.messages',
+            ],
+        },
+    },
+]
+
+WSGI_APPLICATION = 'election_monitor.wsgi.application'
+
+# ==========================================
+# DATABASE
+# ==========================================
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
@@ -27,13 +76,70 @@ DATABASES = {
         'HOST': os.environ.get('DB_HOST', 'localhost'),
         'PORT': os.environ.get('DB_PORT', '5432'),
         'OPTIONS': {
-            'sslmode': 'disable',  
+            'sslmode': 'disable',  # Fixes psycopg2 2.9.10+ SSL issue on Mac
         },
     }
 }
 
-# ... [Keep the rest of your settings] ...
+# ==========================================
+# PASSWORD VALIDATION
+# ==========================================
+AUTH_PASSWORD_VALIDATORS = [
+    {'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator'},
+    {'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator'},
+    {'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator'},
+    {'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator'},
+]
 
-# 4. Custom Project Settings (Pulled from .env)
+# ==========================================
+# INTERNATIONALIZATION
+# ==========================================
+LANGUAGE_CODE = 'en-us'
+TIME_ZONE = 'Africa/Johannesburg'
+USE_I18N = True
+USE_TZ = True
+
+# ==========================================
+# STATIC & MEDIA FILES
+# ==========================================
+STATIC_URL = '/static/'
+STATIC_ROOT = BASE_DIR / 'staticfiles'
+
+MEDIA_URL = '/media/'
+MEDIA_ROOT = BASE_DIR / 'media'
+
+# ==========================================
+# DEFAULT PRIMARY KEY FIELD TYPE
+# ==========================================
+DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# ==========================================
+# CUSTOM PROJECT SETTINGS
+# ==========================================
+
+# OpenRouter LLM Settings
 OPENROUTER_API_KEY = os.environ.get('OPENROUTER_API_KEY', '')
-OPENROUTER_MODEL_ID = os.environ.get('OPENROUTER_MODEL_ID', 'meta-llama/llama-4-scout')
+OPENROUTER_MODEL_ID = os.environ.get('OPENROUTER_MODEL_ID', 'meta-llama/llama-3.3-70b-instruct')
+
+# Caching (Used heavily in your views for lexicons and aggregates)
+CACHES = {
+    "default": {
+        "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
+        "LOCATION": "unique-snowflake",
+        "TIMEOUT": 3600,  # 1 hour default timeout
+    }
+}
+
+# Django Q (Background Tasks)
+Q_CLUSTER = {
+    'name': 'DjangoQ',
+    'workers': 2,
+    'timeout': 120,
+    'retry': 180,
+    'queue_limit': 50,
+    'bulk': 10,
+    'orm': 'default',
+}
+
+# Login URL (Required for @login_required decorators)
+LOGIN_URL = '/admin/login/'
