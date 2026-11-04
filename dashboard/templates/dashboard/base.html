@@ -4,72 +4,188 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}ADDO - SA Municipal Elections Monitor{% endblock %}</title>
-    
-    <!-- NEW EDITORIAL CSS -->
-    <link rel="stylesheet" href="{% static 'css/sa-election-theme.css' %}">
-    
-    <!-- Pinned Plotly.js for Charts -->
-    <script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
-    
+    <title>{% block title %}South Africa Election Monitor{% endblock %}</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+
     <style>
-        /* Minor overrides for Django messages */
-        .sa-messages { max-width: 1200px; margin: 1rem auto; padding: 0 2rem; }
-        .sa-alert { padding: 1rem; border-radius: 6px; margin-bottom: 1rem; font-size: 0.9rem; border-left: 4px solid; }
-        .sa-alert-success { background: rgba(46, 125, 91, 0.1); color: var(--risk-calm); border-left-color: var(--risk-calm); }
-        .sa-alert-error { background: rgba(179, 38, 30, 0.1); color: var(--risk-critical); border-left-color: var(--risk-critical); }
-        .sa-alert-warning { background: rgba(199, 154, 30, 0.1); color: var(--risk-watch); border-left-color: var(--risk-watch); }
+        :root{
+            --bg:#0a1628;
+            --panel:#0d1f3c;
+            --panel-2:#11264a;
+            --line:rgba(255,255,255,.10);
+            --line-strong:rgba(255,255,255,.18);
+            --text:#ffffff;
+            --muted:#a8b8d1;
+            --accent:#3b82f6;
+            --accent-2:#60a5fa;
+        }
+        html,body{background:var(--bg);}
+        body{
+            font-family:'Inter',system-ui,-apple-system,sans-serif;
+            color:var(--text);
+            background:
+                radial-gradient(1200px 600px at -10% -20%, rgba(59,130,246,.18), transparent 60%),
+                radial-gradient(1000px 500px at 110% 0%, rgba(96,165,250,.12), transparent 55%),
+                linear-gradient(180deg,#081223 0%, #0a1628 100%);
+            min-height:100vh;
+            letter-spacing:-0.005em;
+        }
+        .font-display{font-family:'Space Grotesk', Inter, sans-serif; letter-spacing:-0.02em;}
+        .panel{
+            background:linear-gradient(180deg, rgba(255,255,255,.04), rgba(255,255,255,.015));
+            border:1px solid var(--line);
+            border-radius:16px;
+            backdrop-filter: blur(8px);
+        }
+        .panel-strong{
+            background:linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.02));
+            border:1px solid var(--line-strong);
+            border-radius:16px;
+        }
+        .hairline{border-color:var(--line);}
+        .muted{color:var(--muted);}
+        .chip{
+            display:inline-flex;align-items:center;gap:6px;
+            padding:4px 10px;border-radius:999px;
+            font-size:11px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;
+            background:rgba(255,255,255,.06); color:#dbe6f5; border:1px solid var(--line);
+        }
+        .nav-item{
+            display:flex;align-items:center;gap:10px;
+            padding:10px 12px;border-radius:10px;
+            font-size:13.5px;color:#cbd9ee;
+            border:1px solid transparent;
+            transition:all .15s ease;
+        }
+        .nav-item:hover{background:rgba(255,255,255,.06);color:#fff;border-color:var(--line);}
+        .nav-item.active{background:rgba(59,130,246,.15);color:#fff;border-color:rgba(59,130,246,.4);}
+        .nav-item .dot{width:5px;height:5px;border-radius:999px;background:#475569;}
+        .nav-item:hover .dot,.nav-item.active .dot{background:var(--accent-2);}
+        .nav-section-label{
+            font-size:10.5px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;
+            color:#7a8aa8; padding:0 12px; margin:18px 0 6px;
+        }
+        .sidebar-shell{
+            background:linear-gradient(180deg,#0a1628 0%, #081120 100%);
+            border-right:1px solid var(--line);
+        }
+        .topbar{
+            background:linear-gradient(180deg, rgba(10,22,40,.9), rgba(10,22,40,.6));
+            border-bottom:1px solid var(--line);
+            backdrop-filter: blur(12px);
+        }
+        .ribbon{
+            background:linear-gradient(90deg, rgba(30,64,175,.25), rgba(59,130,246,.15) 50%, rgba(30,64,175,.25));
+            border:1px solid var(--line-strong);
+            border-radius:14px;
+        }
+        ::-webkit-scrollbar{width:8px;height:8px;}
+        ::-webkit-scrollbar-thumb{background:rgba(255,255,255,.14);border-radius:8px;}
     </style>
 
     {% block extra_head %}{% endblock %}
 </head>
-<body>
+<body class="antialiased">
 
-    <!-- MASTHEAD -->
-    <header class="masthead">
-        <div class="masthead-logo">
-            <!-- ADDO LOGO - Using your actual logo file -->
-            <img src="{% static 'images/ADDO_design.png' %}" alt="ADDO - African Digital Democracy Observatory" style="height: 48px; width: auto;">
-        </div>
+<div class="flex min-h-screen">
+    <!-- Sidebar -->
+    <aside class="sidebar-shell hidden lg:flex flex-col w-[270px] shrink-0">
         
-        <nav class="masthead-nav">
-            <a href="{% url 'home' %}" class="{% if active_tab == 'home' %}active{% endif %}">Home</a>
-            <a href="{% url 'peps' %}" class="{% if active_tab == 'peps' %}active{% endif %}">PEPs Tracker</a>
-            <a href="{% url 'lexicons' %}" class="{% if active_tab == 'lexicons' %}active{% endif %}">Mapped Lexicons</a>
-            <a href="{% url 'narratives' %}" class="{% if active_tab == 'narratives' %}active{% endif %}">Trending Narratives</a>
-            <a href="{% url 'networks' %}" class="{% if active_tab == 'networks' %}active{% endif %}">Networks</a>
-            <a href="{% url 'lexicon_management' %}" class="{% if active_tab == 'lexicon_management' %}active{% endif %}">Management</a>
+        <div class="px-4 pt-5 pb-4 border-b hairline flex flex-col items-center">
+            <div class="w-full bg-white rounded-xl p-3 shadow-md flex items-center justify-center overflow-hidden">
+                <img src="{% static 'images/ADDO_design.png' %}" 
+                     alt="ADDO Logo Asset" 
+                     class="w-full h-auto object-contain max-h-[110px]">
+            </div>
+            <div class="text-[9px] uppercase tracking-[0.15em] font-bold text-slate-400 text-center mt-3 font-display">
+                AFRICAN DIGITAL DEMOCRACY OBSERVATORY
+            </div>
+        </div>
+
+        <nav class="flex-1 overflow-y-auto px-3 py-4">
+            <a href="{% url 'home' %}" class="nav-item {% if active_tab == 'home' %}active{% endif %}"><span class="dot"></span> Home</a>
+            <a href="{% url 'peps' %}" class="nav-item {% if active_tab == 'peps' %}active{% endif %}"><span class="dot"></span> Candidates Tracker</a>
+            <a href="{% url 'lexicons' %}" class="nav-item {% if active_tab == 'lexicons' %}active{% endif %}"><span class="dot"></span> Mapped Lexicons</a>
+            <a href="{% url 'narratives' %}" class="nav-item {% if active_tab == 'narratives' %}active{% endif %}"><span class="dot"></span> Trending Narratives</a>
+            <a href="{% url 'networks' %}" class="nav-item {% if active_tab == 'networks' %}active{% endif %}"><span class="dot"></span> Networks &amp; TTPs</a>
+            <a href="{% url 'lexicon_management' %}" class="nav-item {% if active_tab == 'lexicon_management' %}active{% endif %}"><span class="dot"></span> Lexicon Management</a>
+            <a href="{% url 'reports_landing' %}" class="nav-item {% if active_tab == 'reports' %}active{% endif %}"><span class="dot"></span> Reports</a>
+        
+            <div class="nav-section-label">Data Management</div>
+            <a href="{% url 'upload_data' %}" class="nav-item {% if active_tab == 'upload' %}active{% endif %}"><span class="dot"></span> Upload Data</a>
         </nav>
 
-        <div class="masthead-actions">
-            <a href="{% url 'upload_data' %}" class="btn-upload">Upload Data</a>
+        <div class="px-5 py-4 border-t hairline bg-slate-950/20">
+            <div class="text-[10.5px] muted tracking-wide text-center font-medium">
+                South Africa 2026 Municipal Elections
+            </div>
         </div>
-    </header>
+    </aside>
 
-    <!-- DJANGO MESSAGES -->
-    {% if messages %}
-    <div class="sa-messages">
-        {% for message in messages %}
-        <div class="sa-alert sa-alert-{{ message.tags }}">{{ message }}</div>
-        {% endfor %}
-    </div>
-    {% endif %}
+    <main class="flex-1 min-w-0">
 
-    <!-- MAIN CONTENT -->
-    <main class="container">
-        {% block content %}
-        {% endblock %}
+        <!-- Topbar -->
+        <header class="topbar sticky top-0 z-30">
+            <div class="max-w-[1400px] mx-auto px-6 lg:px-10 py-4 flex items-center gap-4">
+                
+                <div class="flex lg:hidden items-center mr-2">
+                    <div class="bg-white px-2 py-1 rounded-lg max-w-[100px] flex items-center shadow-sm">
+                        <img src="{% static 'images/ADDO_design.png' %}" 
+                             alt="ADDO" 
+                             class="w-full h-auto object-contain">
+                    </div>
+                </div>
+                
+                <div class="hidden md:flex items-center gap-2">
+                    <span class="chip">🇿🇦 South Africa</span>
+                </div>
+                <div class="ml-auto flex items-center gap-2">
+                    <span class="chip">Multilingual Detection</span>
+                    <span class="chip">Real-time Monitoring</span>
+                </div>
+            </div>
+
+            <div class="max-w-[1400px] mx-auto px-6 lg:px-10 pb-4">
+                <div class="ribbon px-5 py-4 flex flex-wrap items-center justify-between gap-x-6 gap-y-2">
+                    <div class="flex items-center gap-3">
+                        <span class="text-xl leading-none">🇿🇦</span>
+                        <span class="font-display text-[15px] font-semibold text-white">South Africa 2026 Municipal Elections Monitor</span>
+                    </div>
+                    <div class="text-[12.5px] muted">
+                        Tracking narratives • Weaponized language • Coordinated networks
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Page Title Section -->
+        <section class="max-w-[1400px] mx-auto px-6 lg:px-10 pt-6">
+            <div class="flex flex-wrap items-end justify-between gap-4 pb-6 border-b hairline">
+                <div>
+                    <h1 class="font-display text-[28px] md:text-[32px] font-bold leading-tight text-white">
+                        {% block page_title %}📊 Executive Dashboard{% endblock %}
+                    </h1>
+                    <p class="muted text-[14px] mt-1">
+                        {% block page_subtitle %}Real-time election integrity monitoring analytics{% endblock %}
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Main Content -->
+        <section class="max-w-[1400px] mx-auto px-6 lg:px-10 py-8">
+            {% block content %}{% endblock %}
+        </section>
+
     </main>
-
-    <!-- FOOTER (Matching Ethiopia style, adapted to new theme, no hardcoded dates) -->
-    <footer style="border-top: 1px solid var(--border-hairline); padding: 2rem 0; margin-top: 4rem; text-align: center;">
-        <div style="font-size: 0.8rem; color: var(--text-muted); letter-spacing: 0.1em; text-transform: uppercase; font-weight: 600;">
-            African Digital Democracy Observatory
-        </div>
-        <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.5rem;">
-            Data Provenance: TikTok, OpenMeasure, Brandwatch, Civicsignal
-        </div>
-    </footer>
+</div>
 
 {% block extra_js %}{% endblock %}
 </body>
